@@ -1,7 +1,7 @@
 package templates
 
 var GQLGen = `# Generated with graphql-orm
-
+{{$config:=.Config}}
 schema:
   - schema.graphql
 exec:
@@ -16,7 +16,7 @@ resolver:
   package: gen
 
 models:
-  {{range .Objects}}
+  {{range .Model.Objects}}
   {{.Name}}ResultType:
     fields:
       count:
@@ -24,7 +24,7 @@ models:
       items:
         resolver: true
   {{.Name}}:
-    model: github.com/novacloudcz/graphql-orm-example/gen.{{.Name}}
+    model: {{$config.Package}}/gen.{{.Name}}
     fields:{{range .Relationships}}
       {{.Name}}:
         resolver: true{{end}}

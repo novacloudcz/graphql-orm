@@ -19,7 +19,7 @@ func (r *Resolver) Mutation() MutationResolver {
 func (r *Resolver) Query() QueryResolver {
 	return &queryResolver{r}
 }
-{{range .Objects}}
+{{range .Model.Objects}}
 func (r *Resolver) {{.Name}}ResultType() {{.Name}}ResultTypeResolver {
 	return &{{.LowerName}}ResultTypeResolver{r}
 }
@@ -32,7 +32,7 @@ func (r *Resolver) {{.Name}}() {{.Name}}Resolver {
 
 type mutationResolver struct{ *Resolver }
 
-{{range .Objects}}
+{{range .Model.Objects}}
 func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input  map[string]interface{}) (item *{{.Name}}, err error) {
 	item = &{{.Name}}{ID:uuid.Must(uuid.NewV4()).String()}
 	tx := r.DB.db.Begin()
@@ -99,7 +99,7 @@ func (r *mutationResolver) Delete{{.Name}}(ctx context.Context, id string) (item
 
 type queryResolver struct{ *Resolver }
 
-{{range $object := .Objects}}
+{{range $object := .Model.Objects}}
 func (r *queryResolver) {{$object.Name}}(ctx context.Context, id *string, q *string) (*{{$object.Name}}, error) {
 	t := {{$object.Name}}{}
 	err := resolvers.GetItem(ctx, r.DB.Query(), &t, id)

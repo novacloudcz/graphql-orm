@@ -9,6 +9,8 @@ import (
 	"path"
 	"text/template"
 
+	"gopkg.in/yaml.v2"
+
 	"github.com/inloop/goclitools"
 
 	"github.com/novacloudcz/graphql-orm/model"
@@ -37,6 +39,17 @@ func generate(filename string) error {
 	if err != nil {
 		return err
 	}
+
+	configSource, err := ioutil.ReadFile("graphql-orm.yml")
+	if err != nil {
+		return err
+	}
+	var c model.Config
+	err = yaml.Unmarshal(configSource, &c)
+	if err != nil {
+		return err
+	}
+
 	// plainModel, err := model.Parse(string(modelSource))
 	// if err != nil {
 	// 	return err
@@ -46,7 +59,7 @@ func generate(filename string) error {
 		os.Mkdir("./gen", 0777)
 	}
 
-	err = generateFiles(m)
+	err = generateFiles(&m, &c)
 	if err != nil {
 		return err
 	}
@@ -82,24 +95,30 @@ func generate(filename string) error {
 	return nil
 }
 
-func generateFiles(m model.Model) error {
-	if err := writeTemplate(templates.Database, "gen/database.go", &m); err != nil {
+func generateFiles(m *model.Model, c *model.Config) error {
+	data := TemplateData{m, c}
+	if err := writeTemplate(templates.Database, "gen/database.go", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.Resolver, "gen/resolver.go", &m); err != nil {
+	if err := writeTemplate(templates.Resolver, "gen/resolver.go", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.GQLGen, "gen/gqlgen.yml", &m); err != nil {
+	if err := writeTemplate(templates.GQLGen, "gen/gqlgen.yml", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.Model, "gen/models.go", &m); err != nil {
+	if err := writeTemplate(templates.Model, "gen/models.go", data); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func writeTemplate(t, filename string, data interface{}) error {
+type TemplateData struct {
+	Model  *model.Model
+	Config *model.Config
+}
+
+func writeTemplate(t, filename string, data TemplateData) error {
 	temp, err := template.New(filename).Parse(t)
 	if err != nil {
 		return err
@@ -107,7 +126,7 @@ func writeTemplate(t, filename string, data interface{}) error {
 	var content bytes.Buffer
 	writer := io.Writer(&content)
 
-	err = temp.Execute(writer, data)
+	err = temp.Execute(writer, &data)
 	if err != nil {
 		return err
 	}
