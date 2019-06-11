@@ -23,6 +23,11 @@ func (r *Resolver) Query() QueryResolver {
 func (r *Resolver) {{.Name}}ResultType() {{.Name}}ResultTypeResolver {
 	return &{{.LowerName}}ResultTypeResolver{r}
 }
+{{if .HasRelationships}}
+func (r *Resolver) {{.Name}}() {{.Name}}Resolver {
+	return &{{.LowerName}}Resolver{r}
+}
+{{end}}
 {{end}}
 
 type mutationResolver struct{ *Resolver }
@@ -30,18 +35,53 @@ type mutationResolver struct{ *Resolver }
 {{range .Objects}}
 func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input  map[string]interface{}) (item *{{.Name}}, err error) {
 	item = &{{.Name}}{ID:uuid.Must(uuid.NewV4()).String()}
-	err = resolvers.CreateItem(ctx, r.DB.db, item, input)
+	tx := r.DB.db.Begin()
+{{range $rel := .Relationships}}
+{{if $rel.IsToMany}}
+	if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
+		items := []{{$rel.TargetType}}{}
+		tx.Find(&items, "id IN (?)", ids)
+		association := tx.Model(&item).Association("{{$rel.MethodName}}")
+		association.Replace(items)
+	}
+{{end}}
+{{end}}
+
+	err = resolvers.CreateItem(ctx, tx, item, input)
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+	err = tx.Commit().Error
 	return 
 }
 func (r *mutationResolver) Update{{.Name}}(ctx context.Context, id string, input  map[string]interface{}) (item *{{.Name}}, err error) {
 	item = &{{.Name}}{}
-	err = resolvers.GetItem(ctx, r.DB.Query(), item, &id)
+	tx := r.DB.db.Begin()
+	
+	err = resolvers.GetItem(ctx, tx, item, &id)
 	if err != nil {
 		return 
 	}
 
-	err = resolvers.UpdateItem(ctx, r.DB.Query(), item, input)
+{{range $rel := .Relationships}}
+{{if $rel.IsToMany}}
+	if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
+		items := []{{$rel.TargetType}}{}
+		tx.Find(&items, "id IN (?)", ids)
+		association := tx.Model(&item).Association("{{$rel.MethodName}}")
+		association.Replace(items)
+	}
+{{end}}
+{{end}}
 
+	err = resolvers.UpdateItem(ctx, tx, item, input)
+
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+	err = tx.Commit().Error
 	return 
 }
 func (r *mutationResolver) Delete{{.Name}}(ctx context.Context, id string) (item *{{.Name}}, err error) {
@@ -59,26 +99,50 @@ func (r *mutationResolver) Delete{{.Name}}(ctx context.Context, id string) (item
 
 type queryResolver struct{ *Resolver }
 
-{{range .Objects}}
-func (r *queryResolver) {{.Name}}(ctx context.Context, id *string, q *string) (*{{.Name}}, error) {
-	t := {{.Name}}{}
+{{range $object := .Objects}}
+func (r *queryResolver) {{$object.Name}}(ctx context.Context, id *string, q *string) (*{{$object.Name}}, error) {
+	t := {{$object.Name}}{}
 	err := resolvers.GetItem(ctx, r.DB.Query(), &t, id)
 	return &t, err
 }
-func (r *queryResolver) {{.Name}}s(ctx context.Context, offset *int, limit *int, q *string) (*{{.Name}}ResultType, error) {
-	return &{{.Name}}ResultType{}, nil
+func (r *queryResolver) {{$object.PluralName}}(ctx context.Context, offset *int, limit *int, q *string) (*{{$object.Name}}ResultType, error) {
+	return &{{$object.Name}}ResultType{}, nil
 }
 
-type {{.LowerName}}ResultTypeResolver struct{ *Resolver }
+type {{$object.LowerName}}ResultTypeResolver struct{ *Resolver }
 
-func (r *{{.LowerName}}ResultTypeResolver) Items(ctx context.Context, obj *{{.Name}}ResultType) (items []{{.Name}}, err error) {
+func (r *{{$object.LowerName}}ResultTypeResolver) Items(ctx context.Context, obj *{{$object.Name}}ResultType) (items []*{{$object.Name}}, err error) {
 	err = resolvers.GetResultTypeItems(ctx, r.DB.db, &items)
 	return
 }
 
-func (r *{{.LowerName}}ResultTypeResolver) Count(ctx context.Context, obj *{{.Name}}ResultType) (count int, err error) {
-	return resolvers.GetResultTypeCount(ctx, r.DB.db, &{{.Name}}{})
+func (r *{{$object.LowerName}}ResultTypeResolver) Count(ctx context.Context, obj *{{$object.Name}}ResultType) (count int, err error) {
+	return resolvers.GetResultTypeCount(ctx, r.DB.db, &{{$object.Name}}{})
 }
+
+{{if .HasRelationships}}
+type {{$object.LowerName}}Resolver struct { *Resolver }
+
+{{range $index, $relationship := .Relationships}}
+func (r *{{$object.LowerName}}Resolver) {{$relationship.MethodName}}(ctx context.Context, obj *{{$object.Name}}) (res {{.ReturnType}}, err error) {
+{{if $relationship.IsToMany}}
+	items := []*{{.TargetType}}{}
+	err = r.DB.Query().Model(obj).Related(&items, "{{$relationship.MethodName}}").Error
+	res = items
+{{else}}
+	item := {{.TargetType}}{}
+	_res := r.DB.Query().Model(obj).Related(&item, "{{$relationship.MethodName}}")
+	if _res.RecordNotFound() {
+		return
+	} else {
+		err = _res.Error
+	}
+	res = &item
+{{end}}
+	return 
+}
+{{end}}
+{{end}}
 
 {{end}}
 `

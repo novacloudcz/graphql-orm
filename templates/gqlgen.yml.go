@@ -23,6 +23,11 @@ models:
         resolver: true
       items:
         resolver: true
+  {{.Name}}:
+    model: github.com/novacloudcz/graphql-orm-example/gen.{{.Name}}
+    fields:{{range .Relationships}}
+      {{.Name}}:
+        resolver: true{{end}}
   {{.Name}}CreateInput:
     model: "map[string]interface{}"
   {{.Name}}UpdateInput:

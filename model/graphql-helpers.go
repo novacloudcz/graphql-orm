@@ -27,15 +27,33 @@ func getNamedType(t ast.Type) ast.Type {
 	}
 	panic("unable to get named type of " + t.String())
 }
-
+func isNonNullType(t ast.Type) bool {
+	return t.GetKind() == kinds.NonNull
+}
+func isListType(t ast.Type) bool {
+	return t.GetKind() == kinds.List
+}
+func getNullableType(t ast.Type) ast.Type {
+	if isNonNullType(t) {
+		return t.(*ast.NonNull).Type
+	}
+	return t
+}
 func nonNull(t ast.Type) ast.Type {
-	if t.GetKind() == kinds.NonNull {
+	if isNonNullType(t) {
 		return t
 	}
 	return &ast.NonNull{
 		Kind: kinds.NonNull,
 		Type: t,
 	}
+}
+
+func listType(t ast.Type) ast.Type {
+	if isListType(t) {
+		return t
+	}
+	return &ast.List{Kind: kinds.List, Type: t}
 }
 
 func nameNode(name string) *ast.Name {

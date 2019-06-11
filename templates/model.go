@@ -3,42 +3,26 @@ package templates
 var Model = `package gen
 
 import (
-	"context"
-
-	"github.com/99designs/gqlgen/graphql"
+	"time"
 )
 
-type {{.Name}}ResultType struct {
+
+{{range $object := .Objects}}
+
+type {{.Name}} struct {
+	ID        string     ` + "`" + `json:"id" gorm:"primary_key"` + "`" + `
+{{range $col := $object.Columns}}
+	{{$col.MethodName}} {{$col.GoType}} ` + "`" + `{{$col.ModelTags}}` + "`" + `{{end}}
+
+{{range $rel := $object.Relationships}}
+{{$rel.MethodName}} {{$rel.GoType}} ` + "`" + `{{$rel.ModelTags}}` + "`" + `
+{{if $rel.IsToOne}}{{$rel.MethodName}}ID string {{end}}
+{{end}}
+
+	UpdatedAt time.Time  ` + "`" + `json:"updatedAt"` + "`" + `
+	CreatedAt time.Time  ` + "`" + `json:"createdAt"` + "`" + `
+	DeletedAt *time.Time ` + "`" + `json:"deletedAt"` + "`" + `
 }
 
-func (t *{{.Name}}ResultType) Items(ctx context.Context) (items []Todo) {
-	rezCtx := graphql.GetResolverContext(ctx)
-	//fields := graphql.CollectFieldsCtx(ctx, nil)
-	//fmt.Println(rezCtx.Args, rezCtx.Parent.Args, fields)
-
-	db := ctx.Value(DBContextKey).(*DB)
-	q := db.Query()
-
-	limit := rezCtx.Parent.Args["limit"]
-	if value, ok := limit.(*int); ok && value != nil {
-		q = q.Limit(*value)
-	}
-	offset := rezCtx.Parent.Args["offset"]
-	if value, ok := offset.(*int); ok && value != nil {
-		q = q.Offset(*value)
-	}
-	err := q.Model(&{{.Name}}{}).Find(&items).Error
-	if err != nil {
-		panic(err)
-	}
-	return
-}
-
-func (t *{{.Name}}ResultType) Count(ctx context.Context) (count int) {
-	db := ctx.Value(DBContextKey).(*DB)
-	err := db.Query().Model(&{{.Name}}{}).Count(&count).Error
-	if err != nil {
-		panic(err)
-	}
-	return
-}`
+{{end}}
+`

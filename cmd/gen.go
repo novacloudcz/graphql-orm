@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"bytes"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
+	"path"
 	"text/template"
 
 	"github.com/inloop/goclitools"
@@ -35,6 +37,10 @@ func generate(filename string) error {
 	if err != nil {
 		return err
 	}
+	// plainModel, err := model.Parse(string(modelSource))
+	// if err != nil {
+	// 	return err
+	// }
 
 	if _, err := os.Stat("./gen"); os.IsNotExist(err) {
 		os.Mkdir("./gen", 0777)
@@ -57,9 +63,23 @@ func generate(filename string) error {
 
 	schema = "# This schema is generated, please don't update it manually\n\n" + schema
 
-	ioutil.WriteFile("gen/schema.graphql", []byte(schema), 0644)
+	if err := ioutil.WriteFile("gen/schema.graphql", []byte(schema), 0644); err != nil {
+		return err
+	}
 
-	return goclitools.RunInteractiveInDir("go run github.com/99designs/gqlgen", "./gen")
+	if err := goclitools.RunInteractiveInDir("go run github.com/99designs/gqlgen", "./gen"); err != nil {
+		return err
+	}
+
+	// for _, obj := range plainModel.Objects() {
+	// 	s1 := fmt.Sprintf("type %s struct {", obj.Name())
+	// 	s2 := fmt.Sprintf("type %s struct {\n\t%sExtensions", obj.Name(), obj.Name())
+	// 	if err := replaceStringInFile("gen/models_gen.go", s1, s2); err != nil {
+	// 		return err
+	// 	}
+	// }
+
+	return nil
 }
 
 func generateFiles(m model.Model) error {
@@ -72,18 +92,15 @@ func generateFiles(m model.Model) error {
 	if err := writeTemplate(templates.GQLGen, "gen/gqlgen.yml", &m); err != nil {
 		return err
 	}
-
-	// for _, obj := range m.Objects() {
-	// 	if err := writeTemplate(templates.Model, fmt.Sprintf("gen/models_%s.go", strings.ToLower(obj.Name())), &obj); err != nil {
-	// 		return err
-	// 	}
-	// }
+	if err := writeTemplate(templates.Model, "gen/models.go", &m); err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func writeTemplate(t, filename string, data interface{}) error {
-	temp, err := template.New("filename").Parse(t)
+	temp, err := template.New(filename).Parse(t)
 	if err != nil {
 		return err
 	}
@@ -94,6 +111,22 @@ func writeTemplate(t, filename string, data interface{}) error {
 	if err != nil {
 		return err
 	}
-	ioutil.WriteFile(filename, content.Bytes(), 0777)
+	err = ioutil.WriteFile(filename, content.Bytes(), 0777)
+	if err != nil {
+		return err
+	}
+	if path.Ext(filename) == ".go" {
+		return goclitools.RunInteractive(fmt.Sprintf("gofmt -w %s", filename))
+	}
 	return nil
 }
+
+// func replaceStringInFile(filename, old, new string) error {
+// 	content, err := ioutil.ReadFile(filename)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	newContent := []byte(strings.ReplaceAll(string(content), old, new))
+
+// 	return ioutil.WriteFile(filename, newContent, 0644)
+// }

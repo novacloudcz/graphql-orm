@@ -8,21 +8,30 @@ import (
 
 func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
 	fields := []*ast.InputValueDefinition{}
-	for _, f := range obj.Columns() {
+	for _, col := range obj.Columns() {
 		fields = append(fields, &ast.InputValueDefinition{
 			Kind:        kinds.InputValueDefinition,
-			Name:        f.Name,
-			Description: f.Description,
-			Type:        f.Type,
+			Name:        col.Def.Name,
+			Description: col.Def.Description,
+			Type:        col.Def.Type,
 		})
 	}
-	for _, f := range obj.Relationships() {
-		fields = append(fields, &ast.InputValueDefinition{
-			Kind:        kinds.InputValueDefinition,
-			Name:        nameNode(f.Name.Value + "_id"),
-			Description: f.Description,
-			Type:        namedType("ID"),
-		})
+	for _, rel := range obj.Relationships() {
+		if rel.IsToMany() {
+			fields = append(fields, &ast.InputValueDefinition{
+				Kind:        kinds.InputValueDefinition,
+				Name:        nameNode(rel.Name() + "Ids"),
+				Description: rel.Def.Description,
+				Type:        listType(nonNull(namedType("ID"))),
+			})
+		} else {
+			fields = append(fields, &ast.InputValueDefinition{
+				Kind:        kinds.InputValueDefinition,
+				Name:        nameNode(rel.Name() + "Id"),
+				Description: rel.Def.Description,
+				Type:        namedType("ID"),
+			})
+		}
 	}
 	return &ast.InputObjectDefinition{
 		Kind:   kinds.InputObjectDefinition,
@@ -33,21 +42,30 @@ func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
 
 func updateObjectDefinition(obj Object) *ast.InputObjectDefinition {
 	fields := []*ast.InputValueDefinition{}
-	for _, f := range obj.Columns() {
+	for _, col := range obj.Columns() {
 		fields = append(fields, &ast.InputValueDefinition{
 			Kind:        kinds.InputValueDefinition,
-			Name:        f.Name,
-			Description: f.Description,
-			Type:        getNamedType(f.Type),
+			Name:        col.Def.Name,
+			Description: col.Def.Description,
+			Type:        getNamedType(col.Def.Type),
 		})
 	}
-	for _, f := range obj.Relationships() {
-		fields = append(fields, &ast.InputValueDefinition{
-			Kind:        kinds.InputValueDefinition,
-			Name:        nameNode(f.Name.Value + "_id"),
-			Description: f.Description,
-			Type:        namedType("ID"),
-		})
+	for _, rel := range obj.Relationships() {
+		if rel.IsToMany() {
+			fields = append(fields, &ast.InputValueDefinition{
+				Kind:        kinds.InputValueDefinition,
+				Name:        nameNode(rel.Name() + "Ids"),
+				Description: rel.Def.Description,
+				Type:        listType(nonNull(namedType("ID"))),
+			})
+		} else {
+			fields = append(fields, &ast.InputValueDefinition{
+				Kind:        kinds.InputValueDefinition,
+				Name:        nameNode(rel.Name() + "Id"),
+				Description: rel.Def.Description,
+				Type:        namedType("ID"),
+			})
+		}
 	}
 	return &ast.InputObjectDefinition{
 		Kind:   kinds.InputObjectDefinition,

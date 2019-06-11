@@ -1,67 +1,10 @@
 package model
 
 import (
-	"strings"
+	"fmt"
 
 	"github.com/graphql-go/graphql/language/ast"
 )
-
-type Object struct {
-	Def *ast.ObjectDefinition
-}
-
-func (o *Object) Name() string {
-	return o.Def.Name.Value
-}
-func (o *Object) LowerName() string {
-	return strings.ToLower(o.Def.Name.Value)
-}
-func isColumn(f *ast.FieldDefinition) bool {
-	v, ok := getNamedType(f.Type).(*ast.Named)
-	if ok {
-		switch v.Name.Value {
-		case "String":
-			fallthrough
-		case "Time":
-			fallthrough
-		case "ID":
-			fallthrough
-		case "Float":
-			fallthrough
-		case "Int":
-			fallthrough
-		case "Boolean":
-			return true
-		}
-	}
-	return false
-}
-func isRelationship(f *ast.FieldDefinition) bool {
-	for _, d := range f.Directives {
-		if d != nil && d.Name.Value == "relationship" {
-			return true
-		}
-	}
-	return false
-}
-func (o *Object) Columns() []*ast.FieldDefinition {
-	fields := []*ast.FieldDefinition{}
-	for _, f := range o.Def.Fields {
-		if isColumn(f) {
-			fields = append(fields, f)
-		}
-	}
-	return fields
-}
-func (o *Object) Relationships() []*ast.FieldDefinition {
-	fields := []*ast.FieldDefinition{}
-	for _, f := range o.Def.Fields {
-		if isRelationship(f) {
-			fields = append(fields, f)
-		}
-	}
-	return fields
-}
 
 type Model struct {
 	Doc *ast.Document
@@ -73,8 +16,26 @@ func (m *Model) Objects() []Object {
 	for _, def := range m.Doc.Definitions {
 		op, ok := def.(*ast.ObjectDefinition)
 		if ok {
-			objs = append(objs, Object{op})
+			objs = append(objs, Object{op, m})
 		}
 	}
 	return objs
+}
+
+func (m *Model) Object(name string) Object {
+	for _, o := range m.Objects() {
+		if o.Name() == name {
+			return o
+		}
+	}
+	panic(fmt.Sprintf("Object with name %s not found in model", name))
+}
+
+func (m *Model) HasObject(name string) bool {
+	for _, o := range m.Objects() {
+		if o.Name() == name {
+			return true
+		}
+	}
+	return false
 }
