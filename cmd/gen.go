@@ -9,8 +9,6 @@ import (
 	"path"
 	"text/template"
 
-	"gopkg.in/yaml.v2"
-
 	"github.com/inloop/goclitools"
 
 	"github.com/novacloudcz/graphql-orm/model"
@@ -30,6 +28,7 @@ var genCmd = cli.Command{
 }
 
 func generate(filename string) error {
+	fmt.Println("Generating contents from", filename, "...")
 	modelSource, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
@@ -40,20 +39,10 @@ func generate(filename string) error {
 		return err
 	}
 
-	configSource, err := ioutil.ReadFile("graphql-orm.yml")
+	c, err := model.LoadConfig()
 	if err != nil {
 		return err
 	}
-	var c model.Config
-	err = yaml.Unmarshal(configSource, &c)
-	if err != nil {
-		return err
-	}
-
-	// plainModel, err := model.Parse(string(modelSource))
-	// if err != nil {
-	// 	return err
-	// }
 
 	if _, err := os.Stat("./gen"); os.IsNotExist(err) {
 		os.Mkdir("./gen", 0777)
@@ -80,6 +69,7 @@ func generate(filename string) error {
 		return err
 	}
 
+	fmt.Println("Running gqlgen generator...")
 	if err := goclitools.RunInteractiveInDir("go run github.com/99designs/gqlgen", "./gen"); err != nil {
 		return err
 	}
