@@ -145,6 +145,10 @@ type Task {
 	assignee: User @relationship(inverse:"tasks")
 }
 `
+
+	if _, err := os.Stat("model.graphql"); !os.IsNotExist(err) {
+		return nil
+	}
 	return ioutil.WriteFile("model.graphql", []byte(content), 0644)
 }
 func createMakeFile() error {
@@ -153,6 +157,9 @@ func createMakeFile() error {
 
 run:
 	DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go
+
+voyager:
+	docker run --rm -v ` + "`" + `pwd` + "`" + `/gen/schema.graphql:/app/schema.graphql -p 8080:80 graphql/voyager
 `
 	return ioutil.WriteFile("makefile", []byte(content), 0644)
 }
