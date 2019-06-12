@@ -27,7 +27,7 @@ func EnrichModel(m *Model) error {
 
 	schemaHeaderNodes := []ast.Node{
 		scalarDefinition("Time"),
-		directiveDefinition("relationship"),
+		relationshipDirectiveDefinition(),
 		schemaDefinition(m),
 		queryDefinition(m),
 		mutationDefinition(m),
@@ -60,15 +60,19 @@ func fieldDefinition(fieldName, fieldType string, isNonNull bool) *ast.FieldDefi
 	}
 }
 
-func directiveDefinition(name string) *ast.DirectiveDefinition {
+func relationshipDirectiveDefinition() *ast.DirectiveDefinition {
 	return &ast.DirectiveDefinition{
 		Kind: kinds.DirectiveDefinition,
-		Name: &ast.Name{
-			Kind:  kinds.Name,
-			Value: name,
+		Name: nameNode("relationship"),
+		Arguments: []*ast.InputValueDefinition{
+			&ast.InputValueDefinition{
+				Kind: kinds.InputValueDefinition,
+				Name: nameNode("inverse"),
+				Type: nonNull(namedType("String")),
+			},
 		},
 		Locations: []*ast.Name{
-			&ast.Name{Kind: kinds.Name, Value: graphql.DirectiveLocationFieldDefinition},
+			nameNode(graphql.DirectiveLocationFieldDefinition),
 		},
 	}
 }
