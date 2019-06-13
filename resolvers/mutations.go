@@ -13,7 +13,7 @@ func CreateItem(ctx context.Context, db *gorm.DB, model interface{}, data map[st
 		return err
 	}
 
-	return db.Save(model).Error
+	return db.Create(model).Error
 }
 
 func UpdateItem(ctx context.Context, db *gorm.DB, model interface{}, data map[string]interface{}) error {

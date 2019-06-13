@@ -33,8 +33,12 @@ func (r *Resolver) {{.Name}}() {{.Name}}Resolver {
 type mutationResolver struct{ *Resolver }
 
 {{range .Model.Objects}}
-func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input  map[string]interface{}) (item *{{.Name}}, err error) {
-	item = &{{.Name}}{ID:uuid.Must(uuid.NewV4()).String()}
+func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input map[string]interface{}) (item *{{.Name}}, err error) {
+	ID,ok := input["id"].(string)
+	if !ok || ID == "" {
+		ID = uuid.Must(uuid.NewV4()).String()
+	}
+	item = &{{.Name}}{ID:ID}
 	tx := r.DB.db.Begin()
 {{range $rel := .Relationships}}
 {{if $rel.IsToMany}}
@@ -105,7 +109,7 @@ func (r *queryResolver) {{$object.Name}}(ctx context.Context, id *string, q *str
 	err := resolvers.GetItem(ctx, r.DB.Query(), &t, id)
 	return &t, err
 }
-func (r *queryResolver) {{$object.PluralName}}(ctx context.Context, offset *int, limit *int, q *string) (*{{$object.Name}}ResultType, error) {
+func (r *queryResolver) {{$object.PluralName}}(ctx context.Context, offset *int, limit *int, q *string,sort []{{$object.Name}}SortType) (*{{$object.Name}}ResultType, error) {
 	return &{{$object.Name}}ResultType{}, nil
 }
 

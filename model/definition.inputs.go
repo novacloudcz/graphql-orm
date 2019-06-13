@@ -7,7 +7,17 @@ import (
 )
 
 func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
-	fields := []*ast.InputValueDefinition{}
+	fields := []*ast.InputValueDefinition{
+		&ast.InputValueDefinition{
+			Kind: kinds.InputValueDefinition,
+			Name: nameNode("id"),
+			Description: &ast.StringValue{
+				Kind:  kinds.StringValue,
+				Value: "Entity identifier. If not specified, the generated UUID is used.",
+			},
+			Type: namedType("String"),
+		},
+	}
 	for _, col := range obj.Columns() {
 		fields = append(fields, &ast.InputValueDefinition{
 			Kind:        kinds.InputValueDefinition,
