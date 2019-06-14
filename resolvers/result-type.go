@@ -2,33 +2,63 @@ package resolvers
 
 import (
 	"context"
+	"strings"
 
-	"github.com/99designs/gqlgen/graphql"
+	"github.com/iancoleman/strcase"
+
 	"github.com/jinzhu/gorm"
 )
 
-// GetResultTypeItems
-func GetResultTypeItems(ctx context.Context, db *gorm.DB, out interface{}) error {
-	rezCtx := graphql.GetResolverContext(ctx)
-	//fields := graphql.CollectFieldsCtx(ctx, nil)
-	//fmt.Println(rezCtx.Args, rezCtx.Parent.Args, fields)
+type EntityFilter interface {
+	Apply(db *gorm.DB) (*gorm.DB, error)
+}
+type EntitySort interface {
+	String() string
+}
 
-	// db := ctx.Value(DBContextKey).(*DB)
+type EntityResultType struct {
+	Offset *int
+	Limit  *int
+	Query  *string
+	Sort   []EntitySort
+	Filter EntityFilter
+}
+
+// GetResultTypeItems ...
+func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, out interface{}) error {
 	q := db
 
-	limit := rezCtx.Parent.Args["limit"]
-	if value, ok := limit.(*int); ok && value != nil {
-		q = q.Limit(*value)
+	if r.Limit != nil {
+		q = q.Limit(*r.Limit)
 	}
-	offset := rezCtx.Parent.Args["offset"]
-	if value, ok := offset.(*int); ok && value != nil {
-		q = q.Offset(*value)
+	if r.Offset != nil {
+		q = q.Offset(*r.Offset)
 	}
+
+	for _, s := range r.Sort {
+		direction := "ASC"
+		_s := s.String()
+		if strings.HasSuffix(_s, "_DESC") {
+			direction = "DESC"
+		}
+		col := strcase.ToLowerCamel(strings.ToLower(strings.TrimSuffix(_s, "_"+direction)))
+		q = q.Order(col + " " + direction)
+	}
+
+	q, err := r.Filter.Apply(q)
+	if err != nil {
+		return err
+	}
+
 	return q.Find(out).Error
 }
 
-// GetResultTypeCount ...
-func GetResultTypeCount(ctx context.Context, db *gorm.DB, out interface{}) (count int, err error) {
+// GetCount ...
+func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interface{}) (count int, err error) {
 	err = db.Model(out).Count(&count).Error
 	return
+}
+
+func (r *EntityResultType) GetSortStrings() []string {
+	return []string{}
 }

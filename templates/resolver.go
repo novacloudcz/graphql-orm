@@ -7,6 +7,7 @@ import (
 	
 	"github.com/novacloudcz/graphql-orm/resolvers"
 	uuid "github.com/satori/go.uuid"
+	"github.com/mitchellh/mapstructure"
 )
 
 type Resolver struct {
@@ -50,8 +51,13 @@ func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input map[string
 	}
 {{end}}
 {{end}}
-
-	err = resolvers.CreateItem(ctx, tx, item, input)
+	
+	err = mapstructure.Decode(input, item)
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+	err = tx.Create(item).Error
 	if err != nil {
 		tx.Rollback()
 		return
@@ -78,9 +84,12 @@ func (r *mutationResolver) Update{{.Name}}(ctx context.Context, id string, input
 	}
 {{end}}
 {{end}}
-
-	err = resolvers.UpdateItem(ctx, tx, item, input)
-
+	err = mapstructure.Decode(input, item);
+	if err != nil {
+		tx.Rollback()
+		return 
+	}
+	err = tx.Save(item).Error
 	if err != nil {
 		tx.Rollback()
 		return
@@ -95,7 +104,7 @@ func (r *mutationResolver) Delete{{.Name}}(ctx context.Context, id string) (item
 		return 
 	}
 
-	err = resolvers.DeleteItem(ctx, r.DB.Query(), item, id)
+	err = r.DB.Query().Delete(item, "id = ?", id).Error
 
 	return 
 }
@@ -109,19 +118,31 @@ func (r *queryResolver) {{$object.Name}}(ctx context.Context, id *string, q *str
 	err := resolvers.GetItem(ctx, r.DB.Query(), &t, id)
 	return &t, err
 }
-func (r *queryResolver) {{$object.PluralName}}(ctx context.Context, offset *int, limit *int, q *string,sort []{{$object.Name}}SortType) (*{{$object.Name}}ResultType, error) {
-	return &{{$object.Name}}ResultType{}, nil
+func (r *queryResolver) {{$object.PluralName}}(ctx context.Context, offset *int, limit *int, q *string,sort []{{$object.Name}}SortType,filter *{{$object.Name}}FilterType) (*{{$object.Name}}ResultType, error) {
+	_sort := []resolvers.EntitySort{}
+	for _, s := range sort {
+		_sort = append(_sort, s)
+	}
+	return &{{$object.Name}}ResultType{
+		EntityResultType: resolvers.EntityResultType{
+			Offset: offset,
+			Limit:  limit,
+			Query:  q,
+			Sort: _sort,
+			Filter: filter,
+		},
+	}, nil
 }
 
 type {{$object.LowerName}}ResultTypeResolver struct{ *Resolver }
 
 func (r *{{$object.LowerName}}ResultTypeResolver) Items(ctx context.Context, obj *{{$object.Name}}ResultType) (items []*{{$object.Name}}, err error) {
-	err = resolvers.GetResultTypeItems(ctx, r.DB.db, &items)
+	err = obj.GetItems(ctx, r.DB.db, &items)
 	return
 }
 
 func (r *{{$object.LowerName}}ResultTypeResolver) Count(ctx context.Context, obj *{{$object.Name}}ResultType) (count int, err error) {
-	return resolvers.GetResultTypeCount(ctx, r.DB.db, &{{$object.Name}}{})
+	return obj.GetCount(ctx, r.DB.db, &{{$object.Name}}{})
 }
 
 {{if .HasRelationships}}

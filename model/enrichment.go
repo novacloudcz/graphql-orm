@@ -10,18 +10,24 @@ import (
 // https://github.com/99designs/gqlgen/issues/681 for nested fields
 // graphql.CollectFieldsCtx()
 
-// EnrichModel ...
-func EnrichModel(m *Model) error {
-
+// EnrichModelObjects ...
+func EnrichModelObjects(m *Model) error {
 	id := fieldDefinition("id", "ID", true)
 	createdAt := fieldDefinition("createdAt", "Time", true)
 	updatedAt := fieldDefinition("updatedAt", "Time", true)
-	deletedAt := fieldDefinition("deletedAt", "Time", false)
+
+	for _, o := range m.Objects() {
+		o.Def.Fields = append(append([]*ast.FieldDefinition{id}, o.Def.Fields...), updatedAt, createdAt)
+	}
+	return nil
+}
+
+// EnrichModel ...
+func EnrichModel(m *Model) error {
 
 	definitions := []ast.Node{}
 	for _, o := range m.Objects() {
-		definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o))
-		o.Def.Fields = append(append([]*ast.FieldDefinition{id}, o.Def.Fields...), updatedAt, createdAt, deletedAt)
+		definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o), createObjectSortType(o), createObjectFilterType(o))
 		definitions = append(definitions, objectResultTypeDefinition(&o))
 	}
 

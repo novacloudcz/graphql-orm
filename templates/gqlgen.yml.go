@@ -18,6 +18,7 @@ resolver:
 models:
   {{range .Model.Objects}}
   {{.Name}}ResultType:
+    model: {{$config.Package}}/gen.{{.Name}}ResultType
     fields:
       count:
         resolver: true

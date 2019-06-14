@@ -47,6 +47,7 @@ func fetchFieldDefinition(obj Object) *ast.FieldDefinition {
 }
 
 func listFieldDefinition(obj Object) *ast.FieldDefinition {
+	createObjectSortType(obj)
 	return &ast.FieldDefinition{
 		Kind: kinds.FieldDefinition,
 		Name: nameNode(inflection.Plural(strcase.ToLowerCamel(obj.Name()))),
@@ -67,6 +68,16 @@ func listFieldDefinition(obj Object) *ast.FieldDefinition {
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("q"),
 				Type: namedType("String"),
+			},
+			&ast.InputValueDefinition{
+				Kind: kinds.InputValueDefinition,
+				Name: nameNode("sort"),
+				Type: listType(nonNull(namedType(obj.Name() + "SortType"))),
+			},
+			&ast.InputValueDefinition{
+				Kind: kinds.InputValueDefinition,
+				Name: nameNode("filter"),
+				Type: namedType(obj.Name() + "FilterType"),
 			},
 		},
 	}

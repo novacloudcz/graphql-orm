@@ -48,6 +48,11 @@ func generate(filename string) error {
 		os.Mkdir("./gen", 0777)
 	}
 
+	err = model.EnrichModelObjects(&m)
+	if err != nil {
+		return err
+	}
+
 	err = generateFiles(&m, &c)
 	if err != nil {
 		return err
@@ -97,6 +102,9 @@ func generateFiles(m *model.Model, c *model.Config) error {
 		return err
 	}
 	if err := writeTemplate(templates.Model, "gen/models.go", data); err != nil {
+		return err
+	}
+	if err := writeTemplate(templates.Filters, "gen/filters.go", data); err != nil {
 		return err
 	}
 

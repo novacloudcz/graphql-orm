@@ -36,10 +36,13 @@ func (o *ObjectRelationship) InverseRelationshipName() string {
 	}
 	panic(fmt.Sprintf("missing relationship directive/inverse argument for %s->%s relationship", o.Obj.Name(), o.Name()))
 }
-func (o *ObjectRelationship) InverseRelationship() *ObjectRelationship {
+
+func (o *ObjectRelationship) Target() *Object {
 	target := o.Obj.Model.Object(o.TargetType())
-	return target.Relationship(o.InverseRelationshipName())
-	// panic(fmt.Sprintf("inverset relationship %s->%s not found", o.Obj.Name(), o.Name()))
+	return &target
+}
+func (o *ObjectRelationship) InverseRelationship() *ObjectRelationship {
+	return o.Target().Relationship(o.InverseRelationshipName())
 }
 
 func (o *ObjectRelationship) IsToMany() bool {

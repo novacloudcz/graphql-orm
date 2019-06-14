@@ -7,18 +7,11 @@ import (
 )
 
 func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
-	fields := []*ast.InputValueDefinition{
-		&ast.InputValueDefinition{
-			Kind: kinds.InputValueDefinition,
-			Name: nameNode("id"),
-			Description: &ast.StringValue{
-				Kind:  kinds.StringValue,
-				Value: "Entity identifier. If not specified, the generated UUID is used.",
-			},
-			Type: namedType("String"),
-		},
-	}
+	fields := []*ast.InputValueDefinition{}
 	for _, col := range obj.Columns() {
+		if col.Name() == "createdAt" || col.Name() == "updatedAt" {
+			continue
+		}
 		fields = append(fields, &ast.InputValueDefinition{
 			Kind:        kinds.InputValueDefinition,
 			Name:        col.Def.Name,
@@ -53,6 +46,9 @@ func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
 func updateObjectDefinition(obj Object) *ast.InputObjectDefinition {
 	fields := []*ast.InputValueDefinition{}
 	for _, col := range obj.Columns() {
+		if col.Name() == "id" || col.Name() == "createdAt" || col.Name() == "updatedAt" {
+			continue
+		}
 		fields = append(fields, &ast.InputValueDefinition{
 			Kind:        kinds.InputValueDefinition,
 			Name:        col.Def.Name,
