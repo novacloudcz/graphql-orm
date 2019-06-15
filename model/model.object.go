@@ -23,6 +23,9 @@ func (o *Object) PluralName() string {
 func (o *Object) LowerName() string {
 	return strcase.ToLowerCamel(o.Def.Name.Value)
 }
+func (o *Object) TableName() string {
+	return inflection.Plural(o.LowerName())
+}
 func (o *Object) Columns() []ObjectColumn {
 	columns := []ObjectColumn{}
 	for _, f := range o.Def.Fields {
