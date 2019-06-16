@@ -15,6 +15,9 @@ func (f *{{$object.Name}}FilterType) Apply(db *gorm.DB) (*gorm.DB, error) {
 	return f.ApplyWithAlias(db, "{{$object.TableName}}")
 }
 func (f *{{$object.Name}}FilterType) ApplyWithAlias(db *gorm.DB, alias string) (*gorm.DB, error) {
+	if f == nil {
+		return db, nil
+	}
 	aliasPrefix := alias
 	if aliasPrefix != "" {
 		aliasPrefix += "."

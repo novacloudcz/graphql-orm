@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jinzhu/inflection"
 
@@ -66,6 +67,10 @@ func (o *ObjectRelationship) IsSelfReferencing() bool {
 	inv := o.InverseRelationship()
 	return o.Obj.Name() == inv.Obj.Name() && o.Name() == inv.Name()
 }
+func (o *ObjectRelationship) IsMainRelationshipForManyToMany() bool {
+	main := o.MainRelationshipForManyToMany()
+	return o.Obj.Name() == main.Obj.Name() && o.Name() == main.Name()
+}
 
 func (o *ObjectRelationship) ReturnType() string {
 	nt := getNamedType(o.Def.Type).(*ast.Named)
@@ -89,15 +94,18 @@ func (o *ObjectRelationship) ModelTags() string {
 	} else if o.IsManyToMany() {
 		rel := o.MainRelationshipForManyToMany()
 		if o.IsSelfReferencing() {
-			tags += fmt.Sprintf(" gorm:\"many2many:%s;association_jointable_foreignkey:%s_id\"", rel.ManyToManyJoinTable(), inflection.Singular(rel.Name()))
+			tags += fmt.Sprintf(" gorm:\"many2many:%s;jointable_foreignkey:%s_id;association_jointable_foreignkey:%s_id\"", rel.ManyToManyJoinTable(), inflection.Singular(strings.ToLower(o.Obj.Name())), inflection.Singular(o.InverseRelationshipName()))
+		} else if o.IsMainRelationshipForManyToMany() {
+			tags += fmt.Sprintf(" gorm:\"many2many:%s;jointable_foreignkey:%s_id;association_jointable_foreignkey:%s_id\"", rel.ManyToManyJoinTable(), inflection.Singular(o.Name()), inflection.Singular(o.InverseRelationshipName()))
 		} else {
-			tags += fmt.Sprintf(" gorm:\"many2many:%s_%s;\"", rel.Obj.LowerName(), rel.Name())
+			tags += fmt.Sprintf(" gorm:\"many2many:%s;jointable_foreignkey:%s_id;association_jointable_foreignkey:%s_id\"", rel.ManyToManyJoinTable(), inflection.Singular(o.InverseRelationshipName()), inflection.Singular(o.Name()))
 		}
 	}
 	return tags
 }
 func (o *ObjectRelationship) ManyToManyJoinTable() string {
-	return o.Obj.LowerName() + "_" + o.Name()
+	m := o.MainRelationshipForManyToMany()
+	return m.Obj.LowerName() + "_" + m.Name()
 }
 func (o *ObjectRelationship) MainRelationshipForManyToMany() *ObjectRelationship {
 	inversed := o.InverseRelationship()
@@ -110,9 +118,9 @@ func (o *ObjectRelationship) JoinString() string {
 	join := ""
 	if o.IsManyToMany() {
 		joinTable := o.ManyToManyJoinTable()
-		join += fmt.Sprintf("\"LEFT JOIN %s LEFT JOIN %s \"+alias+\"%s ON \"", joinTable, o.Target().TableName(), o.Target().TableName())
+		join += fmt.Sprintf("\"LEFT JOIN %[1]s ON \"+alias+\".id = %[1]s.%[3]s_id LEFT JOIN %[2]s \"+_alias+\" ON %[1]s.%[4]s_id = \"+_alias+\".id\"", joinTable, o.Target().TableName(), inflection.Singular(o.InverseRelationshipName()), inflection.Singular(o.Name()))
 	} else if o.IsToOne() {
-		join += fmt.Sprintf("\"LEFT JOIN %[1]s \"+_alias+\" ON \"+_alias+\".id = \"+alias+\".%[3]sId\"", o.Target().TableName(), o.Name(), o.Name())
+		join += fmt.Sprintf("\"LEFT JOIN %[1]s \"+_alias+\" ON \"+_alias+\".id = \"+alias+\".%[2]sId\"", o.Target().TableName(), o.Name())
 	} else if o.IsToMany() {
 		join += fmt.Sprintf("\"LEFT JOIN %[1]s \"+_alias+\" ON \"+_alias+\".%[3]sId = \"+alias+\".id\"", o.Target().TableName(), o.Name(), o.InverseRelationshipName())
 	}
