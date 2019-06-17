@@ -22,11 +22,9 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(db *gorm.DB, alias string) (
 	if aliasPrefix != "" {
 		aliasPrefix += "."
 	}
-{{range $col := $object.Columns}}
-{{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
-	if {{$varName}} != nil {
-		db = db.Where(aliasPrefix + "{{$col.Name}} {{$fm.Operator}}",{{$fm.WrapValueVariable $varName}})
-	}{{end}}{{end}}
+
+conditions, values := f.WhereContent(aliasPrefix)
+db = db.Where(conditions, values...)
 
 {{range $rel := $object.Relationships}}
 {{$varName := (printf "f.%s" $rel.MethodName)}}
@@ -41,6 +39,44 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(db *gorm.DB, alias string) (
 	}{{end}}
 
 	return db, nil
+}
+
+func (f *{{$object.Name}}FilterType) WhereContent(aliasPrefix string) (conditions string, values []interface{}) {
+	_conditions := []string{}
+	values = []interface{}{}
+
+	if f.Or != nil {
+		cs := []string{}
+		vs := []interface{}{}
+		for _, or := range f.Or {
+			_cond, _values := or.WhereContent(aliasPrefix)
+			cs = append(cs, _cond)
+			vs = append(vs, _values...)
+		}
+		_conditions = append(_conditions, "("+strings.Join(cs, " OR ")+")")
+		values = append(values, vs...)
+	}
+	if f.And != nil {
+		cs := []string{}
+		vs := []interface{}{}
+		for _, or := range f.Or {
+			_cond, _values := or.WhereContent(aliasPrefix)
+			cs = append(cs, _cond)
+			vs = append(vs, _values...)
+		}
+		_conditions = append(_conditions, strings.Join(cs, " AND "))
+		values = append(values, vs...)
+	}
+
+{{range $col := $object.Columns}}
+{{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
+	if {{$varName}} != nil {
+		_conditions = append(_conditions, aliasPrefix + "{{$col.Name}} {{$fm.Operator}}")
+		values = append(values, {{$fm.WrapValueVariable $varName}})
+	}{{end}}{{end}}
+
+	conditions = strings.Join(_conditions, " AND ")
+	return
 }
 
 {{end}}
