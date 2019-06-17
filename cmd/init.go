@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/novacloudcz/graphql-orm/templates"
+
 	"github.com/inloop/goclitools"
 
 	"gopkg.in/yaml.v2"
@@ -21,8 +23,10 @@ var initCmd = cli.Command{
 	Action: func(ctx *cli.Context) error {
 		fmt.Println("Initializing project...")
 
-		if err := createConfigFile(); err != nil {
-			return cli.NewExitError(err, 1)
+		if !fileExists("graphql-orm.yml") {
+			if err := createConfigFile(); err != nil {
+				return cli.NewExitError(err, 1)
+			}
 		}
 
 		if err := createDummyModelFile(); err != nil {
@@ -33,10 +37,21 @@ var initCmd = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
-		wantCreateMakefile := goclitools.Prompt("Create makefile for run/generate commands? [y/N]")
-		if strings.ToLower(wantCreateMakefile) == "y" {
-			if err := createMakeFile(); err != nil {
-				return cli.NewExitError(err, 1)
+		if !fileExists("makefile") {
+			wantCreateMakefile := goclitools.Prompt("Create makefile for run/generate commands? [y/N]")
+			if strings.ToLower(wantCreateMakefile) == "y" {
+				if err := createMakeFile(); err != nil {
+					return cli.NewExitError(err, 1)
+				}
+			}
+		}
+
+		if !fileExists("Dockerfile") {
+			wantCreateDockerfile := goclitools.Prompt("Create Dockerfile for building docker images? [y/N]")
+			if strings.ToLower(wantCreateDockerfile) == "y" {
+				if err := createDockerFile(); err != nil {
+					return cli.NewExitError(err, 1)
+				}
 			}
 		}
 
@@ -46,6 +61,13 @@ var initCmd = cli.Command{
 
 		return nil
 	},
+}
+
+func fileExists(filename string) bool {
+	if _, err := os.Stat(filename); !os.IsNotExist(err) {
+		return true
+	}
+	return false
 }
 
 func createConfigFile() error {
@@ -162,6 +184,14 @@ voyager:
 	docker run --rm -v ` + "`" + `pwd` + "`" + `/gen/schema.graphql:/app/schema.graphql -p 8080:80 graphql/voyager
 `
 	return ioutil.WriteFile("makefile", []byte(content), 0644)
+}
+func createDockerFile() error {
+	c, err := model.LoadConfig()
+	if err != nil {
+		return err
+	}
+	data := TemplateData{nil, &c}
+	return writeTemplate(templates.Dockerfile, "Dockerfile", data)
 }
 
 func runGenerate() error {
