@@ -3,6 +3,7 @@ package templates
 var Database = `package gen
 
 import (
+	"fmt"
 	"net/url"
 	"strings"
 
@@ -37,11 +38,7 @@ func NewDBWithString(urlString string) *DB {
 		panic(err)
 	}
 
-	if u.Scheme != "sqlite3" {
-		u.Host = "tcp(" + u.Host + ")"
-	}
-
-	urlString = strings.Replace(u.String(), u.Scheme+"://", "", 1)
+	urlString = getConnectionString(u)
 
 	db, err := gorm.Open(u.Scheme, urlString)
 	if err != nil {
@@ -49,6 +46,23 @@ func NewDBWithString(urlString string) *DB {
 	}
 	db.LogMode(true)
 	return NewDB(db)
+}
+
+func getConnectionString(u *url.URL) string {
+	if u.Scheme == "postgres" {
+		password, _ := u.User.Password()
+		host := strings.Split(u.Host, ":")[0]
+		return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, u.Port(), u.User.Username(), password, strings.TrimPrefix(u.Path, "/"))
+	}
+	if u.Scheme != "sqlite3" {
+		u.Host = "tcp(" + u.Host + ")"
+	}
+	if u.Scheme == "mysql" {
+		q := u.Query()
+		q.Set("parseTime", "true")
+		u.RawQuery = q.Encode()
+	}
+	return strings.Replace(u.String(), u.Scheme+"://", "", 1)
 }
 
 // Query ...
