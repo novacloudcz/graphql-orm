@@ -24,7 +24,7 @@ func (o *Object) LowerName() string {
 	return strcase.ToLowerCamel(o.Def.Name.Value)
 }
 func (o *Object) TableName() string {
-	return inflection.Plural(o.LowerName())
+	return strcase.ToSnake(inflection.Plural(o.LowerName()))
 }
 func (o *Object) Columns() []ObjectColumn {
 	columns := []ObjectColumn{}
