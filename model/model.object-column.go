@@ -38,6 +38,10 @@ func (o *ObjectColumn) TargetType() string {
 func (o *ObjectColumn) IsOptional() bool {
 	return o.Def.Type.GetKind() != "NonNull"
 }
+func (o *ObjectColumn) IsSearchable() bool {
+	t := getNamedType(o.Def.Type).(*ast.Named)
+	return t.Name.Value == "String"
+}
 func (o *ObjectColumn) GoType() string {
 	t := ""
 

@@ -123,11 +123,12 @@ func (r *queryResolver) {{$object.PluralName}}(ctx context.Context, offset *int,
 	for _, s := range sort {
 		_sort = append(_sort, s)
 	}
+	query := {{$object.Name}}QueryFilter{q}
 	return &{{$object.Name}}ResultType{
 		EntityResultType: resolvers.EntityResultType{
 			Offset: offset,
 			Limit:  limit,
-			Query:  q,
+			Query:  &query,
 			Sort: _sort,
 			Filter: filter,
 		},
@@ -137,7 +138,7 @@ func (r *queryResolver) {{$object.PluralName}}(ctx context.Context, offset *int,
 type {{$object.LowerName}}ResultTypeResolver struct{ *Resolver }
 
 func (r *{{$object.LowerName}}ResultTypeResolver) Items(ctx context.Context, obj *{{$object.Name}}ResultType) (items []*{{$object.Name}}, err error) {
-	err = obj.GetItems(ctx, r.DB.db, &items)
+	err = obj.GetItems(ctx, r.DB.db, "{{$object.TableName}}", &items)
 	return
 }
 

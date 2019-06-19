@@ -10,7 +10,10 @@ import (
 )
 
 type EntityFilter interface {
-	Apply(db *gorm.DB) (*gorm.DB, error)
+	Apply(ctx context.Context, wheres *[]string, values *[]interface{}, joins *[]string) error
+}
+type EntityFilterQuery interface {
+	Apply(ctx context.Context, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
 type EntitySort interface {
 	String() string
@@ -19,13 +22,13 @@ type EntitySort interface {
 type EntityResultType struct {
 	Offset *int
 	Limit  *int
-	Query  *string
+	Query  EntityFilterQuery
 	Sort   []EntitySort
 	Filter EntityFilter
 }
 
 // GetResultTypeItems ...
-func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, out interface{}) error {
+func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias string, out interface{}) error {
 	q := db
 
 	if r.Limit != nil {
@@ -45,11 +48,32 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, out interf
 		q = q.Order(col + " " + direction)
 	}
 
-	q, err := r.Filter.Apply(q)
+	wheres := []string{}
+	values := []interface{}{}
+	joins := []string{}
+
+	err := r.Query.Apply(ctx, &wheres, &values, &joins)
 	if err != nil {
 		return err
 	}
 
+	err = r.Filter.Apply(ctx, &wheres, &values, &joins)
+	if err != nil {
+		return err
+	}
+
+	q = q.Where(strings.Join(wheres, " AND "), values...)
+
+	uniqueJoins := map[string]bool{}
+	for _, join := range joins {
+		uniqueJoins[join] = true
+	}
+
+	for join := range uniqueJoins {
+		q = q.Joins(join)
+	}
+
+	q = q.Group(alias + ".id")
 	return q.Find(out).Error
 }
 

@@ -107,6 +107,9 @@ func generateFiles(m *model.Model, c *model.Config) error {
 	if err := writeTemplate(templates.Filters, "gen/filters.go", data); err != nil {
 		return err
 	}
+	if err := writeTemplate(templates.QueryFilters, "gen/query-filters.go", data); err != nil {
+		return err
+	}
 
 	return nil
 }
