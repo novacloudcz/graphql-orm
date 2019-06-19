@@ -31,13 +31,6 @@ func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
 				Description: rel.Def.Description,
 				Type:        listType(nonNull(namedType("ID"))),
 			})
-		} else {
-			fields = append(fields, &ast.InputValueDefinition{
-				Kind:        kinds.InputValueDefinition,
-				Name:        nameNode(rel.Name() + "Id"),
-				Description: rel.Def.Description,
-				Type:        namedType("ID"),
-			})
 		}
 	}
 	return &ast.InputObjectDefinition{
@@ -67,13 +60,6 @@ func updateObjectDefinition(obj Object) *ast.InputObjectDefinition {
 				Name:        nameNode(rel.Name() + "Ids"),
 				Description: rel.Def.Description,
 				Type:        listType(nonNull(namedType("ID"))),
-			})
-		} else {
-			fields = append(fields, &ast.InputValueDefinition{
-				Kind:        kinds.InputValueDefinition,
-				Name:        nameNode(rel.Name() + "Id"),
-				Description: rel.Def.Description,
-				Type:        namedType("ID"),
 			})
 		}
 	}

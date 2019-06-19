@@ -20,7 +20,6 @@ type {{.Name}} struct {
 
 {{range $rel := $object.Relationships}}
 {{$rel.MethodName}} {{$rel.GoType}} ` + "`" + `{{$rel.ModelTags}}` + "`" + `
-{{if $rel.IsToOne}}{{$rel.MethodName}}ID *string ` + "`" + `gorm:"column:{{$rel.Name}}Id"` + "`" + `{{end}}
 {{end}}
 }
 

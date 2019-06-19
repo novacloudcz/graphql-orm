@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/iancoleman/strcase"
@@ -25,10 +26,16 @@ func (o *ObjectColumn) Name() string {
 	return o.Def.Name.Value
 }
 func (o *ObjectColumn) MethodName() string {
-	if o.Name() == "id" {
+	name := o.Name()
+	if name == "id" {
 		return "ID"
 	}
-	return strcase.ToCamel(o.Def.Name.Value)
+
+	if strings.HasSuffix(name, "Id") {
+		name = strings.TrimSuffix(name, "Id") + "ID"
+	}
+
+	return strcase.ToCamel(name)
 }
 
 func (o *ObjectColumn) TargetType() string {
