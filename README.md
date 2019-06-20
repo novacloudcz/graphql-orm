@@ -1,6 +1,6 @@
 # graphql-orm
 
-Golang GraphQL API generator using [https://gqlgen.com](gqlgen) and [https://gorm.io](gorm)
+Golang GraphQL API generator using [gqlgen](https://gqlgen.com) and [gorm](https://gorm.io)
 
 # Installation
 
@@ -28,7 +28,7 @@ DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go
 
 ## Schema preview in Voyager
 
-[https://apis.guru/graphql-voyager/](GraphQL Voyager) tool is very nice tool for previewing your GraphQL Schema, you can run it locally by:
+[GraphQL Voyager](https://apis.guru/graphql-voyager/) tool is very nice tool for previewing your GraphQL Schema, you can run it locally by:
 
 ```
 make voyager
