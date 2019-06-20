@@ -127,11 +127,13 @@ func main() {
 	db.AutoMigrate()
 
 	gqlHandler := handler.GraphQL(gen.NewExecutableSchema(gen.Config{Resolvers: &gen.Resolver{DB: db}}))
-	http.Handle("/", handler.Playground("GraphQL playground", "/graphql"))
+	playgroundHandler := handler.Playground("GraphQL playground", "/graphql")
 	http.HandleFunc("/graphql", func(res http.ResponseWriter, req *http.Request) {
-		ctx := context.WithValue(req.Context(), gen.DBContextKey, db)
-		req = req.WithContext(ctx)
-		gqlHandler(res, req)
+		if req.Method == "GET" {
+			playgroundHandler(res, req)
+		} else {
+			gqlHandler(res, req)
+		}
 	})
 
 	http.HandleFunc("/healthcheck", func(res http.ResponseWriter, req *http.Request) {
@@ -144,7 +146,7 @@ func main() {
 		res.Write([]byte("OK"))
 	})
 
-	log.Printf("connect to http://localhost:%%s/ for GraphQL playground", port)
+	log.Printf("connect to http://localhost:%%s/graphql for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 `, c.Package)
