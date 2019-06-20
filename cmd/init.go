@@ -97,7 +97,6 @@ func createMainFile() error {
 	content := fmt.Sprintf(`package main
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"net/http"
