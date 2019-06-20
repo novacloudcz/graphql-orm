@@ -146,7 +146,7 @@ func writeTemplate(t, filename string, data TemplateData) error {
 // 	if err != nil {
 // 		return err
 // 	}
-// 	newContent := []byte(strings.ReplaceAll(string(content), old, new))
+// 	newContent := []byte(strings.Replace(string(content), old, new, -1))
 
 // 	return ioutil.WriteFile(filename, newContent, 0644)
 // }

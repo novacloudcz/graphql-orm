@@ -104,7 +104,7 @@ func (o *ObjectColumn) FilterMapping() []FilterMappingItem {
 	_t := t.(*ast.Named)
 	if _t.Name.Value == "String" {
 		mapping = append(mapping,
-			FilterMappingItem{"_like", "LIKE ?", t, "strings.ReplaceAll(strings.ReplaceAll(*%s,\"?\",\"_\"),\"*\",\"%%\")"},
+			FilterMappingItem{"_like", "LIKE ?", t, "strings.Replace(strings.Replace(*%s,\"?\",\"_\",-1),\"*\",\"%%\",-1)"},
 			FilterMappingItem{"_prefix", "LIKE ?", t, "fmt.Sprintf(\"%%s%%%%\",*%s)"},
 			FilterMappingItem{"_suffix", "LIKE ?", t, "fmt.Sprintf(\"%%%%%%s\",*%s)"},
 		)
