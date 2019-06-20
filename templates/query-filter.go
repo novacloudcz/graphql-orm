@@ -43,7 +43,6 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(fields []*ast.Field,
 	if len(fields) == 0 {
 		return nil
 	}
-	aliasPrefix := alias + "."
 	
 	fieldsMap := map[string]*ast.Field{}
 	for _, f := range fields {
@@ -52,7 +51,7 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(fields []*ast.Field,
 
 	{{range $col := $object.Columns}}{{if $col.IsSearchable}}
 	if _, ok := fieldsMap["{{$col.Name}}"]; ok {
-		*ors = append(*ors, fmt.Sprintf("%[1]s{{$col.Name}} LIKE ? OR %[1]s{{$col.Name}} LIKE ?", aliasPrefix))
+		*ors = append(*ors, fmt.Sprintf("%[1]s{{$col.Name}} LIKE ? OR %[1]s{{$col.Name}} LIKE ?", alias + "."))
 		*values = append(*values, fmt.Sprintf("%s%%", query), fmt.Sprintf("%% %s%%", query))
 	}
 	{{end}}

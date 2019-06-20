@@ -30,6 +30,12 @@ func (o *ObjectColumn) MethodName() string {
 	if name == "id" {
 		return "ID"
 	}
+	if name == "uid" {
+		return "UID"
+	}
+	if name == "url" {
+		return "URL"
+	}
 
 	if strings.HasSuffix(name, "Id") {
 		name = strings.TrimSuffix(name, "Id") + "ID"
