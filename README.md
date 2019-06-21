@@ -26,7 +26,11 @@ or without makefile:
 DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go
 ```
 
-## Schema preview in Voyager
+# Example
+
+You can find example project at [graphql-orm-example repo](https://github.com/novacloudcz/graphql-orm-example)
+
+# Schema preview in Voyager
 
 [GraphQL Voyager](https://apis.guru/graphql-voyager/) tool is very nice tool for previewing your GraphQL Schema, you can run it locally by:
 
