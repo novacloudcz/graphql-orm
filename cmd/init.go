@@ -128,6 +128,9 @@ func main() {
 	gqlHandler := handler.GraphQL(gen.NewExecutableSchema(gen.Config{Resolvers: &gen.Resolver{DB: db}}))
 	playgroundHandler := handler.Playground("GraphQL playground", "/graphql")
 	http.HandleFunc("/graphql", func(res http.ResponseWriter, req *http.Request) {
+		principalID := getPrincipalID(req)
+		ctx := context.WithValue(req.Context(), gen.KeyPrincipalID, principalID)
+		req = req.WithContext(ctx)
 		if req.Method == "GET" {
 			playgroundHandler(res, req)
 		} else {
@@ -145,9 +148,14 @@ func main() {
 		res.Write([]byte("OK"))
 	})
 
-	log.Printf("connect to http://localhost:%%s/graphql for GraphQL playground", port)
+	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
+
+func getPrincipalID(req *http.Request) string {
+	return req.Header.Get("principal-id")
+}
+
 `, c.Package)
 	return ioutil.WriteFile("main.go", []byte(content), 0644)
 }

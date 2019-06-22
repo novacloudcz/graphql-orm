@@ -35,6 +35,11 @@ func ToTimeHookFunc() mapstructure.DecodeHookFunc {
 	}
 }
 
+func getPrincipalID(ctx context.Context) string {
+	v, _ := ctx.Value(KeyPrincipalID).(string)
+	return v
+}
+
 type Resolver struct {
 	DB *DB
 }
@@ -64,7 +69,8 @@ func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input map[string
 	if !ok || ID == "" {
 		ID = uuid.Must(uuid.NewV4()).String()
 	}
-	item = &{{.Name}}{ID:ID}
+	principalID := getPrincipalID(ctx)
+	item = &{{.Name}}{ID:ID, CreatedBy: principalID}
 	tx := r.DB.db.Begin()
 {{range $rel := .Relationships}}
 {{if $rel.IsToMany}}
@@ -109,6 +115,9 @@ func (r *mutationResolver) Update{{.Name}}(ctx context.Context, id string, input
 	if err != nil {
 		return 
 	}
+
+	principalID := getPrincipalID(ctx)
+	item.UpdatedBy = &principalID
 
 {{range $rel := .Relationships}}
 {{if $rel.IsToMany}}

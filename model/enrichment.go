@@ -14,7 +14,9 @@ import (
 func EnrichModelObjects(m *Model) error {
 	id := fieldDefinition("id", "ID", true)
 	createdAt := fieldDefinition("createdAt", "Time", true)
-	updatedAt := fieldDefinition("updatedAt", "Time", true)
+	updatedAt := fieldDefinition("updatedAt", "Time", false)
+	createdBy := fieldDefinition("createdBy", "ID", true)
+	updatedBy := fieldDefinition("updatedBy", "ID", false)
 
 	for _, o := range m.Objects() {
 		o.Def.Fields = append(append([]*ast.FieldDefinition{id}, o.Def.Fields...))
@@ -23,7 +25,7 @@ func EnrichModelObjects(m *Model) error {
 				o.Def.Fields = append(o.Def.Fields, fieldDefinition(rel.Name()+"Id", "ID", false))
 			}
 		}
-		o.Def.Fields = append(o.Def.Fields, updatedAt, createdAt)
+		o.Def.Fields = append(o.Def.Fields, updatedAt, createdAt, updatedBy, createdBy)
 	}
 	return nil
 }

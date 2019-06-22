@@ -14,12 +14,6 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
-type key int
-
-const (
-	DBContextKey key = iota
-)
-
 // DB ...
 type DB struct {
 	db *gorm.DB
