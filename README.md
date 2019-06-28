@@ -4,6 +4,12 @@ Golang GraphQL API generator using [gqlgen](https://gqlgen.com) and [gorm](https
 
 # Installation
 
+Before you start, please make sure you have `goimports` installed:
+
+```
+go get golang.org/x/tools/cmd/goimports
+```
+
 _NOTE: Make sure you have Go installed on your system._
 
 1. Create new project repository
