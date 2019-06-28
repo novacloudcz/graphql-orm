@@ -85,7 +85,7 @@ func (r *mutationResolver) Update{{.Name}}(ctx context.Context, id string, input
 {{range $col := .Columns}}{{if $col.IsUpdatable}}
 	if val, ok := input["{{$col.Name}}"].({{$col.GoTypeWithPointer false}}); ok && ({{if $col.IsOptional}}item.{{$col.MethodName}} == nil || *{{end}}item.{{$col.MethodName}} != val) {
 		item.{{$col.MethodName}} = {{if $col.IsOptional}}&{{end}}val
-	}	}
+	}
 {{end}}
 {{end}}
 
