@@ -9,7 +9,7 @@ import (
 func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
 	fields := []*ast.InputValueDefinition{}
 	for _, col := range obj.Columns() {
-		if col.Name() == "createdAt" || col.Name() == "updatedAt" || col.Name() == "createdBy" || col.Name() == "updatedBy" {
+		if !col.IsCreatable() {
 			continue
 		}
 		t := col.Def.Type
@@ -43,7 +43,7 @@ func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
 func updateObjectDefinition(obj Object) *ast.InputObjectDefinition {
 	fields := []*ast.InputValueDefinition{}
 	for _, col := range obj.Columns() {
-		if col.Name() == "id" || col.Name() == "createdAt" || col.Name() == "updatedAt" || col.Name() == "createdBy" || col.Name() == "updatedBy" {
+		if !col.IsUpdatable() {
 			continue
 		}
 		fields = append(fields, &ast.InputValueDefinition{

@@ -139,7 +139,7 @@ func writeTemplate(t, filename string, data TemplateData) error {
 		return err
 	}
 	if path.Ext(filename) == ".go" {
-		return goclitools.RunInteractive(fmt.Sprintf("gofmt -w %s", filename))
+		return goclitools.RunInteractive(fmt.Sprintf("goimports -w %s", filename))
 	}
 	return nil
 }

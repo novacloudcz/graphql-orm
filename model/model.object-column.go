@@ -48,6 +48,12 @@ func (o *ObjectColumn) TargetType() string {
 	nt := getNamedType(o.Def.Type).(*ast.Named)
 	return nt.Name.Value
 }
+func (o *ObjectColumn) IsCreatable() bool {
+	return !(o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy")
+}
+func (o *ObjectColumn) IsUpdatable() bool {
+	return !(o.Name() == "id" || o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy")
+}
 func (o *ObjectColumn) IsOptional() bool {
 	return o.Def.Type.GetKind() != "NonNull"
 }
@@ -56,9 +62,12 @@ func (o *ObjectColumn) IsSearchable() bool {
 	return t.Name.Value == "String"
 }
 func (o *ObjectColumn) GoType() string {
+	return o.GoTypeWithPointer(true)
+}
+func (o *ObjectColumn) GoTypeWithPointer(showPointer bool) string {
 	t := ""
 
-	if o.IsOptional() {
+	if o.IsOptional() && showPointer {
 		t += "*"
 	}
 

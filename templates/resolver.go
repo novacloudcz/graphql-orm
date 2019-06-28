@@ -4,36 +4,11 @@ var Resolver = `package gen
 
 import (
 	"context"
-	"reflect"
 	"time"
 	
 	"github.com/novacloudcz/graphql-orm/resolvers"
 	uuid "github.com/satori/go.uuid"
-	"github.com/mitchellh/mapstructure"
 )
-
-func ToTimeHookFunc() mapstructure.DecodeHookFunc {
-	return func(
-		f reflect.Type,
-		t reflect.Type,
-		data interface{}) (interface{}, error) {
-		if t != reflect.TypeOf(time.Time{}) {
-			return data, nil
-		}
-
-		switch f.Kind() {
-		case reflect.String:
-			return time.Parse(time.RFC3339, data.(string))
-		case reflect.Float64:
-			return time.Unix(0, int64(data.(float64))*int64(time.Millisecond)), nil
-		case reflect.Int64:
-			return time.Unix(0, data.(int64)*int64(time.Millisecond)), nil
-		default:
-			return data, nil
-		}
-		// Convert it by parsing
-	}
-}
 
 func getPrincipalID(ctx context.Context) string {
 	v, _ := ctx.Value(KeyPrincipalID).(string)
@@ -65,13 +40,17 @@ type mutationResolver struct{ *Resolver }
 
 {{range .Model.Objects}}
 func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input map[string]interface{}) (item *{{.Name}}, err error) {
-	ID,ok := input["id"].(string)
-	if !ok || ID == "" {
-		ID = uuid.Must(uuid.NewV4()).String()
-	}
 	principalID := getPrincipalID(ctx)
-	item = &{{.Name}}{ID:ID, CreatedBy: principalID}
+	item = &{{.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedBy: principalID}
 	tx := r.DB.db.Begin()
+
+{{range $col := .Columns}}{{if $col.IsCreatable}}
+	if val, ok := input["{{$col.Name}}"].({{$col.GoTypeWithPointer false}}); ok && ({{if $col.IsOptional}}item.{{$col.MethodName}} == nil || *{{end}}item.{{$col.MethodName}} != val) {
+		item.{{$col.MethodName}} = {{if $col.IsOptional}}&{{end}}val
+	}
+{{end}}
+{{end}}
+
 {{range $rel := .Relationships}}
 {{if $rel.IsToMany}}
 	if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
@@ -83,22 +62,6 @@ func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input map[string
 {{end}}
 {{end}}
 
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Metadata: nil,
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			ToTimeHookFunc()),
-		Result: item,
-	})
-	if err != nil {
-		tx.Rollback()
-		return
-	}
-
-	err = decoder.Decode(input)
-	if err != nil {
-		tx.Rollback()
-		return
-	}
 	err = tx.Create(item).Error
 	if err != nil {
 		tx.Rollback()
@@ -107,7 +70,7 @@ func (r *mutationResolver) Create{{.Name}}(ctx context.Context, input map[string
 	err = tx.Commit().Error
 	return 
 }
-func (r *mutationResolver) Update{{.Name}}(ctx context.Context, id string, input  map[string]interface{}) (item *{{.Name}}, err error) {
+func (r *mutationResolver) Update{{.Name}}(ctx context.Context, id string, input map[string]interface{}) (item *{{.Name}}, err error) {
 	item = &{{.Name}}{}
 	tx := r.DB.db.Begin()
 	
@@ -119,6 +82,13 @@ func (r *mutationResolver) Update{{.Name}}(ctx context.Context, id string, input
 	principalID := getPrincipalID(ctx)
 	item.UpdatedBy = &principalID
 
+{{range $col := .Columns}}{{if $col.IsUpdatable}}
+	if val, ok := input["{{$col.Name}}"].({{$col.GoTypeWithPointer false}}); ok && ({{if $col.IsOptional}}item.{{$col.MethodName}} == nil || *{{end}}item.{{$col.MethodName}} != val) {
+		item.{{$col.MethodName}} = {{if $col.IsOptional}}&{{end}}val
+	}	}
+{{end}}
+{{end}}
+
 {{range $rel := .Relationships}}
 {{if $rel.IsToMany}}
 	if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
@@ -129,22 +99,7 @@ func (r *mutationResolver) Update{{.Name}}(ctx context.Context, id string, input
 	}
 {{end}}
 {{end}}
-	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
-		Metadata: nil,
-		DecodeHook: mapstructure.ComposeDecodeHookFunc(
-			ToTimeHookFunc()),
-		Result: item,
-	})
-	if err != nil {
-		tx.Rollback()
-		return
-	}
 
-	err = decoder.Decode(input)
-	if err != nil {
-		tx.Rollback()
-		return 
-	}
 	err = tx.Save(item).Error
 	if err != nil {
 		tx.Rollback()
