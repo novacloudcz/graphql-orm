@@ -15,7 +15,7 @@ func EnrichModelObjects(m *Model) error {
 	id := fieldDefinition("id", "ID", true)
 	createdAt := fieldDefinition("createdAt", "Time", true)
 	updatedAt := fieldDefinition("updatedAt", "Time", false)
-	createdBy := fieldDefinition("createdBy", "ID", true)
+	createdBy := fieldDefinition("createdBy", "ID", false)
 	updatedBy := fieldDefinition("updatedBy", "ID", false)
 
 	for _, o := range m.Objects() {
