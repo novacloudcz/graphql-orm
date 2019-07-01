@@ -97,12 +97,15 @@ func createMainFile() error {
 	content := fmt.Sprintf(`package main
 
 import (
+
+	"context"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
 	"github.com/99designs/gqlgen/handler"
+	"github.com/novacloudcz/graphql-orm/events"
 	"%s/gen"
 )
 
@@ -125,7 +128,14 @@ func main() {
 	defer db.Close()
 	db.AutoMigrate()
 
-	gqlHandler := handler.GraphQL(gen.NewExecutableSchema(gen.Config{Resolvers: &gen.Resolver{DB: db}}))
+
+	eventController, err := events.NewEventController()
+	if err != nil {
+		panic(err)
+	}
+
+	gqlHandler := handler.GraphQL(gen.NewExecutableSchema(gen.Config{Resolvers: NewResolver(db, &eventController)}))
+
 	playgroundHandler := handler.Playground("GraphQL playground", "/graphql")
 	http.HandleFunc("/graphql", func(res http.ResponseWriter, req *http.Request) {
 		principalID := getPrincipalID(req)
@@ -148,12 +158,16 @@ func main() {
 		res.Write([]byte("OK"))
 	})
 
-	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
+	log.Printf("connect to http://localhost:%%s/graphql for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
 
 func getPrincipalID(req *http.Request) *string {
-	return req.Header.Get("principal-id")
+	pID := req.Header.Get("principal-id")
+	if pID == "" {
+		return nil
+	}
+	return &pID
 }
 
 `, c.Package)
@@ -207,19 +221,17 @@ func createResolverFile() error {
 	content := `package main
 
 	import (
-		"context"
-		"fmt"
-	
 		"github.com/novacloudcz/graphql-orm-example/gen"
+		"github.com/novacloudcz/graphql-orm/events"
 	)
 	
 	type Resolver struct {
 		*gen.GeneratedResolver
 	}
 	
-	func NewResolver(db *gen.DB) *Resolver {
-		return &Resolver{&gen.GeneratedResolver{db}}
-	}
+	func NewResolver(db *gen.DB, ec *events.EventController) *Resolver {
+		return &Resolver{&gen.GeneratedResolver{db, ec}}
+	}	
 
 	// This is example how to override default resolver to provide customizations
 

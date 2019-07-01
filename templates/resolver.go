@@ -17,6 +17,7 @@ func getPrincipalID(ctx context.Context) *string {
 
 type GeneratedResolver struct {
 	DB *DB
+	EventController *events.EventController
 }
 
 func (r *GeneratedResolver) Mutation() MutationResolver {
@@ -45,7 +46,7 @@ func (r *GeneratedMutationResolver) Create{{.Name}}(ctx context.Context, input m
 	item = &{{.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
 	tx := r.DB.db.Begin()
 
-	e := events.NewEvent(events.EventMetadata{
+	event := events.NewEvent(events.EventMetadata{
 		Type:        events.EventTypeCreated,
 		Entity:      "{{.Name}}",
 		EntityID:    item.ID,
@@ -56,7 +57,7 @@ func (r *GeneratedMutationResolver) Create{{.Name}}(ctx context.Context, input m
 {{range $col := .Columns}}{{if $col.IsCreatable}}
 	if val, ok := input["{{$col.Name}}"].({{$col.GoTypeWithPointer false}}); ok && ({{if $col.IsOptional}}item.{{$col.MethodName}} == nil || *{{end}}item.{{$col.MethodName}} != val) {
 		item.{{$col.MethodName}} = {{if $col.IsOptional}}&{{end}}val
-		e.AddNewValue("{{$col.Name}}", &val)
+		event.AddNewValue("{{$col.Name}}", &val)
 	}
 {{end}}
 {{end}}
@@ -78,6 +79,12 @@ func (r *GeneratedMutationResolver) Create{{.Name}}(ctx context.Context, input m
 		return
 	}
 	err = tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+
+	err = r.EventController.SendEvent(ctx, &event)
 
 	return 
 }
