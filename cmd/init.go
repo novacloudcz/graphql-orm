@@ -97,7 +97,6 @@ func createMainFile() error {
 	content := fmt.Sprintf(`package main
 
 import (
-
 	"context"
 	"fmt"
 	"log"
@@ -106,6 +105,7 @@ import (
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/novacloudcz/graphql-orm/events"
+	"github.com/rs/cors"
 	"%s/gen"
 )
 
@@ -114,6 +114,8 @@ const (
 )
 
 func main() {
+	mux := http.NewServeMux()
+
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = defaultPort
@@ -128,7 +130,6 @@ func main() {
 	defer db.Close()
 	db.AutoMigrate()
 
-
 	eventController, err := events.NewEventController()
 	if err != nil {
 		panic(err)
@@ -137,7 +138,7 @@ func main() {
 	gqlHandler := handler.GraphQL(gen.NewExecutableSchema(gen.Config{Resolvers: NewResolver(db, &eventController)}))
 
 	playgroundHandler := handler.Playground("GraphQL playground", "/graphql")
-	http.HandleFunc("/graphql", func(res http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/graphql", func(res http.ResponseWriter, req *http.Request) {
 		principalID := getPrincipalID(req)
 		ctx := context.WithValue(req.Context(), gen.KeyPrincipalID, principalID)
 		req = req.WithContext(ctx)
@@ -148,7 +149,7 @@ func main() {
 		}
 	})
 
-	http.HandleFunc("/healthcheck", func(res http.ResponseWriter, req *http.Request) {
+	mux.HandleFunc("/healthcheck", func(res http.ResponseWriter, req *http.Request) {
 		if err := db.Ping(); err != nil {
 			res.WriteHeader(400)
 			res.Write([]byte("ERROR"))
@@ -158,8 +159,12 @@ func main() {
 		res.Write([]byte("OK"))
 	})
 
-	log.Printf("connect to http://localhost:%%s/graphql for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	handler := mux
+	// use this line to allow cors for all origins/methods/headers (for development)
+	// handler := cors.AllowAll().Handler(mux)
+	
+	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
+	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
 
 func getPrincipalID(req *http.Request) *string {
@@ -168,8 +173,7 @@ func getPrincipalID(req *http.Request) *string {
 		return nil
 	}
 	return &pID
-}
-
+}	
 `, c.Package)
 	return ioutil.WriteFile("main.go", []byte(content), 0644)
 }
