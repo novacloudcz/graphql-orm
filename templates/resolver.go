@@ -54,10 +54,16 @@ func (r *GeneratedMutationResolver) Create{{.Name}}(ctx context.Context, input m
 		PrincipalID: principalID,
 	})
 
+	var changes {{.Name}}Changes
+	err = ApplyChanges(input, &changes)
+	if err != nil {
+		return 
+	}
+
 {{range $col := .Columns}}{{if $col.IsCreatable}}
-	if val, ok := input["{{$col.Name}}"].({{$col.GoTypeWithPointer false}}); ok && ({{if $col.IsOptional}}item.{{$col.MethodName}} == nil || *{{end}}item.{{$col.MethodName}} != val) {
-		item.{{$col.MethodName}} = {{if $col.IsOptional}}&{{end}}val
-		event.AddNewValue("{{$col.Name}}", &val)
+	if _, ok := input["{{$col.Name}}"]; ok && (item.{{$col.MethodName}} != changes.{{$col.MethodName}}){{if $col.IsOptional}} && (item.{{$col.MethodName}} == nil || changes.{{$col.MethodName}} == nil || *item.{{$col.MethodName}} != *changes.{{$col.MethodName}}){{end}} {
+		item.{{$col.MethodName}} = changes.{{$col.MethodName}}
+		event.AddNewValue("{{$col.Name}}", changes.{{$col.MethodName}})
 	}
 {{end}}
 {{end}}
@@ -84,25 +90,44 @@ func (r *GeneratedMutationResolver) Create{{.Name}}(ctx context.Context, input m
 		return
 	}
 
-	err = r.EventController.SendEvent(ctx, &event)
+	if len(event.Changes) > 0 {
+		err = r.EventController.SendEvent(ctx, &event)
+	}
 
 	return 
 }
 func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id string, input map[string]interface{}) (item *{{.Name}}, err error) {
+	principalID := getPrincipalID(ctx)
 	item = &{{.Name}}{}
+	now := time.Now()
 	tx := r.DB.db.Begin()
-	
+
+	event := events.NewEvent(events.EventMetadata{
+		Type:        events.EventTypeCreated,
+		Entity:      "{{.Name}}",
+		EntityID:    item.ID,
+		Date:        now,
+		PrincipalID: principalID,
+	})
+
+	var changes {{.Name}}Changes
+	err = ApplyChanges(input, &changes)
+	if err != nil {
+		return 
+	}
+
 	err = resolvers.GetItem(ctx, tx, item, &id)
 	if err != nil {
 		return 
 	}
 
-	principalID := getPrincipalID(ctx)
 	item.UpdatedBy = principalID
 
 {{range $col := .Columns}}{{if $col.IsUpdatable}}
-	if val, ok := input["{{$col.Name}}"].({{$col.GoTypeWithPointer false}}); ok && ({{if $col.IsOptional}}item.{{$col.MethodName}} == nil || *{{end}}item.{{$col.MethodName}} != val) {
-		item.{{$col.MethodName}} = {{if $col.IsOptional}}&{{end}}val
+	if _, ok := input["{{$col.Name}}"]; ok && (item.{{$col.MethodName}} != changes.{{$col.MethodName}}){{if $col.IsOptional}} && (item.{{$col.MethodName}} == nil || changes.{{$col.MethodName}} == nil || *item.{{$col.MethodName}} != *changes.{{$col.MethodName}}){{end}} {
+		event.AddOldValue("{{$col.Name}}", item.{{$col.MethodName}})
+		event.AddNewValue("{{$col.Name}}", changes.{{$col.MethodName}})
+		item.{{$col.MethodName}} = changes.{{$col.MethodName}}
 	}
 {{end}}
 {{end}}
@@ -124,6 +149,17 @@ func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id stri
 		return
 	}
 	err = tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+
+	if len(event.Changes) > 0 {
+		err = r.EventController.SendEvent(ctx, &event)
+		data, _ := json.Marshal(event)
+		fmt.Println("??", string(data))
+	}
+
 	return 
 }
 func (r *GeneratedMutationResolver) Delete{{.Name}}(ctx context.Context, id string) (item *{{.Name}}, err error) {
