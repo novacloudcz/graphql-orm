@@ -169,7 +169,7 @@ func main() {
 	// use this line to allow cors for all origins/methods/headers (for development)
 	// handler := cors.AllowAll().Handler(mux)
 	
-	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
+	log.Printf("connect to http://localhost:%%s/graphql for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
 
@@ -228,10 +228,15 @@ func createDockerFile() error {
 }
 
 func createResolverFile() error {
-	content := `package main
+	c, err := model.LoadConfig()
+	if err != nil {
+		return err
+	}
+
+	content := fmt.Sprintf(`package main
 
 	import (
-		"github.com/novacloudcz/graphql-orm-example/gen"
+		"%s/gen"
 		"github.com/novacloudcz/graphql-orm/events"
 	)
 	
@@ -262,7 +267,7 @@ func createResolverFile() error {
 	//	}
 	// 	return r.GeneratedMutationResolver.CreateXXX(ctx, input)
 	// }	
-`
+`, c.Package)
 	return ioutil.WriteFile("resolver.go", []byte(content), 0644)
 }
 
