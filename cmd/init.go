@@ -37,6 +37,12 @@ var initCmd = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
+		if !fileExists("resolver.go") {
+			if err := createResolverFile(); err != nil {
+				return cli.NewExitError(err, 1)
+			}
+		}
+
 		if !fileExists("makefile") {
 			wantCreateMakefile := goclitools.Prompt("Create makefile for run/generate commands? [y/N]")
 			if strings.ToLower(wantCreateMakefile) == "y" {
@@ -257,7 +263,7 @@ func createResolverFile() error {
 	// 	return r.GeneratedMutationResolver.CreateXXX(ctx, input)
 	// }	
 `
-	return ioutil.WriteFile("makefile", []byte(content), 0644)
+	return ioutil.WriteFile("resolver.go", []byte(content), 0644)
 }
 
 func runGenerate() error {
