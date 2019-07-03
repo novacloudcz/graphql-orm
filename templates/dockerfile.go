@@ -4,7 +4,7 @@ var Dockerfile = `FROM golang as builder
 WORKDIR /go/src/{{.Config.Package}}
 COPY . .
 RUN go get ./... 
-RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /tmp/app main.go
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o /tmp/app *.go
 
 FROM jakubknejzlik/wait-for as wait-for
 
