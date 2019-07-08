@@ -22,6 +22,7 @@ func PrintSchema(model Model) (string, error) {
 		fields := []*ast.FieldDefinition{}
 		for _, f := range o.Def.Fields {
 			f.Directives = filterDirective(f.Directives, "relationship")
+			f.Directives = filterDirective(f.Directives, "column")
 			fields = append(fields, f)
 		}
 		o.Def.Fields = fields

@@ -88,6 +88,17 @@ func (o *ObjectColumn) ModelTags() string {
 	if o.Name() == "id" {
 		_gorm += ";primary_key"
 	}
+
+	for _, d := range o.Def.Directives {
+		if d.Name.Value == "column" {
+			for _, arg := range d.Arguments {
+				if arg.Name.Value == "type" {
+					_gorm += fmt.Sprintf(";type:%v", arg.Value.GetValue())
+				}
+			}
+		}
+	}
+
 	return fmt.Sprintf(`json:"%s" gorm:"%s"`, o.Name(), _gorm)
 }
 
