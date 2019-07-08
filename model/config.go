@@ -7,7 +7,11 @@ import (
 )
 
 type Config struct {
-	Package string `json:"package"`
+	Package    string `json:"package"`
+	Connection *struct {
+		MaxIdleConnections *uint `json:"maxIdleConnections"`
+		MaxOpenConnections *uint `json:"maxOpenConnections"`
+	} `json:"connection,omitempty"`
 }
 
 func LoadConfig() (c Config, err error) {
@@ -20,4 +24,18 @@ func LoadConfig() (c Config, err error) {
 		return
 	}
 	return
+}
+
+func (c *Config) MaxIdleConnections() uint {
+	if c.Connection != nil && (*c.Connection).MaxIdleConnections != nil {
+		return *(*c.Connection).MaxIdleConnections
+	}
+	return 0
+}
+
+func (c *Config) MaxOpenConnections() uint {
+	if c.Connection != nil && (*c.Connection).MaxOpenConnections != nil {
+		return *(*c.Connection).MaxOpenConnections
+	}
+	return 10
 }
