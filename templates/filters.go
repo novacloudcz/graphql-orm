@@ -56,8 +56,8 @@ func (f *{{$object.Name}}FilterType) WhereContent(aliasPrefix string) (condition
 	if f.And != nil {
 		cs := []string{}
 		vs := []interface{}{}
-		for _, or := range f.Or {
-			_cond, _values := or.WhereContent(aliasPrefix)
+		for _, and := range f.And {
+			_cond, _values := and.WhereContent(aliasPrefix)
 			cs = append(cs, _cond...)
 			vs = append(vs, _values...)
 		}

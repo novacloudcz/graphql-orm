@@ -58,7 +58,7 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(fields []*ast.Field,
 	{{end}}
 
 	{{range $rel := $object.Relationships}}
-	if f, ok := fieldsMap["employees"]; ok {
+	if f, ok := fieldsMap["{{$rel.Name}}"]; ok {
 		_fields := []*ast.Field{}
 		_alias := alias + "_{{$rel.Name}}"
 		*joins = append(*joins,{{$rel.JoinString}})
