@@ -75,5 +75,37 @@ func (f *{{$object.Name}}FilterType) WhereContent(aliasPrefix string) (condition
 	return
 }
 
+// AndWith convenience method for combining two or more filters with AND statement
+func (f *{{$object.Name}}FilterType) AndWith(f2 ...*{{$object.Name}}FilterType) *{{$object.Name}}FilterType {
+	_f2 := f2[:0]
+	for _, x := range f2 {
+		if x != nil {
+			_f2 = append(_f2, x)
+		}
+	}
+	if len(_f2) == 0 {
+		return f
+	}
+	return &{{$object.Name}}FilterType{
+		And: append(_f2,f),
+	}
+}
+
+// OrWith convenience method for combining two or more filters with OR statement
+func (f *{{$object.Name}}FilterType) OrWith(f2 ...*{{$object.Name}}FilterType) *{{$object.Name}}FilterType {
+	_f2 := f2[:0]
+	for _, x := range f2 {
+		if x != nil {
+			_f2 = append(_f2, x)
+		}
+	}
+	if len(_f2) == 0 {
+		return f
+	}
+	return &{{$object.Name}}FilterType{
+		Or: append(_f2,f),
+	}
+}
+
 {{end}}
 `
