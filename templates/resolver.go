@@ -156,7 +156,8 @@ func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id stri
 
 	if len(event.Changes) > 0 {
 		err = r.EventController.SendEvent(ctx, &event)
-		data, _ := json.Marshal(event)
+		// data, _ := json.Marshal(event)
+		// fmt.Println("?",string(data))
 	}
 
 	return 
@@ -168,7 +169,7 @@ func (r *GeneratedMutationResolver) Delete{{.Name}}(ctx context.Context, id stri
 		return 
 	}
 
-	err = r.DB.Query().Delete(item, "id = ?", id).Error
+	err = r.DB.Query().Delete(item, "{{.TableName}}.id = ?", id).Error
 
 	return 
 }
@@ -191,7 +192,7 @@ func (r *GeneratedQueryResolver) {{$object.Name}}(ctx context.Context, id *strin
 	}
 	qb := r.DB.Query()
 	if id != nil {
-		qb = qb.Where("id = ?", *id)
+		qb = qb.Where("{{$object.TableName}}.id = ?", *id)
 	}
 
 	var items []*{{$object.Name}}
