@@ -157,7 +157,6 @@ func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id stri
 	if len(event.Changes) > 0 {
 		err = r.EventController.SendEvent(ctx, &event)
 		data, _ := json.Marshal(event)
-		fmt.Println("??", string(data))
 	}
 
 	return 

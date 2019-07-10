@@ -34,7 +34,9 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias s
 				return err
 			}
 		}
-		*wheres = append(*wheres, "("+strings.Join(cs, " OR ")+")")
+		if len(cs) > 0 {
+			*wheres = append(*wheres, "("+strings.Join(cs, " OR ")+")")
+		}
 		*values = append(*values, vs...)
 		*joins = append(*joins, js...)
 	}
@@ -48,7 +50,9 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias s
 				return err
 			}
 		}
-		*wheres = append(*wheres, strings.Join(cs, " AND "))
+		if len(cs) > 0 {
+			*wheres = append(*wheres, strings.Join(cs, " AND "))
+		}
 		*values = append(*values, vs...)
 		*joins = append(*joins, js...)
 	}

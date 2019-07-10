@@ -64,7 +64,9 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 		}
 	}
 
-	q = q.Where(strings.Join(wheres, " AND "), values...)
+	if len(wheres) > 0 {
+		q = q.Where(strings.Join(wheres, " AND "), values...)
+	}
 
 	uniqueJoins := map[string]bool{}
 	for _, join := range joins {
