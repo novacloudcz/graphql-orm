@@ -173,13 +173,29 @@ func main() {
 	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
 
+
 func getPrincipalID(req *http.Request) *string {
 	pID := req.Header.Get("principal-id")
-	if pID == "" {
+	if pID != "" {
+		return &pID
+	}
+	authHeader := strings.Replace(req.Header.Get("authorization"), "Bearer ", "", 1)
+	if authHeader == "" {
 		return nil
 	}
-	return &pID
-}	
+	c, _ := extractPrincipalIDFromJWT(authHeader)
+	return c
+}
+
+func extractPrincipalIDFromJWT(tokenStr string) (*string, error) {
+	token, err := jwt.Parse([]byte(tokenStr))
+	if err != nil {
+		return nil, err
+	}
+	var p struct{ Sub *string }
+	_, err = token.Decode(&p)
+	return p.Sub, err
+}
 `, c.Package)
 	return ioutil.WriteFile("main.go", []byte(content), 0644)
 }
