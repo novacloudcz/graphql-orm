@@ -178,12 +178,34 @@ func (r *GeneratedMutationResolver) Delete{{.Name}}(ctx context.Context, id stri
 type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 {{range $object := .Model.Objects}}
-func (r *GeneratedQueryResolver) {{$object.Name}}(ctx context.Context, id *string, q *string) (*{{$object.Name}}, error) {
-	t := {{$object.Name}}{}
-	err := resolvers.GetItem(ctx, r.DB.Query(), &t, id)
-	return &t, err
+func (r *GeneratedQueryResolver) {{$object.Name}}(ctx context.Context, id *string, q *string, filter *{{$object.Name}}FilterType) (*{{$object.Name}}, error) {
+	query := {{$object.Name}}QueryFilter{q}
+	offset := 0
+	limit := 1
+	rt := &{{$object.Name}}ResultType{
+		EntityResultType: resolvers.EntityResultType{
+			Offset: &offset,
+			Limit:  &limit,
+			Query:  &query,
+			Filter: filter,
+		},
+	}
+	qb := r.DB.Query()
+	if id != nil {
+		qb = qb.Where("id = ?", *id)
+	}
+
+	var items []*{{$object.Name}}
+	err := rt.GetItems(ctx, qb, "{{$object.TableName}}", &items)
+	if err != nil {
+		return nil, err
+	}
+	if len(items) == 0 {
+		return nil, fmt.Errorf("record not found")
+	}
+	return items[0], err
 }
-func (r *GeneratedQueryResolver) {{$object.PluralName}}(ctx context.Context, offset *int, limit *int, q *string,sort []{{$object.Name}}SortType,filter *{{$object.Name}}FilterType) (*{{$object.Name}}ResultType, error) {
+func (r *GeneratedQueryResolver) {{$object.PluralName}}(ctx context.Context, offset *int, limit *int, q *string, sort []{{$object.Name}}SortType, filter *{{$object.Name}}FilterType) (*{{$object.Name}}ResultType, error) {
 	_sort := []resolvers.EntitySort{}
 	for _, s := range sort {
 		_sort = append(_sort, s)

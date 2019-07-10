@@ -57,9 +57,11 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 		return err
 	}
 
-	err = r.Filter.Apply(ctx, &wheres, &values, &joins)
-	if err != nil {
-		return err
+	if r.Filter != nil {
+		err = r.Filter.Apply(ctx, &wheres, &values, &joins)
+		if err != nil {
+			return err
+		}
 	}
 
 	q = q.Where(strings.Join(wheres, " AND "), values...)

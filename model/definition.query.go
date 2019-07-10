@@ -42,6 +42,11 @@ func fetchFieldDefinition(obj Object) *ast.FieldDefinition {
 				Description: &ast.StringValue{Kind: kinds.StringValue, Value: "Input for textual searching across selected field (string only)"},
 				Type:        namedType("String"),
 			},
+			&ast.InputValueDefinition{
+				Kind: kinds.InputValueDefinition,
+				Name: nameNode("filter"),
+				Type: namedType(obj.Name() + "FilterType"),
+			},
 		},
 	}
 }
