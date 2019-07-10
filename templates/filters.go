@@ -23,6 +23,35 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias s
 	_where, _values := f.WhereContent(aliasPrefix)
 	*wheres = append(*wheres, _where...)
 	*values = append(*values, _values...)
+
+	if f.Or != nil {
+		cs := []string{}
+		vs := []interface{}{}
+		js := []string{}
+		for _, or := range f.Or {
+			err := or.ApplyWithAlias(ctx, alias, &cs, &vs, &js)
+			if err != nil {
+				return err
+			}
+		}
+		*wheres = append(*wheres, "("+strings.Join(cs, " OR ")+")")
+		*values = append(*values, vs...)
+		*joins = append(*joins, js...)
+	}
+	if f.And != nil {
+		cs := []string{}
+		vs := []interface{}{}
+		js := []string{}
+		for _, and := range f.And {
+			err := and.ApplyWithAlias(ctx, alias, &cs, &vs, &js)
+			if err != nil {
+				return err
+			}
+		}
+		*wheres = append(*wheres, strings.Join(cs, " AND "))
+		*values = append(*values, vs...)
+		*joins = append(*joins, js...)
+	}
 	
 {{range $rel := $object.Relationships}}
 {{$varName := (printf "f.%s" $rel.MethodName)}}
@@ -41,29 +70,6 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias s
 func (f *{{$object.Name}}FilterType) WhereContent(aliasPrefix string) (conditions []string, values []interface{}) {
 	conditions = []string{}
 	values = []interface{}{}
-
-	if f.Or != nil {
-		cs := []string{}
-		vs := []interface{}{}
-		for _, or := range f.Or {
-			_cond, _values := or.WhereContent(aliasPrefix)
-			cs = append(cs, _cond...)
-			vs = append(vs, _values...)
-		}
-		conditions = append(conditions, "("+strings.Join(cs, " OR ")+")")
-		values = append(values, vs...)
-	}
-	if f.And != nil {
-		cs := []string{}
-		vs := []interface{}{}
-		for _, and := range f.And {
-			_cond, _values := and.WhereContent(aliasPrefix)
-			cs = append(cs, _cond...)
-			vs = append(vs, _values...)
-		}
-		conditions = append(conditions, strings.Join(cs, " AND "))
-		values = append(values, vs...)
-	}
 
 {{range $col := $object.Columns}}
 {{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
