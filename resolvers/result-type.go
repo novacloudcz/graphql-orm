@@ -83,7 +83,37 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 
 // GetCount ...
 func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interface{}) (count int, err error) {
-	err = db.Model(out).Count(&count).Error
+	q := db
+
+	wheres := []string{}
+	values := []interface{}{}
+	joins := []string{}
+
+	err = r.Query.Apply(ctx, &wheres, &values, &joins)
+	if err != nil {
+		return 0, err
+	}
+
+	if r.Filter != nil {
+		err = r.Filter.Apply(ctx, &wheres, &values, &joins)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	if len(wheres) > 0 {
+		q = q.Where(strings.Join(wheres, " AND "), values...)
+	}
+
+	uniqueJoins := map[string]bool{}
+	for _, join := range joins {
+		uniqueJoins[join] = true
+	}
+
+	for join := range uniqueJoins {
+		q = q.Joins(join)
+	}
+	err = q.Model(out).Count(&count).Error
 	return
 }
 
