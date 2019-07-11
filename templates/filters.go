@@ -11,16 +11,16 @@ import (
 
 {{range $object := .Model.Objects}}
 
-func (f *{{$object.Name}}FilterType) Apply(ctx context.Context, wheres *[]string, values *[]interface{}, joins *[]string) error {
-	return f.ApplyWithAlias(ctx, "{{$object.TableName}}", wheres, values, joins)
+func (f *{{$object.Name}}FilterType) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error {
+	return f.ApplyWithAlias(ctx, dialect, "{{$object.TableName}}", wheres, values, joins)
 }
-func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias string, wheres *[]string, values *[]interface{}, joins *[]string) error {
+func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	if f == nil {
 		return nil
 	}
-	aliasPrefix := alias + "."
+	aliasPrefix := dialect.Quote(alias) + "."
 	
-	_where, _values := f.WhereContent(aliasPrefix)
+	_where, _values := f.WhereContent(dialect, aliasPrefix)
 	*wheres = append(*wheres, _where...)
 	*values = append(*values, _values...)
 
@@ -29,7 +29,7 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias s
 		vs := []interface{}{}
 		js := []string{}
 		for _, or := range f.Or {
-			err := or.ApplyWithAlias(ctx, alias, &cs, &vs, &js)
+			err := or.ApplyWithAlias(ctx, dialect, alias, &cs, &vs, &js)
 			if err != nil {
 				return err
 			}
@@ -45,7 +45,7 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias s
 		vs := []interface{}{}
 		js := []string{}
 		for _, and := range f.And {
-			err := and.ApplyWithAlias(ctx, alias, &cs, &vs, &js)
+			err := and.ApplyWithAlias(ctx, dialect, alias, &cs, &vs, &js)
 			if err != nil {
 				return err
 			}
@@ -62,7 +62,7 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias s
 	if {{$varName}} != nil {
 		_alias := alias + "_{{$rel.Name}}"
 		*joins = append(*joins, {{$rel.JoinString}})
-		err := {{$varName}}.ApplyWithAlias(ctx, _alias, wheres, values, joins)
+		err := {{$varName}}.ApplyWithAlias(ctx, dialect, _alias, wheres, values, joins)
 		if err != nil {
 			return err
 		}
@@ -71,14 +71,14 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, alias s
 	return nil
 }
 
-func (f *{{$object.Name}}FilterType) WhereContent(aliasPrefix string) (conditions []string, values []interface{}) {
+func (f *{{$object.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix string) (conditions []string, values []interface{}) {
 	conditions = []string{}
 	values = []interface{}{}
 
 {{range $col := $object.Columns}}
 {{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
 	if {{$varName}} != nil {
-		conditions = append(conditions, aliasPrefix + "{{$col.Name}} {{$fm.Operator}}")
+		conditions = append(conditions, aliasPrefix + dialect.Quote("{{$col.Name}}")+" {{$fm.Operator}}")
 		values = append(values, {{$fm.WrapValueVariable $varName}})
 	}{{end}}{{end}}
 

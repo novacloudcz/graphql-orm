@@ -10,10 +10,10 @@ import (
 )
 
 type EntityFilter interface {
-	Apply(ctx context.Context, wheres *[]string, values *[]interface{}, joins *[]string) error
+	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
 type EntityFilterQuery interface {
-	Apply(ctx context.Context, wheres *[]string, values *[]interface{}, joins *[]string) error
+	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
 type EntitySort interface {
 	String() string
@@ -48,17 +48,18 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 		q = q.Order(col + " " + direction)
 	}
 
+	dialect := q.Dialect()
 	wheres := []string{}
 	values := []interface{}{}
 	joins := []string{}
 
-	err := r.Query.Apply(ctx, &wheres, &values, &joins)
+	err := r.Query.Apply(ctx, dialect, &wheres, &values, &joins)
 	if err != nil {
 		return err
 	}
 
 	if r.Filter != nil {
-		err = r.Filter.Apply(ctx, &wheres, &values, &joins)
+		err = r.Filter.Apply(ctx, dialect, &wheres, &values, &joins)
 		if err != nil {
 			return err
 		}
@@ -85,17 +86,18 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interface{}) (count int, err error) {
 	q := db
 
+	dialect := q.Dialect()
 	wheres := []string{}
 	values := []interface{}{}
 	joins := []string{}
 
-	err = r.Query.Apply(ctx, &wheres, &values, &joins)
+	err = r.Query.Apply(ctx, dialect, &wheres, &values, &joins)
 	if err != nil {
 		return 0, err
 	}
 
 	if r.Filter != nil {
-		err = r.Filter.Apply(ctx, &wheres, &values, &joins)
+		err = r.Filter.Apply(ctx, dialect, &wheres, &values, &joins)
 		if err != nil {
 			return 0, err
 		}

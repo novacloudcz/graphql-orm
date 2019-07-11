@@ -18,7 +18,7 @@ type {{$object.Name}}QueryFilter struct {
 	Query *string
 }
 
-func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, wheres *[]string, values *[]interface{}, joins *[]string) error {
+func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	if qf.Query == nil {
 		return nil
 	}
@@ -31,7 +31,7 @@ func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, wheres *[]stri
 
 	queryParts := strings.Split(*qf.Query, " ")
 	for _, part := range queryParts {
-		if err := qf.applyQueryWithFields(fields, part, "{{$object.TableName}}", &ors, values, joins); err != nil {
+		if err := qf.applyQueryWithFields(dialect, fields, part, "{{$object.TableName}}", &ors, values, joins); err != nil {
 			return err
 		}
 		*wheres = append(*wheres, "("+strings.Join(ors, " OR ")+")")
@@ -39,7 +39,7 @@ func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, wheres *[]stri
 	return nil
 }
 
-func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(fields []*ast.Field, query, alias string, ors *[]string, values *[]interface{}, joins *[]string) error {
+func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(dialect gorm.Dialect, fields []*ast.Field, query, alias string, ors *[]string, values *[]interface{}, joins *[]string) error {
 	if len(fields) == 0 {
 		return nil
 	}
@@ -51,7 +51,7 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(fields []*ast.Field,
 
 	{{range $col := $object.Columns}}{{if $col.IsSearchable}}
 	if _, ok := fieldsMap["{{$col.Name}}"]; ok {
-		*ors = append(*ors, fmt.Sprintf("%[1]s{{$col.Name}} LIKE ? OR %[1]s{{$col.Name}} LIKE ?", alias + "."))
+		*ors = append(*ors, fmt.Sprintf("%[1]s"+dialect.Quote("{{$col.Name}}")+" LIKE ? OR %[1]s"+dialect.Quote("{{$col.Name}}")+" LIKE ?", dialect.Quote(alias) + "."))
 		*values = append(*values, fmt.Sprintf("%s%%", query), fmt.Sprintf("%% %s%%", query))
 	}
 	{{end}}
@@ -69,7 +69,7 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(fields []*ast.Field,
 			}
 		}
 		q := {{$rel.Target.Name}}QueryFilter{qf.Query}
-		err := q.applyQueryWithFields(_fields, query, _alias, ors, values, joins)
+		err := q.applyQueryWithFields(dialect, _fields, query, _alias, ors, values, joins)
 		if err != nil {
 			return err
 		}
