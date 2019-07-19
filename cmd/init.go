@@ -112,6 +112,7 @@ import (
 	"github.com/99designs/gqlgen/handler"
 	"github.com/novacloudcz/graphql-orm/events"
 	jwtgo "github.com/dgrijalva/jwt-go"
+	"github.com/gbrlsnchs/jwt"
 	// "github.com/rs/cors"
 	"%s/gen"
 )
