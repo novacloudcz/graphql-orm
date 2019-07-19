@@ -111,7 +111,7 @@ import (
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/novacloudcz/graphql-orm/events"
-	"github.com/dgrijalva/jwt-go"
+	jwtgo "github.com/dgrijalva/jwt-go"
 	// "github.com/rs/cors"
 	"%s/gen"
 )
