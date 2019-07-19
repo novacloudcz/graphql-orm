@@ -108,6 +108,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/99designs/gqlgen/handler"
 	"github.com/novacloudcz/graphql-orm/events"
