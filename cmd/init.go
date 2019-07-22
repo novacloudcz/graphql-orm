@@ -113,7 +113,6 @@ import (
 	"github.com/99designs/gqlgen/handler"
 	"github.com/novacloudcz/graphql-orm/events"
 	jwtgo "github.com/dgrijalva/jwt-go"
-	"github.com/gbrlsnchs/jwt"
 	// "github.com/rs/cors"
 	"%s/gen"
 )
@@ -210,13 +209,9 @@ func getJWTClaims(req *http.Request) (*JWTClaims, error) {
 		return p, nil
 	}
 
-	token, err := jwt.Parse([]byte(tokenStr))
-	if err != nil {
-		return p, err
-	}
 	p = &JWTClaims{}
-	_, err = token.Decode(p)
-	return p, err
+	jwtgo.ParseWithClaims(tokenStr, p, nil)
+	return p, nil
 }
 `, c.Package)
 	return ioutil.WriteFile("main.go", []byte(content), 0644)
