@@ -2,6 +2,7 @@ package events
 
 import (
 	"context"
+	"log"
 	"os"
 
 	cloudevents "github.com/cloudevents/sdk-go"
@@ -33,6 +34,7 @@ func NewEventController() (ec EventController, err error) {
 		if err != nil {
 			return
 		}
+		log.Printf("Created cloudevents client with target %s", URL)
 		_client = &client
 	}
 	ec = EventController{_client}
