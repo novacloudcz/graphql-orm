@@ -2,8 +2,8 @@ package model
 
 import (
 	"fmt"
-	"strings"
 
+	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/iancoleman/strcase"
 )
@@ -27,21 +27,7 @@ func (o *ObjectColumn) Name() string {
 }
 func (o *ObjectColumn) MethodName() string {
 	name := o.Name()
-	if name == "id" {
-		return "ID"
-	}
-	if name == "uid" {
-		return "UID"
-	}
-	if name == "url" {
-		return "URL"
-	}
-
-	if strings.HasSuffix(name, "Id") {
-		name = strings.TrimSuffix(name, "Id") + "ID"
-	}
-
-	return strcase.ToCamel(name)
+	return templates.ToGo(name)
 }
 
 func (o *ObjectColumn) TargetType() string {
