@@ -2,6 +2,7 @@ package resolvers
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/iancoleman/strcase"
@@ -116,6 +117,7 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interf
 		}
 	}
 
+	fmt.Println("joins!!!", uniqueJoins)
 	for _, join := range uniqueJoins {
 		q = q.Joins(join)
 	}
