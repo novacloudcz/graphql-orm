@@ -107,12 +107,16 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interf
 		q = q.Where(strings.Join(wheres, " AND "), values...)
 	}
 
-	uniqueJoins := map[string]bool{}
+	uniqueJoinsMap := map[string]bool{}
+	uniqueJoins := []string{}
 	for _, join := range joins {
-		uniqueJoins[join] = true
+		if uniqueJoinsMap[join] == false {
+			uniqueJoinsMap[join] = true
+			uniqueJoins = append(uniqueJoins, join)
+		}
 	}
 
-	for join := range uniqueJoins {
+	for _, join := range uniqueJoins {
 		q = q.Joins(join)
 	}
 	err = q.Model(out).Count(&count).Error
