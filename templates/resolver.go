@@ -211,6 +211,14 @@ func (r *GeneratedQueryResolver) {{$object.PluralName}}(ctx context.Context, off
 		_sort = append(_sort, s)
 	}
 	query := {{$object.Name}}QueryFilter{q}
+	
+	var selectionSet *ast.SelectionSet
+	for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
+		if f.Field.Name == "items" {
+			selectionSet = &f.Field.SelectionSet
+		}
+	}
+	
 	return &{{$object.Name}}ResultType{
 		EntityResultType: resolvers.EntityResultType{
 			Offset: offset,
@@ -218,6 +226,7 @@ func (r *GeneratedQueryResolver) {{$object.PluralName}}(ctx context.Context, off
 			Query:  &query,
 			Sort: _sort,
 			Filter: filter,
+			SelectionSet: selectionSet,
 		},
 	}, nil
 }

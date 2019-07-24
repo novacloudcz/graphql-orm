@@ -18,13 +18,20 @@ type {{$object.Name}}QueryFilter struct {
 	Query *string
 }
 
-func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error {
+func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.Dialect, selectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	if qf.Query == nil {
 		return nil
 	}
+
 	fields := []*ast.Field{}
-	for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
-		fields = append(fields, f.Field)
+	if selectionSet != nil {
+		for _, s := range *selectionSet {
+			if f, ok := s.(*ast.Field); ok {
+				fields = append(fields, f)
+			}
+		}
+	} else {
+		return fmt.Errorf("Cannot query with 'q' attribute without items field.")
 	}
 
 	ors := []string{}

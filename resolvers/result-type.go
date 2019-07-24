@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/iancoleman/strcase"
+	"github.com/vektah/gqlparser/ast"
 
 	"github.com/jinzhu/gorm"
 )
@@ -13,18 +14,20 @@ type EntityFilter interface {
 	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
 type EntityFilterQuery interface {
-	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error
+	Apply(ctx context.Context, dialect gorm.Dialect, selectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
 type EntitySort interface {
 	String() string
 }
 
 type EntityResultType struct {
-	Offset *int
-	Limit  *int
-	Query  EntityFilterQuery
-	Sort   []EntitySort
-	Filter EntityFilter
+	Offset       *int
+	Limit        *int
+	Query        EntityFilterQuery
+	Sort         []EntitySort
+	Filter       EntityFilter
+	Fields       []*ast.Field
+	SelectionSet *ast.SelectionSet
 }
 
 // GetResultTypeItems ...
@@ -53,7 +56,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 	values := []interface{}{}
 	joins := []string{}
 
-	err := r.Query.Apply(ctx, dialect, &wheres, &values, &joins)
+	err := r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &values, &joins)
 	if err != nil {
 		return err
 	}
@@ -95,7 +98,7 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interf
 	values := []interface{}{}
 	joins := []string{}
 
-	err = r.Query.Apply(ctx, dialect, &wheres, &values, &joins)
+	err = r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &values, &joins)
 	if err != nil {
 		return 0, err
 	}
