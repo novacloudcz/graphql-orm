@@ -111,8 +111,6 @@ func (o *ObjectRelationship) ModelTags() string {
 		rel := o.MainRelationshipForManyToMany()
 		if o.IsSelfReferencing() {
 			tags += fmt.Sprintf(" gorm:\"many2many:%s;jointable_foreignkey:%s_id;association_jointable_foreignkey:%s_id\"", rel.ManyToManyJoinTable(), inflection.Singular(strings.ToLower(o.Obj.Name())), inflection.Singular(o.InverseRelationshipName()))
-		} else if o.IsMainRelationshipForManyToMany() {
-			tags += fmt.Sprintf(" gorm:\"many2many:%s;jointable_foreignkey:%s_id;association_jointable_foreignkey:%s_id\"", rel.ManyToManyJoinTable(), inflection.Singular(o.Name()), inflection.Singular(o.InverseRelationshipName()))
 		} else {
 			tags += fmt.Sprintf(" gorm:\"many2many:%s;jointable_foreignkey:%s_id;association_jointable_foreignkey:%s_id\"", rel.ManyToManyJoinTable(), inflection.Singular(o.InverseRelationshipName()), inflection.Singular(o.Name()))
 		}
