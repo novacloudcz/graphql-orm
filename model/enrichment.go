@@ -22,6 +22,8 @@ func EnrichModelObjects(m *Model) error {
 		for _, rel := range o.Relationships() {
 			if rel.IsToOne() {
 				o.Def.Fields = append(o.Def.Fields, fieldDefinition(rel.Name()+"Id", "ID", false))
+				// } else {
+				// 	o.Def.Fields = append(o.Def.Fields, fieldDefinitionWithType(rel.Name()+"Ids", nonNull(listType(nonNull(namedType("ID"))))))
 			}
 		}
 		o.Def.Fields = append(o.Def.Fields, updatedAt, createdAt, updatedBy, createdBy)
@@ -34,6 +36,11 @@ func EnrichModel(m *Model) error {
 
 	definitions := []ast.Node{}
 	for _, o := range m.Objects() {
+		for _, rel := range o.Relationships() {
+			if rel.IsToMany() {
+				o.Def.Fields = append(o.Def.Fields, fieldDefinitionWithType(rel.Name()+"Ids", nonNull(listType(nonNull(namedType("ID"))))))
+			}
+		}
 		definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o), createObjectSortType(o), createObjectFilterType(o))
 		definitions = append(definitions, objectResultTypeDefinition(&o))
 	}
@@ -65,6 +72,9 @@ func fieldDefinition(fieldName, fieldType string, isNonNull bool) *ast.FieldDefi
 	if isNonNull {
 		t = nonNull(t)
 	}
+	return fieldDefinitionWithType(fieldName, t)
+}
+func fieldDefinitionWithType(fieldName string, t ast.Type) *ast.FieldDefinition {
 	return &ast.FieldDefinition{
 		Name: nameNode(fieldName),
 		Kind: kinds.FieldDefinition,

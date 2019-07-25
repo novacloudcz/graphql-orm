@@ -286,7 +286,24 @@ func (r *Generated{{$object.Name}}Resolver) {{$relationship.MethodName}}(ctx con
 {{end}}
 	return 
 }
+{{if $relationship.IsToMany}}
+
+func (r *Generated{{$object.Name}}Resolver) {{$relationship.MethodName}}Ids(ctx context.Context, obj *{{$object.Name}}) (ids []string, err error) {
+	ids = []string{}
+
+	items := []*{{$relationship.TargetType}}{}
+	err = r.DB.Query().Model(obj).Select("{{$relationship.Target.TableName}}.id").Related(&items, "{{$relationship.MethodName}}").Error
+
+	for _, item := range items {
+		ids = append(ids, item.ID)
+	}
+
+	return
+}
 {{end}}
+
+{{end}}
+
 {{end}}
 
 {{end}}
