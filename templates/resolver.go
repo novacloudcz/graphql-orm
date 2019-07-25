@@ -224,7 +224,7 @@ func (r *GeneratedQueryResolver) {{$object.Name}}(ctx context.Context, id *strin
 		return nil, err
 	}
 	if len(items) == 0 {
-		return nil, fmt.Errorf("record not found")
+		return nil, fmt.Errorf("{{$object.Name}} not found")
 	}
 	return items[0], err
 }
