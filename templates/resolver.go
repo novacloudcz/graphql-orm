@@ -103,9 +103,9 @@ func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id stri
 	tx := r.DB.db.Begin()
 
 	event := events.NewEvent(events.EventMetadata{
-		Type:        events.EventTypeCreated,
+		Type:        events.EventTypeUpdated,
 		Entity:      "{{.Name}}",
-		EntityID:    item.ID,
+		EntityID:    id,
 		Date:        now,
 		PrincipalID: principalID,
 	})
@@ -163,14 +163,37 @@ func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id stri
 	return 
 }
 func (r *GeneratedMutationResolver) Delete{{.Name}}(ctx context.Context, id string) (item *{{.Name}}, err error) {
+	principalID := getPrincipalID(ctx)
 	item = &{{.Name}}{}
-	err = resolvers.GetItem(ctx, r.DB.Query(), item, &id)
+	now := time.Now()
+	tx := r.DB.db.Begin()
+
+	err = resolvers.GetItem(ctx, tx, item, &id)
 	if err != nil {
 		return 
 	}
 
-	err = r.DB.Query().Delete(item, "{{.TableName}}.id = ?", id).Error
+	event := events.NewEvent(events.EventMetadata{
+		Type:        events.EventTypeDeleted,
+		Entity:      "{{.Name}}",
+		EntityID:    id,
+		Date:        now,
+		PrincipalID: principalID,
+	})
 
+	err = tx.Delete(item, "{{.TableName}}.id = ?", id).Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+	err = tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+
+	err = r.EventController.SendEvent(ctx, &event)
+	
 	return 
 }
 {{end}}
