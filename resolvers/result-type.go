@@ -41,6 +41,8 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 		q = q.Offset(*r.Offset)
 	}
 
+	dialect := q.Dialect()
+
 	for _, s := range r.Sort {
 		direction := "ASC"
 		_s := s.String()
@@ -48,10 +50,9 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 			direction = "DESC"
 		}
 		col := strcase.ToLowerCamel(strings.ToLower(strings.TrimSuffix(_s, "_"+direction)))
-		q = q.Order(col + " " + direction)
+		q = q.Order(dialect.Quote(col) + " " + direction)
 	}
 
-	dialect := q.Dialect()
 	wheres := []string{}
 	values := []interface{}{}
 	joins := []string{}
