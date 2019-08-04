@@ -2,6 +2,7 @@ package model
 
 import (
 	"io/ioutil"
+	"time"
 
 	"github.com/ghodss/yaml"
 )
@@ -9,8 +10,9 @@ import (
 type Config struct {
 	Package    string `json:"package"`
 	Connection *struct {
-		MaxIdleConnections *uint `json:"maxIdleConnections"`
-		MaxOpenConnections *uint `json:"maxOpenConnections"`
+		MaxIdleConnections *uint   `json:"maxIdleConnections"`
+		ConnMaxLifetime    *string `json:"connMaxLifetime"`
+		MaxOpenConnections *uint   `json:"maxOpenConnections"`
 	} `json:"connection,omitempty"`
 }
 
@@ -30,7 +32,7 @@ func (c *Config) MaxIdleConnections() uint {
 	if c.Connection != nil && (*c.Connection).MaxIdleConnections != nil {
 		return *(*c.Connection).MaxIdleConnections
 	}
-	return 0
+	return 5
 }
 
 func (c *Config) MaxOpenConnections() uint {
@@ -38,4 +40,15 @@ func (c *Config) MaxOpenConnections() uint {
 		return *(*c.Connection).MaxOpenConnections
 	}
 	return 10
+}
+func (c *Config) ConnMaxLifetime() float64 {
+	if c.Connection != nil && (*c.Connection).ConnMaxLifetime != nil {
+		val := *(*c.Connection).ConnMaxLifetime
+		dur, err := time.ParseDuration(val)
+		if err != nil {
+			panic("failed to parse config connMaxLifetime duration, error: " + err.Error())
+		}
+		return dur.Seconds()
+	}
+	return time.Minute.Seconds()
 }

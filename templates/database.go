@@ -45,6 +45,7 @@ func NewDBWithString(urlString string) *DB {
 		panic(err)
 	}
 	db.DB().SetMaxIdleConns({{.Config.MaxIdleConnections}})
+	db.DB().SetConnMaxLifetime(time.Seconds*{{.Config.ConnMaxLifetime}})
 	db.DB().SetMaxOpenConns({{.Config.MaxOpenConnections}})
 	db.LogMode(true)
 	return NewDB(db)
