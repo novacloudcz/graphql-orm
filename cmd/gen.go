@@ -1,13 +1,9 @@
 package cmd
 
 import (
-	"bytes"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
-	"path"
-	"text/template"
 
 	"github.com/inloop/goclitools"
 
@@ -91,56 +87,29 @@ func generate(filename string) error {
 }
 
 func generateFiles(m *model.Model, c *model.Config) error {
-	data := TemplateData{m, c}
-	if err := writeTemplate(templates.Database, "gen/database.go", data); err != nil {
+	data := templates.TemplateData{Model: m, Config: c}
+	if err := templates.WriteTemplate(templates.Database, "gen/database.go", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.Resolver, "gen/resolver.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.GeneratedResolver, "gen/resolver.go", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.GQLGen, "gen/gqlgen.yml", data); err != nil {
+	if err := templates.WriteTemplate(templates.GQLGen, "gen/gqlgen.yml", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.Model, "gen/models.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.Model, "gen/models.go", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.Filters, "gen/filters.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.Filters, "gen/filters.go", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.QueryFilters, "gen/query-filters.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.QueryFilters, "gen/query-filters.go", data); err != nil {
 		return err
 	}
-	if err := writeTemplate(templates.Keys, "gen/keys.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.Keys, "gen/keys.go", data); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-type TemplateData struct {
-	Model  *model.Model
-	Config *model.Config
-}
-
-func writeTemplate(t, filename string, data TemplateData) error {
-	temp, err := template.New(filename).Parse(t)
-	if err != nil {
-		return err
-	}
-	var content bytes.Buffer
-	writer := io.Writer(&content)
-
-	err = temp.Execute(writer, &data)
-	if err != nil {
-		return err
-	}
-	err = ioutil.WriteFile(filename, content.Bytes(), 0777)
-	if err != nil {
-		return err
-	}
-	if path.Ext(filename) == ".go" {
-		return goclitools.RunInteractive(fmt.Sprintf("goimports -w %s", filename))
-	}
 	return nil
 }
 

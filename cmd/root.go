@@ -6,7 +6,7 @@ import (
 	"github.com/urfave/cli"
 )
 
-// Execute
+// Execute ...
 func Execute() {
 	app := cli.NewApp()
 	app.Name = "graphql-orm"
