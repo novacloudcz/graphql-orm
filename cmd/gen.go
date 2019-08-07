@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 
-	"github.com/inloop/goclitools"
+	"github.com/novacloudcz/goclitools"
 
 	"github.com/novacloudcz/graphql-orm/model"
 	"github.com/novacloudcz/graphql-orm/templates"

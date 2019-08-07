@@ -1,6 +1,4 @@
-package templates
-
-var Main = `package main
+package main
 
 import (
 	"context"
@@ -11,10 +9,11 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/handler"
-	"github.com/novacloudcz/graphql-orm/events"
 	jwtgo "github.com/dgrijalva/jwt-go"
+	"github.com/novacloudcz/graphql-orm/events"
+
 	// "github.com/rs/cors"
-	"{{.Config.Package}}/gen"
+	"github.com/novacloudcz/graphql-orm/test/gen"
 )
 
 const (
@@ -70,7 +69,7 @@ func main() {
 	handler := mux
 	// use this line to allow cors for all origins/methods/headers (for development)
 	// handler := cors.AllowAll().Handler(mux)
-	
+
 	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
 	log.Fatal(http.ListenAndServe(":"+port, handler))
 }
@@ -113,4 +112,3 @@ func getJWTClaims(req *http.Request) (*JWTClaims, error) {
 	jwtgo.ParseWithClaims(tokenStr, p, nil)
 	return p, nil
 }
-`

@@ -8,7 +8,7 @@ import (
 	"path"
 	"text/template"
 
-	"github.com/inloop/goclitools"
+	"github.com/novacloudcz/goclitools"
 	"github.com/novacloudcz/graphql-orm/model"
 )
 
