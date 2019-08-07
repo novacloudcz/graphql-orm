@@ -17,7 +17,7 @@ func mutationDefinition(m *Model) *ast.ObjectDefinition {
 	fields := []*ast.FieldDefinition{}
 
 	for _, obj := range m.Objects() {
-		fields = append(fields, createFieldDefinition(obj), updateFieldDefinition(obj), deleteFieldDefinition(obj))
+		fields = append(fields, createFieldDefinition(obj), updateFieldDefinition(obj), deleteFieldDefinition(obj), deleteAllFieldDefinition(obj))
 	}
 	return &ast.ObjectDefinition{
 		Kind:   kinds.ObjectDefinition,
@@ -75,5 +75,13 @@ func deleteFieldDefinition(obj Object) *ast.FieldDefinition {
 		Arguments: []*ast.InputValueDefinition{
 			&idInput,
 		},
+	}
+}
+
+func deleteAllFieldDefinition(obj Object) *ast.FieldDefinition {
+	return &ast.FieldDefinition{
+		Kind: kinds.FieldDefinition,
+		Name: nameNode("deleteAll" + inflection.Plural(obj.Name())),
+		Type: nonNull(namedType("Boolean")),
 	}
 }

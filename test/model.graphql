@@ -1,0 +1,21 @@
+type Company {
+  name: String
+
+  employees: [User!]! @relationship(inverse: "employers")
+}
+type User {
+  email: String
+  firstName: String
+  lastName: String
+
+  employers: [Company!]! @relationship(inverse: "employees")
+  tasks: [Task!]! @relationship(inverse: "assignee")
+}
+
+type Task {
+  title: String
+  completed: Boolean
+  dueDate: Time
+
+  assignee: User @relationship(inverse: "tasks")
+}

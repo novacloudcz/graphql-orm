@@ -2,6 +2,7 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jinzhu/inflection"
 
@@ -35,6 +36,12 @@ func (o *Object) Columns() []ObjectColumn {
 	}
 	return columns
 }
+func (o *Object) IsToManyColumn(c ObjectColumn) bool {
+	if c.Obj.Name() != o.Name() {
+		return false
+	}
+	return o.HasRelationship(strings.TrimSuffix(c.Name(), "Ids"))
+}
 func (o *Object) Relationships() []*ObjectRelationship {
 	relationships := []*ObjectRelationship{}
 	for _, f := range o.Def.Fields {
@@ -53,8 +60,16 @@ func (o *Object) Relationship(name string) *ObjectRelationship {
 	}
 	panic(fmt.Sprintf("relationship %s->%s not found", o.Name(), name))
 }
-func (o *Object) HasRelationships() bool {
+func (o *Object) HasAnyRelationships() bool {
 	return len(o.Relationships()) > 0
+}
+func (o *Object) HasRelationship(name string) bool {
+	for _, rel := range o.Relationships() {
+		if rel.Name() == name {
+			return true
+		}
+	}
+	return false
 }
 
 func (o *Object) isColumn(f *ast.FieldDefinition) bool {

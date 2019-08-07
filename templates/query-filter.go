@@ -7,9 +7,8 @@ import (
 	"strings"
 	"fmt"
 
-	"github.com/99designs/gqlgen/graphql"
+	"github.com/jinzhu/gorm"
 	"github.com/vektah/gqlparser/ast"
-
 )
 
 {{range $object := .Model.Objects}}

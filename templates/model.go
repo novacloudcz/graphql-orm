@@ -4,6 +4,9 @@ var Model = `package gen
 
 import (
 	"time"
+	
+	"github.com/99designs/gqlgen/graphql"
+	"github.com/mitchellh/mapstructure"
 	"github.com/novacloudcz/graphql-orm/resolvers"
 )
 

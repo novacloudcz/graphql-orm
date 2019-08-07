@@ -18,6 +18,9 @@ func createObjectFilterType(obj Object) *ast.InputObjectDefinition {
 	// fields = append(fields, filterInputValues("id", namedType("ID"))...)
 
 	for _, col := range obj.Columns() {
+		if obj.IsToManyColumn(col) {
+			continue
+		}
 		fields = append(fields, filterInputValues(&col, col.Def.Type)...)
 	}
 	for _, rel := range obj.Relationships() {
