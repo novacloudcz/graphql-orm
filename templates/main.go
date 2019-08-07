@@ -42,6 +42,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	
+	loaders := gen.GetLoaders(db)
 
 	gqlHandler := handler.GraphQL(gen.NewExecutableSchema(gen.Config{Resolvers: NewResolver(db, &eventController)}))
 
@@ -49,6 +51,7 @@ func main() {
 	mux.HandleFunc("/graphql", func(res http.ResponseWriter, req *http.Request) {
 		principalID := getPrincipalID(req)
 		ctx := context.WithValue(req.Context(), gen.KeyPrincipalID, principalID)
+		ctx = context.WithValue(ctx, "loaders", loaders)
 		req = req.WithContext(ctx)
 		if req.Method == "GET" {
 			playgroundHandler(res, req)
