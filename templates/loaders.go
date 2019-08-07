@@ -3,15 +3,10 @@ package templates
 var Loaders = `package gen
 
 import (
+	"context"
 	"fmt"
-	"net/url"
-	"strings"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mssql"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"github.com/graph-gophers/dataloader"
 )
 
 func GetLoaders(db *DB) map[string]*dataloader.Loader {
