@@ -283,14 +283,12 @@ func (r *Generated{{$object.Name}}Resolver) {{$relationship.MethodName}}(ctx con
 	err = r.DB.Query().Model(obj).Related(&items, "{{$relationship.MethodName}}").Error
 	res = items
 {{else}}
-	item := {{.TargetType}}{}
-	_res := r.DB.Query().Model(obj).Related(&item, "{{$relationship.MethodName}}")
-	if _res.RecordNotFound() {
-		return
-	} else {
-		err = _res.Error
+	loaders := ctx.Value("loaders").(map[string]*dataloader.Loader)
+	if obj.{{$relationship.MethodName}}ID != nil {
+		item, _err := loaders["{{$relationship.Target.Name}}"].Load(ctx, dataloader.StringKey(*obj.{{$relationship.MethodName}}ID))()
+		res = item.({{.ReturnType}})
+		err = _err
 	}
-	res = &item
 {{end}}
 	return 
 }
