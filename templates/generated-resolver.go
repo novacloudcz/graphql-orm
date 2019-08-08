@@ -6,6 +6,7 @@ import (
 	"context"
 	"time"
 	
+	"github.com/graph-gophers/dataloader"
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gofrs/uuid"
 	"github.com/novacloudcz/graphql-orm/events"

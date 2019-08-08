@@ -18,7 +18,6 @@ require (
 	github.com/jinzhu/inflection v1.0.0
 	github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047
 	github.com/novacloudcz/goclitools v0.0.0-20190807112614-386f7ae41d2f
-	github.com/satori/go.uuid v1.2.0
 	github.com/urfave/cli v1.21.0
 	github.com/vektah/gqlparser v1.1.2
 	golang.org/x/tools v0.0.0-20190806215303-88ddfcebc769 // indirect
