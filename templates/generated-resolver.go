@@ -287,7 +287,7 @@ func (r *Generated{{$object.Name}}Resolver) {{$relationship.MethodName}}(ctx con
 	loaders := ctx.Value("loaders").(map[string]*dataloader.Loader)
 	if obj.{{$relationship.MethodName}}ID != nil {
 		item, _err := loaders["{{$relationship.Target.Name}}"].Load(ctx, dataloader.StringKey(*obj.{{$relationship.MethodName}}ID))()
-		res = item.({{.ReturnType}})
+		res, _ = item.({{.ReturnType}})
 		err = _err
 	}
 {{end}}
