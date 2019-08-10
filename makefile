@@ -1,5 +1,3 @@
-SHELL := /bin/bash
-
 test: test-generate test-build test-run
 test-generate:
 	cd test && go run ../main.go init && cd ..
