@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/novacloudcz/graphql-orm/templates"
 
@@ -29,8 +28,10 @@ var initCmd = cli.Command{
 			}
 		}
 
-		if err := createDummyModelFile(); err != nil {
-			return cli.NewExitError(err, 1)
+		if !fileExists("model.graphql") {
+			if err := createDummyModelFile(); err != nil {
+				return cli.NewExitError(err, 1)
+			}
 		}
 
 		if err := createMainFile(); err != nil {
@@ -43,22 +44,12 @@ var initCmd = cli.Command{
 			}
 		}
 
-		if !fileExists("makefile") {
-			wantCreateMakefile := goclitools.Prompt("Create makefile for run/generate commands? [y/N]")
-			if strings.ToLower(wantCreateMakefile) == "y" {
-				if err := createMakeFile(); err != nil {
-					return cli.NewExitError(err, 1)
-				}
-			}
+		if err := createMakeFile(); err != nil {
+			return cli.NewExitError(err, 1)
 		}
 
-		if !fileExists("Dockerfile") {
-			wantCreateDockerfile := goclitools.Prompt("Create Dockerfile for building docker images? [y/N]")
-			if strings.ToLower(wantCreateDockerfile) == "y" {
-				if err := createDockerFile(); err != nil {
-					return cli.NewExitError(err, 1)
-				}
-			}
+		if err := createDockerFile(); err != nil {
+			return cli.NewExitError(err, 1)
 		}
 
 		if err := runGenerate(); err != nil {

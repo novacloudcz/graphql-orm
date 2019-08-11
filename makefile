@@ -1,8 +1,6 @@
-SHELL := /bin/bash
-
 test: test-generate test-build test-run
 test-generate:
-	cd test && go run ../main.go && cd ..
+	cd test && go run ../main.go init && cd ..
 test-build:
 	CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o test/app test/*.go
 test-run:
