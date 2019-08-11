@@ -43,9 +43,9 @@ func generate(filename, p string) error {
 	}
 
 	genPath := path.Join(p, "gen")
-	if _, err := os.Stat(genPath); os.IsNotExist(err) {
-		os.Mkdir(genPath, 0777)
-	}
+	ensureDir(genPath)
+	lambdaPath := path.Join(p, "lambda")
+	ensureDir(lambdaPath)
 
 	err = model.EnrichModelObjects(&m)
 	if err != nil {
@@ -89,6 +89,13 @@ func generate(filename, p string) error {
 	return nil
 }
 
+func ensureDir(dir string) {
+	if _, err := os.Stat(dir); os.IsNotExist(err) {
+		os.Mkdir(dir, 0777)
+	}
+
+}
+
 func generateFiles(p string, m *model.Model, c *model.Config) error {
 	data := templates.TemplateData{Model: m, Config: c}
 	if err := templates.WriteTemplate(templates.Database, path.Join(p, "gen/database.go"), data); err != nil {
@@ -116,6 +123,9 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 		return err
 	}
 	if err := templates.WriteTemplate(templates.GeneratedResolver, path.Join(p, "gen/resolver.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.Lambda, path.Join(p, "lambda/main.go"), data); err != nil {
 		return err
 	}
 
