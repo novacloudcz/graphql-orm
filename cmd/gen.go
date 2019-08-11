@@ -44,8 +44,6 @@ func generate(filename, p string) error {
 
 	genPath := path.Join(p, "gen")
 	ensureDir(genPath)
-	lambdaPath := path.Join(p, "lambda")
-	ensureDir(lambdaPath)
 
 	err = model.EnrichModelObjects(&m)
 	if err != nil {
@@ -123,9 +121,6 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 		return err
 	}
 	if err := templates.WriteTemplate(templates.GeneratedResolver, path.Join(p, "gen/resolver.go"), data); err != nil {
-		return err
-	}
-	if err := templates.WriteTemplate(templates.Lambda, path.Join(p, "lambda/main.go"), data); err != nil {
 		return err
 	}
 

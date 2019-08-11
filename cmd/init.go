@@ -43,6 +43,9 @@ var initCmd = cli.Command{
 		if err := createMainFile(p); err != nil {
 			return cli.NewExitError(err, 1)
 		}
+		if err := createLambdaMainFile(p); err != nil {
+			return cli.NewExitError(err, 1)
+		}
 
 		if !fileExists(path.Join(p, "resolver.go")) {
 			if err := createResolverFile(p); err != nil {
@@ -104,6 +107,14 @@ func createMainFile(p string) error {
 		return err
 	}
 	return templates.WriteTemplate(templates.Main, path.Join(p, "main.go"), templates.TemplateData{Config: &c})
+}
+func createLambdaMainFile(p string) error {
+	c, err := model.LoadConfigFromPath(p)
+	if err != nil {
+		return err
+	}
+	ensureDir(path.Join(p, "lambda"))
+	return templates.WriteTemplate(templates.Lambda, path.Join(p, "lambda/main.go"), templates.TemplateData{Config: &c})
 }
 func createDummyModelFile(p string) error {
 	data := templates.TemplateData{Model: nil, Config: nil}
