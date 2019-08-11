@@ -14,11 +14,6 @@ import (
 	"github.com/vektah/gqlparser/ast"
 )
 
-func getPrincipalID(ctx context.Context) *string {
-	v, _ := ctx.Value(KeyPrincipalID).(*string)
-	return v
-}
-
 type GeneratedResolver struct {
 	DB *DB
 	EventController *events.EventController
@@ -45,7 +40,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 
 {{range .Model.Objects}}
 func (r *GeneratedMutationResolver) Create{{.Name}}(ctx context.Context, input map[string]interface{}) (item *{{.Name}}, err error) {
-	principalID := getPrincipalID(ctx)
+	principalID := getPrincipalIDFromContext(ctx)
 	now := time.Now()
 	item = &{{.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
 	tx := r.DB.db.Begin()
@@ -101,7 +96,7 @@ func (r *GeneratedMutationResolver) Create{{.Name}}(ctx context.Context, input m
 	return 
 }
 func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id string, input map[string]interface{}) (item *{{.Name}}, err error) {
-	principalID := getPrincipalID(ctx)
+	principalID := getPrincipalIDFromContext(ctx)
 	item = &{{.Name}}{}
 	now := time.Now()
 	tx := r.DB.db.Begin()
@@ -167,7 +162,7 @@ func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id stri
 	return 
 }
 func (r *GeneratedMutationResolver) Delete{{.Name}}(ctx context.Context, id string) (item *{{.Name}}, err error) {
-	principalID := getPrincipalID(ctx)
+	principalID := getPrincipalIDFromContext(ctx)
 	item = &{{.Name}}{}
 	now := time.Now()
 	tx := r.DB.db.Begin()

@@ -3,6 +3,8 @@ package templates
 var Model = `package gen
 
 import (
+	"fmt"
+	"reflect"
 	"time"
 	
 	"github.com/99designs/gqlgen/graphql"

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 
 	"github.com/novacloudcz/goclitools"
 
@@ -16,14 +17,15 @@ var genCmd = cli.Command{
 	Name:  "generate",
 	Usage: "generate contents",
 	Action: func(ctx *cli.Context) error {
-		if err := generate("model.graphql"); err != nil {
+		if err := generate("model.graphql", "."); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 		return nil
 	},
 }
 
-func generate(filename string) error {
+func generate(filename, p string) error {
+	filename = path.Join(p, filename)
 	fmt.Println("Generating contents from", filename, "...")
 	modelSource, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -35,13 +37,14 @@ func generate(filename string) error {
 		return err
 	}
 
-	c, err := model.LoadConfig()
+	c, err := model.LoadConfigFromPath(p)
 	if err != nil {
 		return err
 	}
 
-	if _, err := os.Stat("./gen"); os.IsNotExist(err) {
-		os.Mkdir("./gen", 0777)
+	genPath := path.Join(p, "gen")
+	if _, err := os.Stat(genPath); os.IsNotExist(err) {
+		os.Mkdir(genPath, 0777)
 	}
 
 	err = model.EnrichModelObjects(&m)
@@ -49,7 +52,7 @@ func generate(filename string) error {
 		return err
 	}
 
-	err = generateFiles(&m, &c)
+	err = generateFiles(p, &m, &c)
 	if err != nil {
 		return err
 	}
@@ -66,12 +69,12 @@ func generate(filename string) error {
 
 	schema = "# This schema is generated, please don't update it manually\n\n" + schema
 
-	if err := ioutil.WriteFile("gen/schema.graphql", []byte(schema), 0644); err != nil {
+	if err := ioutil.WriteFile(path.Join(p, "gen/schema.graphql"), []byte(schema), 0644); err != nil {
 		return err
 	}
 
-	fmt.Println("Running gqlgen generator...")
-	if err := goclitools.RunInteractiveInDir("go run github.com/99designs/gqlgen", "./gen"); err != nil {
+	fmt.Printf("Running gqlgen generator in %s ...\n", path.Join(p, "gen"))
+	if err := goclitools.RunInteractiveInDir("go run github.com/99designs/gqlgen", path.Join(p, "gen")); err != nil {
 		return err
 	}
 
@@ -86,30 +89,33 @@ func generate(filename string) error {
 	return nil
 }
 
-func generateFiles(m *model.Model, c *model.Config) error {
+func generateFiles(p string, m *model.Model, c *model.Config) error {
 	data := templates.TemplateData{Model: m, Config: c}
-	if err := templates.WriteTemplate(templates.Database, "gen/database.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.Database, path.Join(p, "gen/database.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.GeneratedResolver, "gen/resolver.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.GQLGen, path.Join(p, "gen/gqlgen.yml"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.GQLGen, "gen/gqlgen.yml", data); err != nil {
+	if err := templates.WriteTemplate(templates.Model, path.Join(p, "gen/models.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.Model, "gen/models.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.Filters, path.Join(p, "gen/filters.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.Filters, "gen/filters.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.QueryFilters, path.Join(p, "gen/query-filters.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.QueryFilters, "gen/query-filters.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.Keys, path.Join(p, "gen/keys.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.Keys, "gen/keys.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.Loaders, path.Join(p, "gen/loaders.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.Loaders, "gen/loaders.go", data); err != nil {
+	if err := templates.WriteTemplate(templates.HTTPHandler, path.Join(p, "gen/http-handler.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.GeneratedResolver, path.Join(p, "gen/resolver.go"), data); err != nil {
 		return err
 	}
 
