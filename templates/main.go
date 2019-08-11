@@ -15,7 +15,7 @@ import (
 	jwtgo "github.com/dgrijalva/jwt-go"
 	// "github.com/rs/cors"
 	"{{.Config.Package}}/gen"
-	"{{.Config.Package}}/resolver"
+	"{{.Config.Package}}/src"
 )
 
 const (
@@ -37,7 +37,7 @@ func main() {
 		panic(err)
 	}
 
-	mux := gen.GetHTTPServeMux(resolver.New(db, &eventController), db)
+	mux := gen.GetHTTPServeMux(src.New(db, &eventController), db)
 
 	mux.HandleFunc("/healthcheck", func(res http.ResponseWriter, req *http.Request) {
 		if err := db.Ping(); err != nil {

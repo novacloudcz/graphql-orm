@@ -147,8 +147,8 @@ func createResolverFile(p string) error {
 		return err
 	}
 	data := templates.TemplateData{Model: nil, Config: &c}
-	ensureDir(path.Join(p, "resolver"))
-	return templates.WriteTemplate(templates.Resolver, path.Join(p, "resolver/resolver.go"), data)
+	ensureDir(path.Join(p, "src"))
+	return templates.WriteTemplate(templates.Resolver, path.Join(p, "src/resolver.go"), data)
 }
 
 func runGenerate(p string) error {

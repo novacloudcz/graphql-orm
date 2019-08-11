@@ -6,7 +6,7 @@ import (
 	"github.com/akrylysov/algnhsa"
 	"github.com/novacloudcz/graphql-orm/events"
 	"{{.Config.Package}}/gen"
-	"{{.Config.Package}}/resolver"
+	"{{.Config.Package}}/src"
 )
 
 
@@ -18,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	handler := gen.GetHTTPServeMux(resolver.New(db, &eventController),db)
+	handler := gen.GetHTTPServeMux(src.New(db, &eventController),db)
 	algnhsa.ListenAndServe(handler, nil)
 }
 
