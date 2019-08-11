@@ -19,6 +19,15 @@ type DB struct {
 	db *gorm.DB
 }
 
+// NewDBFromEnvVars Create database client using DATABASE_URL environment variable
+func NewDBFromEnvVars() *DB {
+	urlString := os.Getenv("DATABASE_URL")
+	if urlString == "" {
+		panic(fmt.Errorf("missing DATABASE_URL environment variable"))
+	}
+	return NewDBWithString(urlString)
+}
+
 // NewDB ...
 func NewDB(db *gorm.DB) *DB {
 	prefix := os.Getenv("TABLE_NAME_PREFIX")

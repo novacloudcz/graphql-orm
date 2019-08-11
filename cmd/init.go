@@ -23,7 +23,7 @@ var initCmd = cli.Command{
 	Action: func(ctx *cli.Context) error {
 		p := ctx.Args().First()
 		if p == "" {
-			p = "./"
+			p = "."
 		}
 
 		fmt.Printf("Initializing project in %s ...\n", p)
@@ -140,5 +140,5 @@ func createResolverFile(p string) error {
 }
 
 func runGenerate(p string) error {
-	return goclitools.RunInteractiveInDir("go run github.com/novacloudcz/graphql-orm", p)
+	return generate("model.graphql", p)
 }
