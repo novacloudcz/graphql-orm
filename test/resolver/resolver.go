@@ -1,4 +1,4 @@
-package main
+package resolver
 
 import (
 	"github.com/novacloudcz/graphql-orm/events"
@@ -9,7 +9,7 @@ type Resolver struct {
 	*gen.GeneratedResolver
 }
 
-func NewResolver(db *gen.DB, ec *events.EventController) *Resolver {
+func New(db *gen.DB, ec *events.EventController) *Resolver {
 	return &Resolver{&gen.GeneratedResolver{db, ec}}
 }
 

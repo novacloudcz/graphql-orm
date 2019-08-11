@@ -9,3 +9,7 @@ run:
 
 voyager:
 	docker run --rm -v `pwd`/gen/schema.graphql:/app/schema.graphql -p 8080:80 graphql/voyager
+
+build-lambda-function:
+	GO111MODULE=on go build -o main lambda/main.go && zip lambda.zip main && rm main
+
