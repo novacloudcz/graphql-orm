@@ -130,6 +130,8 @@ github.com/novacloudcz/goclitools v0.0.0-20190807112614-386f7ae41d2f h1:iyBr2gqA
 github.com/novacloudcz/goclitools v0.0.0-20190807112614-386f7ae41d2f/go.mod h1:vUMFKZv4Um2Gti7ZrJ25iP6UStRpA8n7OUR0rEgaGIY=
 github.com/novacloudcz/graphql-orm v0.0.0-20190811071254-8539170bd47b h1:UTi0eHzzNQVZdfbITAe6ElruGO2T+Zvv9jCtUOxpdEo=
 github.com/novacloudcz/graphql-orm v0.0.0-20190811071254-8539170bd47b/go.mod h1:5np8CM49Ux0A8h2L9S2iB1gBkp8G1ZCxfk8hM5kxvT8=
+github.com/novacloudcz/graphql-orm v0.0.0-20190811072339-5d7c5026cfbe h1:vnho+jJDv7GPK4x4QCepaztC3XwZGna6uap4shyod40=
+github.com/novacloudcz/graphql-orm v0.0.0-20190811072339-5d7c5026cfbe/go.mod h1:5np8CM49Ux0A8h2L9S2iB1gBkp8G1ZCxfk8hM5kxvT8=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=

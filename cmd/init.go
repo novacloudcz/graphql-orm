@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 
 	"github.com/novacloudcz/graphql-orm/templates"
@@ -20,45 +21,50 @@ var initCmd = cli.Command{
 	Name:  "init",
 	Usage: "initialize new project",
 	Action: func(ctx *cli.Context) error {
-		fmt.Println("Initializing project...")
+		p := ctx.Args().First()
+		if p == "" {
+			p = "./"
+		}
 
-		if !fileExists("graphql-orm.yml") {
-			if err := createConfigFile(); err != nil {
+		fmt.Printf("Initializing project in %s ...\n", p)
+
+		if !fileExists(path.Join(p, "graphql-orm.yml")) {
+			if err := createConfigFile(p); err != nil {
 				return cli.NewExitError(err, 1)
 			}
 		}
 
-		if !fileExists("model.graphql") {
-			if err := createDummyModelFile(); err != nil {
+		if !fileExists(path.Join(p, "model.graphql")) {
+			if err := createDummyModelFile(p); err != nil {
 				return cli.NewExitError(err, 1)
 			}
 		}
 
-		if err := createMainFile(); err != nil {
+		if err := createMainFile(p); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 
-		if !fileExists("resolver.go") {
-			if err := createResolverFile(); err != nil {
+		if !fileExists(path.Join(p, "resolver.go")) {
+			if err := createResolverFile(p); err != nil {
 				return cli.NewExitError(err, 1)
 			}
 		}
 
-		if err := createMakeFile(); err != nil {
+		if err := createMakeFile(p); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 
-		if err := createDockerFile(); err != nil {
+		if err := createDockerFile(p); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 
-		if !fileExists("go.mod") {
-			if err := initModules(); err != nil {
+		if !fileExists(path.Join(p, "go.mod")) {
+			if err := initModules(p); err != nil {
 				return cli.NewExitError(err, 1)
 			}
 		}
 
-		if err := runGenerate(); err != nil {
+		if err := runGenerate(p); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 
@@ -73,66 +79,66 @@ func fileExists(filename string) bool {
 	return false
 }
 
-func createConfigFile() error {
-	defaultPackagePath := ""
-	if os.Getenv("GOPATH") != "" {
+func createConfigFile(p string) error {
+	defaultPackagep := ""
+	if os.Getenv("GOp") != "" {
 		cw, _ := os.Getwd()
-		defaultPackagePath, _ = filepath.Rel(os.Getenv("GOPATH")+"/src", cw)
+		defaultPackagep, _ = filepath.Rel(os.Getenv("GOp")+"/src", cw)
 	}
-	packagePath := goclitools.Prompt(fmt.Sprintf("Package path (default %s)", defaultPackagePath))
-	if packagePath != "" {
-		defaultPackagePath = packagePath
+	packagep := goclitools.Prompt(fmt.Sprintf("Package p (default %s)", defaultPackagep))
+	if packagep != "" {
+		defaultPackagep = packagep
 	}
-	c := model.Config{Package: defaultPackagePath}
+	c := model.Config{Package: defaultPackagep}
 
 	content, err := yaml.Marshal(c)
 	if err != nil {
 		return err
 	}
-	err = ioutil.WriteFile("graphql-orm.yml", content, 0644)
+	err = ioutil.WriteFile(path.Join(p, "graphql-orm.yml"), content, 0644)
 	return err
 }
-func createMainFile() error {
-	c, err := model.LoadConfig()
+func createMainFile(p string) error {
+	c, err := model.LoadConfigFromPath(p)
 	if err != nil {
 		return err
 	}
-	return templates.WriteTemplate(templates.Main, "main.go", templates.TemplateData{Config: &c})
+	return templates.WriteTemplate(templates.Main, path.Join(p, "main.go"), templates.TemplateData{Config: &c})
 }
-func createDummyModelFile() error {
+func createDummyModelFile(p string) error {
 	data := templates.TemplateData{Model: nil, Config: nil}
-	return templates.WriteTemplate(templates.DummyModel, "model.graphql", data)
+	return templates.WriteTemplate(templates.DummyModel, path.Join(p, "model.graphql"), data)
 }
-func createMakeFile() error {
+func createMakeFile(p string) error {
 	data := templates.TemplateData{Model: nil, Config: nil}
-	return templates.WriteTemplate(templates.Makefile, "makefile", data)
+	return templates.WriteTemplate(templates.Makefile, path.Join(p, "makefile"), data)
 }
-func createDockerFile() error {
-	c, err := model.LoadConfig()
+func createDockerFile(p string) error {
+	c, err := model.LoadConfigFromPath(p)
 	if err != nil {
 		return err
 	}
 	data := templates.TemplateData{Model: nil, Config: &c}
-	return templates.WriteTemplate(templates.Dockerfile, "Dockerfile", data)
+	return templates.WriteTemplate(templates.Dockerfile, path.Join(p, "Dockerfile"), data)
 }
 
-func initModules() error {
-	c, err := model.LoadConfig()
+func initModules(p string) error {
+	c, err := model.LoadConfigFromPath(p)
 	if err != nil {
 		return err
 	}
-	return goclitools.RunInteractive(fmt.Sprintf("go mod init %s", c.Package))
+	return goclitools.RunInteractiveInDir(fmt.Sprintf("go mod init %s", c.Package), p)
 }
 
-func createResolverFile() error {
-	c, err := model.LoadConfig()
+func createResolverFile(p string) error {
+	c, err := model.LoadConfigFromPath(p)
 	if err != nil {
 		return err
 	}
 	data := templates.TemplateData{Model: nil, Config: &c}
-	return templates.WriteTemplate(templates.Resolver, "resolver.go", data)
+	return templates.WriteTemplate(templates.Resolver, path.Join(p, "resolver.go"), data)
 }
 
-func runGenerate() error {
-	return goclitools.RunInteractive("go run github.com/novacloudcz/graphql-orm")
+func runGenerate(p string) error {
+	return goclitools.RunInteractiveInDir("go run github.com/novacloudcz/graphql-orm", p)
 }
