@@ -52,6 +52,12 @@ var initCmd = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
+		if !fileExists("go.mod") {
+			if err := initModules(); err != nil {
+				return cli.NewExitError(err, 1)
+			}
+		}
+
 		if err := runGenerate(); err != nil {
 			return cli.NewExitError(err, 1)
 		}
@@ -108,6 +114,14 @@ func createDockerFile() error {
 	}
 	data := templates.TemplateData{Model: nil, Config: &c}
 	return templates.WriteTemplate(templates.Dockerfile, "Dockerfile", data)
+}
+
+func initModules() error {
+	c, err := model.LoadConfig()
+	if err != nil {
+		return err
+	}
+	return goclitools.RunInteractive(fmt.Sprintf("go mod init %s", c.Package))
 }
 
 func createResolverFile() error {
