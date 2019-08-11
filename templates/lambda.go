@@ -4,7 +4,7 @@ var Lambda = `package main
 
 import (
 	"github.com/akrylysov/algnhsa"
-	"gitlab.com/novacloud/reportingdokapsy/cms/orm/gen"
+	"{{.Config.Package}}/gen"
 )
 
 func main() {

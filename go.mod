@@ -4,6 +4,7 @@ go 1.12
 
 require (
 	github.com/99designs/gqlgen v0.9.1
+	github.com/akrylysov/algnhsa v0.0.0-20190319020909-05b3d192e9a7 // indirect
 	github.com/cloudevents/sdk-go v0.8.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
