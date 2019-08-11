@@ -76,22 +76,16 @@ func generate(filename, p string) error {
 		return err
 	}
 
-	// for _, obj := range plainModel.Objects() {
-	// 	s1 := fmt.Sprintf("type %s struct {", obj.Name())
-	// 	s2 := fmt.Sprintf("type %s struct {\n\t%sExtensions", obj.Name(), obj.Name())
-	// 	if err := replaceStringInFile("gen/models_gen.go", s1, s2); err != nil {
-	// 		return err
-	// 	}
-	// }
-
 	return nil
 }
 
 func ensureDir(dir string) {
 	if _, err := os.Stat(dir); os.IsNotExist(err) {
-		os.Mkdir(dir, 0777)
+		err = os.Mkdir(dir, 0777)
+		if err != nil {
+			panic(err)
+		}
 	}
-
 }
 
 func generateFiles(p string, m *model.Model, c *model.Config) error {

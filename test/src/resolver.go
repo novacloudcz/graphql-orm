@@ -1,10 +1,8 @@
-package templates
-
-var Resolver = `package src
+package src
 
 import (
-	"{{.Config.Package}}/gen"
 	"github.com/novacloudcz/graphql-orm/events"
+	"github.com/novacloudcz/graphql-orm/test/gen"
 )
 
 type Resolver struct {
@@ -13,7 +11,7 @@ type Resolver struct {
 
 func New(db *gen.DB, ec *events.EventController) *Resolver {
 	return &Resolver{&gen.GeneratedResolver{db, ec}}
-}	
+}
 
 // This is example how to override default resolver to provide customizations
 
@@ -33,5 +31,4 @@ func New(db *gen.DB, ec *events.EventController) *Resolver {
 // 		return nil, err
 //	}
 // 	return r.GeneratedMutationResolver.CreateXXX(ctx, input)
-// }	
-`
+// }
