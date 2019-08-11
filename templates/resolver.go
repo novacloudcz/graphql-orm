@@ -1,6 +1,6 @@
 package templates
 
-var Resolver = `package main
+var Resolver = `package resolver
 
 import (
 	"{{.Config.Package}}/gen"
@@ -11,7 +11,7 @@ type Resolver struct {
 	*gen.GeneratedResolver
 }
 
-func NewResolver(db *gen.DB, ec *events.EventController) *Resolver {
+func New(db *gen.DB, ec *events.EventController) *Resolver {
 	return &Resolver{&gen.GeneratedResolver{db, ec}}
 }	
 
