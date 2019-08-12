@@ -47,7 +47,7 @@ var initCmd = cli.Command{
 			return cli.NewExitError(err, 1)
 		}
 
-		if !fileExists(path.Join(p, "resolver.go")) {
+		if !fileExists(path.Join(p, "src/resolver.go")) {
 			if err := createResolverFile(p); err != nil {
 				return cli.NewExitError(err, 1)
 			}
