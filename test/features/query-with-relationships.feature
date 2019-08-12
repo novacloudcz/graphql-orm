@@ -65,3 +65,35 @@ Feature: It should be possible to fetch items by relationships
                 }
             }
             """
+
+    Scenario: Fetching users by company name with alias
+        When I send query:
+            """
+            query {
+            users(q:"test company") { items { firstName lastName companies: employers { name } employers { id } } count }
+            }
+            """
+        Then the response should be:
+            """
+            {
+                "users": {
+                    "items": [
+                        {
+                            "firstName": "John",
+                            "lastName": "Doe",
+                            "employers": [
+                                {
+                                    "id": "test"
+                                }
+                            ],
+                            "companies": [
+                                {
+                                    "name": "test company"
+                                }
+                            ]
+                        }
+                    ],
+                    "count": 1
+                }
+            }
+            """

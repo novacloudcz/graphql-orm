@@ -49,9 +49,9 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(dialect gorm.Dialect
 		return nil
 	}
 	
-	fieldsMap := map[string]*ast.Field{}
+	fieldsMap := map[string][]*ast.Field{}
 	for _, f := range fields {
-		fieldsMap[f.Name] = f
+		fieldsMap[f.Name] = append(fieldsMap[f.Name],f)
 	}
 
 	{{range $col := $object.Columns}}{{if $col.IsSearchable}}
@@ -63,14 +63,16 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(dialect gorm.Dialect
 	{{end}}
 
 	{{range $rel := $object.Relationships}}
-	if f, ok := fieldsMap["{{$rel.Name}}"]; ok {
+	if fs, ok := fieldsMap["{{$rel.Name}}"]; ok {
 		_fields := []*ast.Field{}
 		_alias := alias + "_{{$rel.Name}}"
 		*joins = append(*joins,{{$rel.JoinString}})
 		
-		for _, s := range f.SelectionSet {
-			if f, ok := s.(*ast.Field); ok {
-				_fields = append(_fields, f)
+		for _, f := range fs {
+			for _, s := range f.SelectionSet {
+				if f, ok := s.(*ast.Field); ok {
+					_fields = append(_fields, f)
+				}
 			}
 		}
 		q := {{$rel.Target.Name}}QueryFilter{qf.Query}
