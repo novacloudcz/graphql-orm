@@ -1,6 +1,6 @@
 Feature: It should be possible to mutate with relationships
 
-    Background: We have users Johny and Jane
+    Background: We have users Johny and Jane with task and company
         Given I send query:
             """
             mutation {
