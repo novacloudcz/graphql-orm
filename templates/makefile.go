@@ -1,7 +1,7 @@
 package templates
 
 var Makefile = `generate:
-	go run github.com/novacloudcz/graphql-orm
+	GO111MODULE=on go run github.com/novacloudcz/graphql-orm
 
 reinit:
 	GO111MODULE=on go run github.com/novacloudcz/graphql-orm init
