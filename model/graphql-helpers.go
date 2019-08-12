@@ -7,8 +7,7 @@ import (
 )
 
 func namedType(name string) ast.Type {
-	var t ast.Type
-	t = &ast.Named{
+	t := &ast.Named{
 		Kind: kinds.Named,
 		Name: &ast.Name{Kind: kinds.Name, Value: name},
 	}

@@ -17,7 +17,7 @@ build-lambda-function:
 
 test:
 	go build -o app *.go && (DATABASE_URL=sqlite3://test.db PORT=8080 ./app& export app_pid=$$! && make test-godog || test_result=$? && kill $$app_pid && exit $$test_result)
+// TODO: add detection of host ip (eg. host.docker.internal) for other OS
 test-godog:
-	docker run --rm --network="host" -v "${PWD}/features:/godog/features" -e GRAPHQL_URL=http://host.docker.internal:8080/graphql jakubknejzlik/godog-graphql
-
+	docker run --rm --network="host" -v "${PWD}/features:/godog/features" -e GRAPHQL_URL=http://$$(if [[ $${OSTYPE} == darwin* ]]; then echo host.docker.internal;else echo localhost;fi):8080/graphql jakubknejzlik/godog-graphql
 `

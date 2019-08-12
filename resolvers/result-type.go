@@ -76,7 +76,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 	uniqueJoinsMap := map[string]bool{}
 	uniqueJoins := []string{}
 	for _, join := range joins {
-		if uniqueJoinsMap[join] == false {
+		if !uniqueJoinsMap[join] {
 			uniqueJoinsMap[join] = true
 			uniqueJoins = append(uniqueJoins, join)
 		}
@@ -118,7 +118,7 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interf
 	uniqueJoinsMap := map[string]bool{}
 	uniqueJoins := []string{}
 	for _, join := range joins {
-		if uniqueJoinsMap[join] == false {
+		if !uniqueJoinsMap[join] {
 			uniqueJoinsMap[join] = true
 			uniqueJoins = append(uniqueJoins, join)
 		}

@@ -4,7 +4,6 @@ go 1.12
 
 require (
 	github.com/99designs/gqlgen v0.9.1
-	github.com/akrylysov/algnhsa v0.0.0-20190319020909-05b3d192e9a7 // indirect
 	github.com/cloudevents/sdk-go v0.8.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
@@ -16,7 +15,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0
 	github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047
 	github.com/novacloudcz/goclitools v0.0.0-20190807112614-386f7ae41d2f
-	github.com/novacloudcz/graphql-orm/test v0.0.0-20190811085658-b3707505072a // indirect
+	github.com/novacloudcz/graphql-orm/test v0.0.0-20190811213627-c90bee88150a // indirect
 	github.com/urfave/cli v1.21.0
 	github.com/vektah/gqlparser v1.1.2
 	gopkg.in/yaml.v2 v2.2.2

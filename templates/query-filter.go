@@ -33,10 +33,9 @@ func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.D
 		return fmt.Errorf("Cannot query with 'q' attribute without items field.")
 	}
 
-	ors := []string{}
-
 	queryParts := strings.Split(*qf.Query, " ")
 	for _, part := range queryParts {
+		ors := []string{}
 		if err := qf.applyQueryWithFields(dialect, fields, part, "{{$object.TableName}}", &ors, values, joins); err != nil {
 			return err
 		}
