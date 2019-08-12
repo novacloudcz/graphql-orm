@@ -21,5 +21,8 @@ func Execute() {
 		initCmd,
 	}
 
-	app.Run(os.Args)
+	err := app.Run(os.Args)
+	if err != nil {
+		panic(err)
+	}
 }
