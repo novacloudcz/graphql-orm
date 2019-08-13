@@ -71,6 +71,13 @@ func generate(filename, p string) error {
 		return err
 	}
 
+	constants := map[string]interface{}{
+		"RawSchema": schema,
+	}
+	if err := templates.WriteTemplateRaw(templates.Constants, path.Join(p, "gen/constants.go"), constants); err != nil {
+		return err
+	}
+
 	fmt.Printf("Running gqlgen generator in %s ...\n", path.Join(p, "gen"))
 	if err := goclitools.RunInteractiveInDir("go run github.com/99designs/gqlgen", path.Join(p, "gen")); err != nil {
 		return err
@@ -105,9 +112,6 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 	if err := templates.WriteTemplate(templates.QueryFilters, path.Join(p, "gen/query-filters.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.Keys, path.Join(p, "gen/keys.go"), data); err != nil {
-		return err
-	}
 	if err := templates.WriteTemplate(templates.Loaders, path.Join(p, "gen/loaders.go"), data); err != nil {
 		return err
 	}
@@ -115,6 +119,9 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 		return err
 	}
 	if err := templates.WriteTemplate(templates.GeneratedResolver, path.Join(p, "gen/resolver.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.Federation, path.Join(p, "gen/federation.go"), data); err != nil {
 		return err
 	}
 

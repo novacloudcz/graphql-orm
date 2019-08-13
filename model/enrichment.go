@@ -31,6 +31,7 @@ func EnrichModelObjects(m *Model) error {
 
 // EnrichModel ...
 func EnrichModel(m *Model) error {
+	m.Doc.Definitions = append(m.Doc.Definitions, createFederationEntityUnion(m))
 
 	definitions := []ast.Node{}
 	for _, o := range m.Objects() {
@@ -45,12 +46,14 @@ func EnrichModel(m *Model) error {
 
 	schemaHeaderNodes := []ast.Node{
 		scalarDefinition("Time"),
+		scalarDefinition("_Any"),
 		schemaDefinition(m),
 		queryDefinition(m),
 		mutationDefinition(m),
 	}
 	m.Doc.Definitions = append(schemaHeaderNodes, m.Doc.Definitions...)
 	m.Doc.Definitions = append(m.Doc.Definitions, definitions...)
+	m.Doc.Definitions = append(m.Doc.Definitions, createFederationServiceObject())
 
 	return nil
 }

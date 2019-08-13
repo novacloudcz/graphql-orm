@@ -25,6 +25,7 @@ func (r *GeneratedResolver) Mutation() MutationResolver {
 func (r *GeneratedResolver) Query() QueryResolver {
 	return &GeneratedQueryResolver{r}
 }
+
 {{range .Model.Objects}}
 func (r *GeneratedResolver) {{.Name}}ResultType() {{.Name}}ResultTypeResolver {
 	return &Generated{{.Name}}ResultTypeResolver{r}
@@ -203,6 +204,42 @@ func (r *GeneratedMutationResolver) DeleteAll{{.PluralName}}(ctx context.Context
 {{end}}
 
 type GeneratedQueryResolver struct{ *GeneratedResolver }
+
+
+func (r *GeneratedResolver) _service(ctx context.Context) (*_Service, error) {
+	sdl := RawSchema
+	return &_Service{
+		Sdl: &sdl,
+	}, nil
+}
+
+
+func (r *GeneratedResolver) _entities(ctx context.Context, representations []interface{}) ([]_Entity, error) {
+	var err error
+	entities := map[string]_Entity{ {{range $obj := .Model.Objects}}
+		"{{$obj.Name}}": &{{$obj.Name}}{},{{end}}
+	}
+	res := []_Entity{}
+	for _, repr := range representations {
+		anyValue, ok := repr.(map[string]interface{})
+		if !ok {
+			err = fmt.Errorf("The _entities resolver received invalid representation type")
+			break
+		}
+		typename, ok := anyValue["__typename"].(string)
+		if !ok {
+			err = fmt.Errorf("The _entities resolver received invalid representation type (missing __typename field)")
+			break
+		}
+		if val, ok := entities[typename]; ok {
+			res = append(res, val)
+		} else {
+			err = fmt.Errorf("The _entities resolver tried to load an entity for type \"%s\", but no object type of that name was found in the schema", typename)
+			break
+		}
+	}
+	return res, err
+}
 
 {{range $object := .Model.Objects}}
 func (r *GeneratedQueryResolver) {{$object.Name}}(ctx context.Context, id *string, q *string, filter *{{$object.Name}}FilterType) (*{{$object.Name}}, error) {

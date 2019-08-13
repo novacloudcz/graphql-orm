@@ -34,4 +34,6 @@ models:
   {{.Name}}UpdateInput:
     model: "map[string]interface{}"
   {{end}}
+  _Any:
+    model: {{$config.Package}}/gen._Any
 `
