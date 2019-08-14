@@ -11,7 +11,10 @@ import (
 func queryDefinition(m *Model) *ast.ObjectDefinition {
 	fields := []*ast.FieldDefinition{
 		createFederationServiceQueryField(),
-		createFederationEntitiesQueryField(),
+	}
+
+	if hasFederatedTypes(m) {
+		fields = append(fields, createFederationEntitiesQueryField())
 	}
 
 	for _, obj := range m.Objects() {
