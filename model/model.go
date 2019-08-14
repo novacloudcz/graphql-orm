@@ -73,3 +73,16 @@ func (m *Model) HasScalar(name string) bool {
 	}
 	return false
 }
+
+func (m *Model) HasEnum(name string) bool {
+	if _, ok := defaultScalars[name]; ok {
+		return true
+	}
+	for _, def := range m.Doc.Definitions {
+		e, ok := def.(*ast.EnumDefinition)
+		if ok && e.Name.Value == name {
+			return true
+		}
+	}
+	return false
+}

@@ -28,15 +28,6 @@ func createFederationServiceQueryField() *ast.FieldDefinition {
 	}
 }
 
-func hasFederatedTypes(m *Model) bool {
-	for _, o := range m.Objects() {
-		if o.HasDirective("key") {
-			return true
-		}
-	}
-
-	return false
-}
 func createFederationEntityUnion(m *Model) *ast.UnionDefinition {
 	types := []*ast.Named{}
 

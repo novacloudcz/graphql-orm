@@ -13,9 +13,15 @@ type User {
   tasks: [Task!]! @relationship(inverse: "assignee")
 }
 
+enum TaskState {
+  CREATED
+  IN_PROGRESS
+  RESOLVED
+}
 type Task {
   title: String
   completed: Boolean
+  state: TaskState
   dueDate: Time
 
   assignee: User @relationship(inverse: "tasks")
