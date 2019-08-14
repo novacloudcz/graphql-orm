@@ -31,7 +31,7 @@ func EnrichModelObjects(m *Model) error {
 
 // EnrichModel ...
 func EnrichModel(m *Model) error {
-	if hasFederatedTypes(m) {
+	if m.HasFederatedTypes() {
 		m.Doc.Definitions = append(m.Doc.Definitions, createFederationEntityUnion(m))
 	}
 

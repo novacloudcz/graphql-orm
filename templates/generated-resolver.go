@@ -256,7 +256,7 @@ func (r *GeneratedQueryResolver) _service(ctx context.Context) (*_Service, error
 	}, nil
 }
 
-
+{{if .Model.HasFederatedTypes}}
 func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations []interface{}) (res []_Entity, err error) {
 	res = []_Entity{}
 	for _, repr := range representations {
@@ -292,6 +292,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 	}
 	return res, err
 }
+{{end}}
 
 {{range $object := .Model.Objects}}
 func (r *GeneratedQueryResolver) {{$object.Name}}(ctx context.Context, id *string, q *string, filter *{{$object.Name}}FilterType) (*{{$object.Name}}, error) {

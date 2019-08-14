@@ -11,7 +11,7 @@ Feature: It should not fail to fetch entity with invalid ID (this situation prob
             }
             """
 
-    Scenario: Fetching many2many
+    Scenario: Fetching invalid many2many
         When I send query:
             """
             query {

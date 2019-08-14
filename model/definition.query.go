@@ -13,7 +13,7 @@ func queryDefinition(m *Model) *ast.ObjectDefinition {
 		createFederationServiceQueryField(),
 	}
 
-	if hasFederatedTypes(m) {
+	if m.HasFederatedTypes() {
 		fields = append(fields, createFederationEntitiesQueryField())
 	}
 
