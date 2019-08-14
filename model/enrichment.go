@@ -58,6 +58,38 @@ func EnrichModel(m *Model) error {
 	return nil
 }
 
+func BuildFederatedModel(m *Model) error {
+
+	for _, def := range m.Doc.Definitions {
+		ext, ok := def.(*ast.TypeExtensionDefinition)
+		if ok {
+			m.Doc.Definitions = append(m.Doc.Definitions, getObjectDefinitionFromFederationExtension(ext))
+		}
+	}
+
+	for _, obj := range m.Objects() {
+		if obj.HasDirective("key") {
+			// obj.Def.Fields = append(obj.Def.Fields, getObjectResolverReferenceField(&obj))
+			obj.Def.Directives = filterDirective(obj.Def.Directives, "key")
+		}
+	}
+
+	m.Doc.Definitions = filterExtensions(m.Doc.Definitions)
+
+	return nil
+}
+
+func filterExtensions(def []ast.Node) []ast.Node {
+	res := []ast.Node{}
+	for _, d := range def {
+		_, ok := d.(*ast.TypeExtensionDefinition)
+		if !ok {
+			res = append(res, d)
+		}
+	}
+	return res
+}
+
 func scalarDefinition(name string) *ast.ScalarDefinition {
 	return &ast.ScalarDefinition{
 		Name: &ast.Name{

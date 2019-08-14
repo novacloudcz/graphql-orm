@@ -1,7 +1,8 @@
-type Company {
+type Company @key(fields: "id") {
   name: String
 
   employees: [User!]! @relationship(inverse: "employers")
+  review: Review
 }
 type User {
   email: String
@@ -18,4 +19,8 @@ type Task {
   dueDate: Time
 
   assignee: User @relationship(inverse: "tasks")
+}
+
+extend type Review @key(fields: "id") {
+  id: ID! @external
 }

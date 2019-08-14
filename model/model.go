@@ -22,6 +22,17 @@ func (m *Model) Objects() []Object {
 	return objs
 }
 
+func (m *Model) ExtendedObjects() []Object {
+	objs := []Object{}
+	for _, def := range m.Doc.Definitions {
+		ext, ok := def.(*ast.TypeExtensionDefinition)
+		if ok {
+			objs = append(objs, Object{ext.Definition, m})
+		}
+	}
+	return objs
+}
+
 func (m *Model) Object(name string) Object {
 	for _, o := range m.Objects() {
 		if o.Name() == name {
@@ -34,6 +45,29 @@ func (m *Model) Object(name string) Object {
 func (m *Model) HasObject(name string) bool {
 	for _, o := range m.Objects() {
 		if o.Name() == name {
+			return true
+		}
+	}
+	return false
+}
+
+var defaultScalars map[string]bool = map[string]bool{
+	"Int":     true,
+	"Float":   true,
+	"String":  true,
+	"Boolean": true,
+	"ID":      true,
+	"Any":     true,
+	"Time":    true,
+}
+
+func (m *Model) HasScalar(name string) bool {
+	if _, ok := defaultScalars[name]; ok {
+		return true
+	}
+	for _, def := range m.Doc.Definitions {
+		scalar, ok := def.(*ast.ScalarDefinition)
+		if ok && scalar.Name.Value == name {
 			return true
 		}
 	}

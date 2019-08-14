@@ -24,7 +24,7 @@ func createFederationServiceQueryField() *ast.FieldDefinition {
 	return &ast.FieldDefinition{
 		Kind: kinds.FieldDefinition,
 		Name: nameNode("_service"),
-		Type: namedType("_Service"),
+		Type: nonNull(namedType("_Service")),
 	}
 }
 
@@ -32,8 +32,10 @@ func createFederationEntityUnion(m *Model) *ast.UnionDefinition {
 	types := []*ast.Named{}
 
 	for _, o := range m.Objects() {
-		t := namedType(o.Name())
-		types = append(types, t.(*ast.Named))
+		if o.HasDirective("key") {
+			t := namedType(o.Name())
+			types = append(types, t.(*ast.Named))
+		}
 	}
 
 	return &ast.UnionDefinition{
@@ -56,3 +58,45 @@ func createFederationEntitiesQueryField() *ast.FieldDefinition {
 		},
 	}
 }
+
+func getObjectDefinitionFromFederationExtension(def *ast.TypeExtensionDefinition) *ast.ObjectDefinition {
+	federationDirectives := []string{"requires", "provides", "key", "extends", "external"}
+	objDef := def.Definition
+	for _, dir := range federationDirectives {
+		objDef.Directives = filterDirective(objDef.Directives, dir)
+	}
+	for _, field := range objDef.Fields {
+		for _, dir := range federationDirectives {
+			field.Directives = filterDirective(field.Directives, dir)
+		}
+	}
+	return objDef
+}
+
+// func getObjectResolverReferenceField(o *Object) *ast.FieldDefinition {
+// 	d := o.Directive("key")
+// 	var fields *ast.Argument
+
+// 	for _, arg := range d.Arguments {
+// 		if arg.Name.Value == "fields" {
+// 			fields = arg
+// 		}
+// 	}
+
+// 	fieldsString := fields.Value.GetValue().(string)
+
+// 	args := []*ast.InputValueDefinition{}
+// 	for _, field := range strings.Split(fieldsString, ",") {
+// 		args = append(args, &ast.InputValueDefinition{
+// 			Kind: kinds.InputValueDefinition,
+// 			Name: nameNode(field),
+// 			Type: o.Column(field).Def.Type,
+// 		})
+// 	}
+// 	return &ast.FieldDefinition{
+// 		Kind:      kinds.FieldDefinition,
+// 		Name:      nameNode("resolveReference"),
+// 		Type:      namedType(o.Name()),
+// 		Arguments: args,
+// 	}
+// }

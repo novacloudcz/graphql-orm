@@ -35,10 +35,19 @@ func (o *ObjectColumn) TargetType() string {
 	return nt.Name.Value
 }
 func (o *ObjectColumn) IsCreatable() bool {
-	return !(o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy")
+	return !(o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy") && !o.IsReadonlyType()
 }
 func (o *ObjectColumn) IsUpdatable() bool {
-	return !(o.Name() == "id" || o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy")
+	return !(o.Name() == "id" || o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy") && !o.IsReadonlyType()
+}
+func (o *ObjectColumn) IsReadonlyType() bool {
+	return !(o.IsScalarType() || o.Obj.Model.HasObject(o.TargetType()))
+}
+func (o *ObjectColumn) IsWritableType() bool {
+	return !o.IsReadonlyType()
+}
+func (o *ObjectColumn) IsScalarType() bool {
+	return o.Obj.Model.HasScalar(o.TargetType())
 }
 func (o *ObjectColumn) IsOptional() bool {
 	return o.Def.Type.GetKind() != "NonNull"

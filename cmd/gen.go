@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 
 	"github.com/novacloudcz/goclitools"
 
@@ -60,6 +61,16 @@ func generate(filename, p string) error {
 		return err
 	}
 
+	schemaSDL, err := model.PrintSchema(m)
+	if err != nil {
+		return err
+	}
+
+	err = model.BuildFederatedModel(&m)
+	if err != nil {
+		return err
+	}
+
 	schema, err := model.PrintSchema(m)
 	if err != nil {
 		return err
@@ -71,8 +82,10 @@ func generate(filename, p string) error {
 		return err
 	}
 
+	var re = regexp.MustCompile(`(?sm)schema {[^}]+}`)
+	schemaSDL = re.ReplaceAllString(schemaSDL, ``)
 	constants := map[string]interface{}{
-		"RawSchema": schema,
+		"SchemaSDL": schemaSDL,
 	}
 	if err := templates.WriteTemplateRaw(templates.Constants, path.Join(p, "gen/constants.go"), constants); err != nil {
 		return err
