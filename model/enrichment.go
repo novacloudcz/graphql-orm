@@ -31,7 +31,9 @@ func EnrichModelObjects(m *Model) error {
 
 // EnrichModel ...
 func EnrichModel(m *Model) error {
-	m.Doc.Definitions = append(m.Doc.Definitions, createFederationEntityUnion(m))
+	if hasFederatedTypes(m) {
+		m.Doc.Definitions = append(m.Doc.Definitions, createFederationEntityUnion(m))
+	}
 
 	definitions := []ast.Node{}
 	for _, o := range m.Objects() {
