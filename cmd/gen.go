@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"regexp"
 
 	"github.com/novacloudcz/goclitools"
 
@@ -60,6 +61,16 @@ func generate(filename, p string) error {
 		return err
 	}
 
+	schemaSDL, err := model.PrintSchema(m)
+	if err != nil {
+		return err
+	}
+
+	err = model.BuildFederatedModel(&m)
+	if err != nil {
+		return err
+	}
+
 	schema, err := model.PrintSchema(m)
 	if err != nil {
 		return err
@@ -68,6 +79,15 @@ func generate(filename, p string) error {
 	schema = "# This schema is generated, please don't update it manually\n\n" + schema
 
 	if err := ioutil.WriteFile(path.Join(p, "gen/schema.graphql"), []byte(schema), 0644); err != nil {
+		return err
+	}
+
+	var re = regexp.MustCompile(`(?sm)schema {[^}]+}`)
+	schemaSDL = re.ReplaceAllString(schemaSDL, ``)
+	constants := map[string]interface{}{
+		"SchemaSDL": schemaSDL,
+	}
+	if err := templates.WriteTemplateRaw(templates.Constants, path.Join(p, "gen/constants.go"), constants); err != nil {
 		return err
 	}
 
@@ -105,9 +125,6 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 	if err := templates.WriteTemplate(templates.QueryFilters, path.Join(p, "gen/query-filters.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.Keys, path.Join(p, "gen/keys.go"), data); err != nil {
-		return err
-	}
 	if err := templates.WriteTemplate(templates.Loaders, path.Join(p, "gen/loaders.go"), data); err != nil {
 		return err
 	}
@@ -115,6 +132,9 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 		return err
 	}
 	if err := templates.WriteTemplate(templates.GeneratedResolver, path.Join(p, "gen/resolver.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.Federation, path.Join(p, "gen/federation.go"), data); err != nil {
 		return err
 	}
 

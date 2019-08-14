@@ -27,6 +27,14 @@ func (o *Object) LowerName() string {
 func (o *Object) TableName() string {
 	return strcase.ToSnake(inflection.Plural(o.LowerName()))
 }
+func (o *Object) Column(name string) *ObjectColumn {
+	for _, f := range o.Def.Fields {
+		if o.isColumn(f) && f.Name.Value == name {
+			return &ObjectColumn{f, o}
+		}
+	}
+	return nil
+}
 func (o *Object) Columns() []ObjectColumn {
 	columns := []ObjectColumn{}
 	for _, f := range o.Def.Fields {
@@ -70,6 +78,17 @@ func (o *Object) HasRelationship(name string) bool {
 		}
 	}
 	return false
+}
+func (o *Object) Directive(name string) *ast.Directive {
+	for _, d := range o.Def.Directives {
+		if d.Name.Value == name {
+			return d
+		}
+	}
+	return nil
+}
+func (o *Object) HasDirective(name string) bool {
+	return o.Directive(name) != nil
 }
 
 func (o *Object) isColumn(f *ast.FieldDefinition) bool {

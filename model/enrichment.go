@@ -31,6 +31,7 @@ func EnrichModelObjects(m *Model) error {
 
 // EnrichModel ...
 func EnrichModel(m *Model) error {
+	m.Doc.Definitions = append(m.Doc.Definitions, createFederationEntityUnion(m))
 
 	definitions := []ast.Node{}
 	for _, o := range m.Objects() {
@@ -45,14 +46,48 @@ func EnrichModel(m *Model) error {
 
 	schemaHeaderNodes := []ast.Node{
 		scalarDefinition("Time"),
+		scalarDefinition("_Any"),
 		schemaDefinition(m),
 		queryDefinition(m),
 		mutationDefinition(m),
 	}
 	m.Doc.Definitions = append(schemaHeaderNodes, m.Doc.Definitions...)
 	m.Doc.Definitions = append(m.Doc.Definitions, definitions...)
+	m.Doc.Definitions = append(m.Doc.Definitions, createFederationServiceObject())
 
 	return nil
+}
+
+func BuildFederatedModel(m *Model) error {
+
+	for _, def := range m.Doc.Definitions {
+		ext, ok := def.(*ast.TypeExtensionDefinition)
+		if ok {
+			m.Doc.Definitions = append(m.Doc.Definitions, getObjectDefinitionFromFederationExtension(ext))
+		}
+	}
+
+	for _, obj := range m.Objects() {
+		if obj.HasDirective("key") {
+			// obj.Def.Fields = append(obj.Def.Fields, getObjectResolverReferenceField(&obj))
+			obj.Def.Directives = filterDirective(obj.Def.Directives, "key")
+		}
+	}
+
+	m.Doc.Definitions = filterExtensions(m.Doc.Definitions)
+
+	return nil
+}
+
+func filterExtensions(def []ast.Node) []ast.Node {
+	res := []ast.Node{}
+	for _, d := range def {
+		_, ok := d.(*ast.TypeExtensionDefinition)
+		if !ok {
+			res = append(res, d)
+		}
+	}
+	return res
 }
 
 func scalarDefinition(name string) *ast.ScalarDefinition {

@@ -26,12 +26,16 @@ models:
         resolver: true
   {{.Name}}:
     model: {{$config.Package}}/gen.{{.Name}}
-    fields:{{range .Relationships}}
-      {{.Name}}:
+    fields:{{range $col := .Columns}}{{if $col.IsReadonlyType}}
+      {{$col.Name}}:
+        resolver: true{{end}}{{end}}{{range $rel := .Relationships}}
+      {{$rel.Name}}:
         resolver: true{{end}}
   {{.Name}}CreateInput:
     model: "map[string]interface{}"
   {{.Name}}UpdateInput:
     model: "map[string]interface{}"
   {{end}}
+  _Any:
+    model: {{$config.Package}}/gen._Any
 `

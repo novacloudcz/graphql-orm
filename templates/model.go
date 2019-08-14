@@ -28,6 +28,8 @@ type {{.Name}} struct {
 {{end}}
 }
 
+func (m *{{.Name}}) Is_Entity() {}
+
 type {{.Name}}Changes struct {
 	{{range $col := $object.Columns}}
 	{{$col.MethodName}} {{$col.GoType}}{{end}}
