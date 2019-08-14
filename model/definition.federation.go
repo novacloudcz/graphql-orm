@@ -72,31 +72,3 @@ func getObjectDefinitionFromFederationExtension(def *ast.TypeExtensionDefinition
 	}
 	return objDef
 }
-
-// func getObjectResolverReferenceField(o *Object) *ast.FieldDefinition {
-// 	d := o.Directive("key")
-// 	var fields *ast.Argument
-
-// 	for _, arg := range d.Arguments {
-// 		if arg.Name.Value == "fields" {
-// 			fields = arg
-// 		}
-// 	}
-
-// 	fieldsString := fields.Value.GetValue().(string)
-
-// 	args := []*ast.InputValueDefinition{}
-// 	for _, field := range strings.Split(fieldsString, ",") {
-// 		args = append(args, &ast.InputValueDefinition{
-// 			Kind: kinds.InputValueDefinition,
-// 			Name: nameNode(field),
-// 			Type: o.Column(field).Def.Type,
-// 		})
-// 	}
-// 	return &ast.FieldDefinition{
-// 		Kind:      kinds.FieldDefinition,
-// 		Name:      nameNode("resolveReference"),
-// 		Type:      namedType(o.Name()),
-// 		Arguments: args,
-// 	}
-// }
