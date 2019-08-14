@@ -6,6 +6,7 @@ import (
 	"os"
 	"path"
 	"regexp"
+	"strings"
 
 	"github.com/novacloudcz/goclitools"
 
@@ -84,6 +85,8 @@ func generate(filename, p string) error {
 
 	var re = regexp.MustCompile(`(?sm)schema {[^}]+}`)
 	schemaSDL = re.ReplaceAllString(schemaSDL, ``)
+	schemaSDL = strings.Replace(schemaSDL, "\n  _service: _Service!", "", 1)
+	schemaSDL = strings.Replace(schemaSDL, "\n  _entities(representations: [_Any!]!): [_Entity]!", "", 1)
 	constants := map[string]interface{}{
 		"SchemaSDL": schemaSDL,
 	}
