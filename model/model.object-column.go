@@ -41,7 +41,7 @@ func (o *ObjectColumn) IsUpdatable() bool {
 	return !(o.Name() == "id" || o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy") && !o.IsReadonlyType()
 }
 func (o *ObjectColumn) IsReadonlyType() bool {
-	return !(o.IsScalarType() || o.IsEnumType() || o.Obj.Model.HasObject(o.TargetType()))
+	return !(o.IsScalarType() || o.IsEnumType()) || o.Obj.Model.HasObject(o.TargetType())
 }
 func (o *ObjectColumn) IsWritableType() bool {
 	return !o.IsReadonlyType()
@@ -53,32 +53,55 @@ func (o *ObjectColumn) IsEnumType() bool {
 	return o.Obj.Model.HasEnum(o.TargetType())
 }
 func (o *ObjectColumn) IsOptional() bool {
-	return o.Def.Type.GetKind() != "NonNull"
+	return !isNonNullType(o.Def.Type)
+}
+func (o *ObjectColumn) IsList() bool {
+	return isListType(o.Def.Type)
 }
 func (o *ObjectColumn) IsSearchable() bool {
 	t := getNamedType(o.Def.Type).(*ast.Named)
 	return t.Name.Value == "String"
 }
+func (o *ObjectColumn) Directive(name string) *ast.Directive {
+	for _, d := range o.Def.Directives {
+		if d.Name.Value == name {
+			return d
+		}
+	}
+	return nil
+}
+func (o *ObjectColumn) HasDirective(name string) bool {
+	return o.Directive(name) != nil
+}
+
 func (o *ObjectColumn) GoType() string {
 	return o.GoTypeWithPointer(true)
 }
 func (o *ObjectColumn) GoTypeWithPointer(showPointer bool) string {
-	t := ""
+	t := o.Def.Type
+	st := ""
 
 	if o.IsOptional() && showPointer {
-		t += "*"
+		st += "*"
+	} else {
+		t = getNullableType(t)
+	}
+
+	if isListType(t) {
+		st += "[]*"
 	}
 
 	v, ok := getNamedType(o.Def.Type).(*ast.Named)
 	if ok {
 		_t, known := goTypeMap[v.Name.Value]
 		if known {
-			t += _t
+			st += _t
 		} else {
-			t += v.Name.Value
+			st += v.Name.Value
 		}
 	}
-	return t
+
+	return st
 }
 
 func (o *ObjectColumn) ModelTags() string {

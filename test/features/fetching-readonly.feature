@@ -12,7 +12,7 @@ Feature: It should be possible to fetch readonly field
     Scenario: Fetching single item
         When I send query:
             """
-            query { company { id name review { id } } }
+            query { company { id name reviews { id } } }
             """
         Then the response should be:
             """
@@ -20,9 +20,14 @@ Feature: It should be possible to fetch readonly field
                 "company": {
                     "id": "test",
                     "name": "Test company",
-                    "review": {
-                        "id": "dummy_ID"
-                    }
+                    "reviews": [
+                        {
+                            "id": "1"
+                        },
+                        {
+                            "id": "2"
+                        }
+                    ]
                 }
             }
             """

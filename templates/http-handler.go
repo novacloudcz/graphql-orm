@@ -15,15 +15,17 @@ import (
 func GetHTTPServeMux(r ResolverRoot, db *DB) *http.ServeMux {
 	mux := http.NewServeMux()
 
-	gqlHandler := handler.GraphQL(NewExecutableSchema(Config{Resolvers: r}))
+	executableSchema := NewExecutableSchema(Config{Resolvers: r})
+	gqlHandler := handler.GraphQL(executableSchema)
 
 	loaders := GetLoaders(db)
 
-	playgroundHandler := handler.Playground("GraphQL playground", "/api/graphql")
+	playgroundHandler := handler.Playground("GraphQL playground", "/graphql")
 	mux.HandleFunc("/graphql", func(res http.ResponseWriter, req *http.Request) {
 		principalID := getPrincipalID(req)
 		ctx := context.WithValue(req.Context(), KeyPrincipalID, principalID)
-		ctx = context.WithValue(ctx, "loaders", loaders)
+		ctx = context.WithValue(ctx, KeyLoaders, loaders)
+		ctx = context.WithValue(ctx, KeyExecutableSchema, executableSchema)
 		req = req.WithContext(ctx)
 		if req.Method == "GET" {
 			playgroundHandler(res, req)

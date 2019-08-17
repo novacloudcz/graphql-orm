@@ -84,8 +84,8 @@ func (db *DB) Query() *gorm.DB {
 
 // AutoMigrate ...
 func (db *DB) AutoMigrate() {
-	db.db.AutoMigrate({{range .Model.Objects}}
-		{{.Name}}{},{{end}}
+	db.db.AutoMigrate({{range $obj := .Model.Objects}}{{if not $obj.IsExtended}}
+		{{.Name}}{},{{end}}{{end}}
 	)
 }
 
