@@ -40,7 +40,7 @@ You can find example project at [graphql-orm-example repo](https://github.com/no
 
 # Schema preview in Voyager
 
-[GraphQL Voyager](https://apis.guru/graphql-voyager/) tool is very nice tool for previewing your GraphQL Schema, you can run it locally by:
+[GraphQL Voyager](https://apis.guru/graphql-voyager/) is very nice tool for previewing your GraphQL Schema, you can run it locally by:
 
 ```
 make voyager
