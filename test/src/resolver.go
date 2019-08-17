@@ -2,7 +2,6 @@ package src
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/novacloudcz/graphql-orm/events"
 	"github.com/novacloudcz/graphql-orm/test/gen"
@@ -29,7 +28,7 @@ func New(db *gen.DB, ec *events.EventController) *gen.GeneratedResolver {
 	}
 
 	resolver.Handlers.ReviewCompany = func(ctx context.Context, r *gen.GeneratedReviewResolver, obj *gen.Review) (res *gen.Company, err error) {
-		fmt.Println("??", obj.ID, obj.ReferenceID)
+		// fmt.Println("??", obj.ID, obj.ReferenceID)
 		return r.Query().Company(ctx, &obj.ReferenceID, nil, nil)
 	}
 

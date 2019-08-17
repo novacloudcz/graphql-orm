@@ -286,6 +286,9 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			break
 		}
 		
+		e := ctx.Value(KeyExecutableSchema).(*executableSchema)
+		ec := executionContext{graphql.GetRequestContext(ctx), e}
+
 		switch typename { {{range $obj := .Model.Objects}}{{if $obj.HasDirective "key"}}
 		case "{{$obj.Name}}":
 			{{if $obj.IsExtended}}
@@ -296,10 +299,10 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 					item.{{$col.MethodName}} = _v
 				}{{end}}{{end}}
 			{{else}}
-				f := CompanyFilterType{}
-				if v, ok := anyValue["id"]; ok {
-					_v, _ := v.(string)
-					f.ID = &_v
+				f, _err := ec.unmarshalInput{{$obj.Name}}FilterType(ctx, anyValue)
+				err = _err
+				if err != nil {
+					return
 				}
 				item, qerr := r.Handlers.Query{{$obj.Name}}(ctx, r, nil, nil, &f)
 				err = qerr
@@ -418,7 +421,7 @@ func {{$obj.Name}}{{$rel.MethodName}}Handler(ctx context.Context,r *Generated{{$
 			err = r.DB.Query().Model(obj).Related(&items, "{{$rel.MethodName}}").Error
 			res = items
 		{{else}}
-			loaders := ctx.Value("loaders").(map[string]*dataloader.Loader)
+			loaders := ctx.Value(KeyLoaders).(map[string]*dataloader.Loader)
 			if obj.{{$rel.MethodName}}ID != nil {
 				item, _err := loaders["{{$rel.Target.Name}}"].Load(ctx, dataloader.StringKey(*obj.{{$rel.MethodName}}ID))()
 				res, _ = item.({{$rel.ReturnType}})

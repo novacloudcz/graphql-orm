@@ -5,6 +5,7 @@ Feature: It should be possible fetch fields from apollo federation specs
             mutation {
             deleteAllCompanies
             test:createCompany(input:{id:"test",name:"Test company"}) { id }
+            test2:createCompany(input:{id:"test2",name:"Test2 company"}) { id }
             }
             """
 
@@ -40,7 +41,7 @@ Feature: It should be possible fetch fields from apollo federation specs
     Scenario: Fetching _entities with resolving reference
         When I send query:
             """
-            query { _entities(representations:[{__typename:"Company",id:"test"}]) {
+            query { _entities(representations:[{__typename:"Company",id:"test"},{__typename:"Company",id:"test2"}]) {
             __typename
             ... on Company { id name }
             } }
@@ -53,6 +54,36 @@ Feature: It should be possible fetch fields from apollo federation specs
                         "__typename": "Company",
                         "id": "test",
                         "name": "Test company"
+                    },
+                    {
+                        "__typename": "Company",
+                        "id": "test2",
+                        "name": "Test2 company"
+                    }
+                ]
+            }
+            """
+    Scenario: Fetching _entities by non ID field with resolving reference
+        When I send query:
+            """
+            query { _entities(representations:[{__typename:"Company",name:"Test company"},{__typename:"Company",name:"Test2 company"}]) {
+            __typename
+            ... on Company { id name }
+            } }
+            """
+        Then the response should be:
+            """
+            {
+                "_entities": [
+                    {
+                        "__typename": "Company",
+                        "id": "test",
+                        "name": "Test company"
+                    },
+                    {
+                        "__typename": "Company",
+                        "id": "test2",
+                        "name": "Test2 company"
                     }
                 ]
             }
