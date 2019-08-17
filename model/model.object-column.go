@@ -89,9 +89,7 @@ func (o *ObjectColumn) GoTypeWithPointer(showPointer bool) string {
 
 	if isListType(t) {
 		st += "[]*"
-		_t := t.(*ast.List)
-		t = _t.Type
-
+		t = t.(*ast.List).Type
 	}
 
 	v, ok := getNamedType(o.Def.Type).(*ast.Named)
