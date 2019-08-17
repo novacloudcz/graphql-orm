@@ -11,8 +11,9 @@ import (
 )
 
 type Object struct {
-	Def   *ast.ObjectDefinition
-	Model *Model
+	Def        *ast.ObjectDefinition
+	Model      *Model
+	IsExtended bool
 }
 
 func (o *Object) Name() string {
@@ -43,6 +44,14 @@ func (o *Object) Columns() []ObjectColumn {
 		}
 	}
 	return columns
+}
+func (o *Object) HasReadonlyColumns() bool {
+	for _, c := range o.Columns() {
+		if c.IsReadonlyType() {
+			return true
+		}
+	}
+	return false
 }
 func (o *Object) IsToManyColumn(c ObjectColumn) bool {
 	if c.Obj.Name() != o.Name() {
@@ -92,7 +101,7 @@ func (o *Object) HasDirective(name string) bool {
 }
 
 func (o *Object) isColumn(f *ast.FieldDefinition) bool {
-	return !o.Model.HasObject(getNamedType(f.Type).(*ast.Named).Name.Value) && !o.isRelationship(f)
+	return !o.isRelationship(f)
 }
 func (o *Object) isRelationship(f *ast.FieldDefinition) bool {
 	for _, d := range f.Directives {

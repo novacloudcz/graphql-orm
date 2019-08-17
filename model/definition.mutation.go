@@ -17,7 +17,9 @@ func mutationDefinition(m *Model) *ast.ObjectDefinition {
 	fields := []*ast.FieldDefinition{}
 
 	for _, obj := range m.Objects() {
-		fields = append(fields, createFieldDefinition(obj), updateFieldDefinition(obj), deleteFieldDefinition(obj), deleteAllFieldDefinition(obj))
+		if !obj.IsExtended {
+			fields = append(fields, createFieldDefinition(obj), updateFieldDefinition(obj), deleteFieldDefinition(obj), deleteAllFieldDefinition(obj))
+		}
 	}
 	return &ast.ObjectDefinition{
 		Kind:   kinds.ObjectDefinition,

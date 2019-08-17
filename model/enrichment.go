@@ -18,13 +18,15 @@ func EnrichModelObjects(m *Model) error {
 	updatedBy := fieldDefinition("updatedBy", "ID", false)
 
 	for _, o := range m.Objects() {
-		o.Def.Fields = append(append([]*ast.FieldDefinition{id}, o.Def.Fields...))
-		for _, rel := range o.Relationships() {
-			if rel.IsToOne() {
-				o.Def.Fields = append(o.Def.Fields, fieldDefinition(rel.Name()+"Id", "ID", false))
+		if !o.IsExtended {
+			o.Def.Fields = append(append([]*ast.FieldDefinition{id}, o.Def.Fields...))
+			for _, rel := range o.Relationships() {
+				if rel.IsToOne() {
+					o.Def.Fields = append(o.Def.Fields, fieldDefinition(rel.Name()+"Id", "ID", false))
+				}
 			}
+			o.Def.Fields = append(o.Def.Fields, updatedAt, createdAt, updatedBy, createdBy)
 		}
-		o.Def.Fields = append(o.Def.Fields, updatedAt, createdAt, updatedBy, createdBy)
 	}
 	return nil
 }
@@ -42,8 +44,10 @@ func EnrichModel(m *Model) error {
 				o.Def.Fields = append(o.Def.Fields, fieldDefinitionWithType(rel.Name()+"Ids", nonNull(listType(nonNull(namedType("ID"))))))
 			}
 		}
-		definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o), createObjectSortType(o), createObjectFilterType(o))
-		definitions = append(definitions, objectResultTypeDefinition(&o))
+		if !o.IsExtended {
+			definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o), createObjectSortType(o), createObjectFilterType(o))
+			definitions = append(definitions, objectResultTypeDefinition(&o))
+		}
 	}
 
 	schemaHeaderNodes := []ast.Node{

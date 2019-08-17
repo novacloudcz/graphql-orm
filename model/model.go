@@ -16,18 +16,13 @@ func (m *Model) Objects() []Object {
 	for _, def := range m.Doc.Definitions {
 		op, ok := def.(*ast.ObjectDefinition)
 		if ok {
-			objs = append(objs, Object{op, m})
+			objs = append(objs, Object{Def: op, Model: m, IsExtended: false})
 		}
 	}
-	return objs
-}
-
-func (m *Model) ExtendedObjects() []Object {
-	objs := []Object{}
 	for _, def := range m.Doc.Definitions {
-		ext, ok := def.(*ast.TypeExtensionDefinition)
+		op, ok := def.(*ast.TypeExtensionDefinition)
 		if ok {
-			objs = append(objs, Object{ext.Definition, m})
+			objs = append(objs, Object{Def: op.Definition, Model: m, IsExtended: true})
 		}
 	}
 	return objs

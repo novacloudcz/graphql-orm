@@ -2,7 +2,7 @@ type Company @key(fields: "id") {
   name: String
 
   employees: [User!]! @relationship(inverse: "employers")
-  review: Review
+  reviews: [Review!]!
 }
 type User {
   email: String
@@ -29,4 +29,6 @@ type Task {
 
 extend type Review @key(fields: "id") {
   id: ID! @external
+  referenceID: ID! @external
+  company: Company @requires(fields: "referenceID")
 }

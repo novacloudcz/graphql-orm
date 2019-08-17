@@ -18,7 +18,9 @@ func queryDefinition(m *Model) *ast.ObjectDefinition {
 	}
 
 	for _, obj := range m.Objects() {
-		fields = append(fields, fetchFieldDefinition(obj), listFieldDefinition(obj))
+		if !obj.IsExtended {
+			fields = append(fields, fetchFieldDefinition(obj), listFieldDefinition(obj))
+		}
 	}
 	return &ast.ObjectDefinition{
 		Kind: kinds.ObjectDefinition,

@@ -16,30 +16,40 @@ import (
 
 type resolutionHandlers struct {
 	{{range $obj := .Model.Objects}}
+	{{if not $obj.IsExtended}}
 	Create{{$obj.Name}} func (ctx context.Context, r *GeneratedMutationResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error)
 	Update{{$obj.Name}} func(ctx context.Context, r *GeneratedMutationResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error)
 	Delete{{$obj.Name}} func(ctx context.Context, r *GeneratedMutationResolver, id string) (item *{{$obj.Name}}, err error)
-	DeleteAll{{.PluralName}} func (ctx context.Context, r *GeneratedMutationResolver) (bool, error) 
+	DeleteAll{{$obj.PluralName}} func (ctx context.Context, r *GeneratedMutationResolver) (bool, error) 
 	Query{{$obj.Name}} func (ctx context.Context, r *GeneratedQueryResolver, id *string, q *string, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}, error)
 	Query{{$obj.PluralName}} func (ctx context.Context, r *GeneratedQueryResolver, offset *int, limit *int, q *string, sort []{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error)
+	{{end}}
 	{{range $col := $obj.Columns}}{{if $col.IsReadonlyType}}
 	{{$obj.Name}}{{$col.MethodName}} func (ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error)
 	{{end}}{{end}}
+	{{range $rel := $obj.Relationships}}
+	{{$obj.Name}}{{$rel.MethodName}} func (ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error)
+	{{end}}
 	{{end}}
 }
 
 func NewResolver(db *DB, ec *events.EventController) *GeneratedResolver {
 	handlers := resolutionHandlers{
 		{{range $obj := .Model.Objects}}
+		{{if not $obj.IsExtended}}
 		Create{{$obj.Name}}: Create{{$obj.Name}}Handler,
 		Update{{$obj.Name}}: Update{{$obj.Name}}Handler,
 		Delete{{$obj.Name}}: Delete{{$obj.Name}}Handler,
 		DeleteAll{{$obj.PluralName}}: DeleteAll{{$obj.PluralName}}Handler,
 		Query{{$obj.Name}}: Query{{$obj.Name}}Handler,
 		Query{{$obj.PluralName}}: Query{{$obj.PluralName}}Handler,
+		{{end}}
 		{{range $col := $obj.Columns}}{{if $col.IsReadonlyType}}
 		{{$obj.Name}}{{$col.MethodName}}: {{$obj.Name}}{{$col.MethodName}}Handler,
 		{{end}}{{end}}
+		{{range $rel := $obj.Relationships}}
+		{{$obj.Name}}{{$rel.MethodName}}: {{$obj.Name}}{{$rel.MethodName}}Handler,
+		{{end}}
 		{{end}}
 	}
 	return &GeneratedResolver{Handlers: handlers, DB: db, EventController: ec}
@@ -58,38 +68,41 @@ func (r *GeneratedResolver) Query() QueryResolver {
 	return &GeneratedQueryResolver{r}
 }
 
-{{range .Model.Objects}}
-func (r *GeneratedResolver) {{.Name}}ResultType() {{.Name}}ResultTypeResolver {
-	return &Generated{{.Name}}ResultTypeResolver{r}
+{{range $obj := .Model.Objects}}
+{{if not $obj.IsExtended}}
+func (r *GeneratedResolver) {{$obj.Name}}ResultType() {{$obj.Name}}ResultTypeResolver {
+	return &Generated{{$obj.Name}}ResultTypeResolver{r}
 }
-{{if .HasAnyRelationships}}
-func (r *GeneratedResolver) {{.Name}}() {{.Name}}Resolver {
-	return &Generated{{.Name}}Resolver{r}
+{{end}}
+{{if or $obj.HasAnyRelationships $obj.HasReadonlyColumns}}
+func (r *GeneratedResolver) {{$obj.Name}}() {{$obj.Name}}Resolver {
+	return &Generated{{$obj.Name}}Resolver{r}
 }
 {{end}}
 {{end}}
 
 type GeneratedMutationResolver struct{ *GeneratedResolver }
 
-{{range .Model.Objects}}
-func (r *GeneratedMutationResolver) Create{{.Name}}(ctx context.Context, input map[string]interface{}) (item *{{.Name}}, err error) {
-	return r.Handlers.Create{{.Name}}(ctx, r, input)
+{{range $obj := .Model.Objects}}
+{{if not $obj.IsExtended}}
+func (r *GeneratedMutationResolver) Create{{$obj.Name}}(ctx context.Context, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
+	return r.Handlers.Create{{$obj.Name}}(ctx, r, input)
 }
-func Create{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, input map[string]interface{}) (item *{{.Name}}, err error) {
+func Create{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
 	principalID := getPrincipalIDFromContext(ctx)
 	now := time.Now()
-	item = &{{.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
+	item = &{{$obj.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
 	tx := r.DB.db.Begin()
 
 	event := events.NewEvent(events.EventMetadata{
 		Type:        events.EventTypeCreated,
-		Entity:      "{{.Name}}",
+		Entity:      "{{$obj.Name}}",
 		EntityID:    item.ID,
 		Date:        now,
 		PrincipalID: principalID,
 	})
 
-	var changes {{.Name}}Changes
+	var changes {{$obj.Name}}Changes
 	err = ApplyChanges(input, &changes)
 	if err != nil {
 		return 
@@ -104,14 +117,14 @@ func Create{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, i
 {{end}}
 
 {{range $rel := .Relationships}}
-{{if $rel.IsToMany}}
+{{if $rel.IsToMany}}{{if not $rel.Target.IsExtended}}
 	if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
 		items := []{{$rel.TargetType}}{}
 		tx.Find(&items, "id IN (?)", ids)
 		association := tx.Model(&item).Association("{{$rel.MethodName}}")
 		association.Replace(items)
 	}
-{{end}}
+{{end}}{{end}}
 {{end}}
 
 	err = tx.Create(item).Error
@@ -131,24 +144,24 @@ func Create{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, i
 
 	return 
 }
-func (r *GeneratedMutationResolver) Update{{.Name}}(ctx context.Context, id string, input map[string]interface{}) (item *{{.Name}}, err error) {
-	return r.Handlers.Update{{.Name}}(ctx, r, id, input)
+func (r *GeneratedMutationResolver) Update{{$obj.Name}}(ctx context.Context, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
+	return r.Handlers.Update{{$obj.Name}}(ctx, r, id, input)
 }
-func Update{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, id string, input map[string]interface{}) (item *{{.Name}}, err error) {
+func Update{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
 	principalID := getPrincipalIDFromContext(ctx)
-	item = &{{.Name}}{}
+	item = &{{$obj.Name}}{}
 	now := time.Now()
 	tx := r.DB.db.Begin()
 
 	event := events.NewEvent(events.EventMetadata{
 		Type:        events.EventTypeUpdated,
-		Entity:      "{{.Name}}",
+		Entity:      "{{$obj.Name}}",
 		EntityID:    id,
 		Date:        now,
 		PrincipalID: principalID,
 	})
 
-	var changes {{.Name}}Changes
+	var changes {{$obj.Name}}Changes
 	err = ApplyChanges(input, &changes)
 	if err != nil {
 		return 
@@ -171,14 +184,14 @@ func Update{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, i
 {{end}}
 
 {{range $rel := .Relationships}}
-{{if $rel.IsToMany}}
+{{if $rel.IsToMany}}{{if not $rel.Target.IsExtended}}
 	if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
 		items := []{{$rel.TargetType}}{}
 		tx.Find(&items, "id IN (?)", ids)
 		association := tx.Model(&item).Association("{{$rel.MethodName}}")
 		association.Replace(items)
 	}
-{{end}}
+{{end}}{{end}}
 {{end}}
 
 	err = tx.Save(item).Error
@@ -200,12 +213,12 @@ func Update{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, i
 
 	return 
 }
-func (r *GeneratedMutationResolver) Delete{{.Name}}(ctx context.Context, id string) (item *{{.Name}}, err error) {
-	return r.Handlers.Delete{{.Name}}(ctx, r, id)
+func (r *GeneratedMutationResolver) Delete{{$obj.Name}}(ctx context.Context, id string) (item *{{$obj.Name}}, err error) {
+	return r.Handlers.Delete{{$obj.Name}}(ctx, r, id)
 }
-func Delete{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, id string) (item *{{.Name}}, err error) {
+func Delete{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, id string) (item *{{$obj.Name}}, err error) {
 	principalID := getPrincipalIDFromContext(ctx)
-	item = &{{.Name}}{}
+	item = &{{$obj.Name}}{}
 	now := time.Now()
 	tx := r.DB.db.Begin()
 
@@ -216,13 +229,13 @@ func Delete{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, i
 
 	event := events.NewEvent(events.EventMetadata{
 		Type:        events.EventTypeDeleted,
-		Entity:      "{{.Name}}",
+		Entity:      "{{$obj.Name}}",
 		EntityID:    id,
 		Date:        now,
 		PrincipalID: principalID,
 	})
 
-	err = tx.Delete(item, "{{.TableName}}.id = ?", id).Error
+	err = tx.Delete(item, "{{$obj.TableName}}.id = ?", id).Error
 	if err != nil {
 		tx.Rollback()
 		return
@@ -237,14 +250,16 @@ func Delete{{.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, i
 	
 	return 
 }
-func (r *GeneratedMutationResolver) DeleteAll{{.PluralName}}(ctx context.Context) (bool, error) {
-	return r.Handlers.DeleteAll{{.PluralName}}(ctx, r)
+func (r *GeneratedMutationResolver) DeleteAll{{$obj.PluralName}}(ctx context.Context) (bool, error) {
+	return r.Handlers.DeleteAll{{$obj.PluralName}}(ctx, r)
 }
-func DeleteAll{{.PluralName}}Handler(ctx context.Context, r *GeneratedMutationResolver) (bool, error) {
-	err := r.DB.db.Delete(&{{.Name}}{}).Error
+func DeleteAll{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedMutationResolver) (bool, error) {
+	err := r.DB.db.Delete(&{{$obj.Name}}{}).Error
 	return err == nil, err
 }
 {{end}}
+{{end}}
+
 
 type GeneratedQueryResolver struct{ *GeneratedResolver }
 
@@ -270,20 +285,29 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			err = fmt.Errorf("The _entities resolver received invalid representation type (missing __typename field)")
 			break
 		}
-		id, identifierExists := anyValue["id"].(string)
 		
 		switch typename { {{range $obj := .Model.Objects}}{{if $obj.HasDirective "key"}}
 		case "{{$obj.Name}}":
-			if identifierExists {
-				item, qerr := r.Handlers.Query{{$obj.Name}}(ctx, r, &id, nil, nil)
+			{{if $obj.IsExtended}}
+				item := &{{$obj.Name}}{}
+				{{range $col := $obj.Columns}}{{if $col.HasDirective "external"}}
+				if v,ok:=anyValue["{{$col.Name}}"]; ok {
+					_v,_ := v.({{$col.GoType}})
+					item.{{$col.MethodName}} = _v
+				}{{end}}{{end}}
+			{{else}}
+				f := CompanyFilterType{}
+				if v, ok := anyValue["id"]; ok {
+					_v, _ := v.(string)
+					f.ID = &_v
+				}
+				item, qerr := r.Handlers.Query{{$obj.Name}}(ctx, r, nil, nil, &f)
 				err = qerr
 				if err != nil {
 					return
 				}
-				res = append(res, item)
-			} else {
-				res = append(res, &{{$obj.Name}}{})
-			}
+			{{end}}
+			res = append(res, item)
 			break;{{end}}{{end}}
 		default:
 			err = fmt.Errorf("The _entities resolver tried to load an entity for type \"%s\", but no object type of that name was found in the schema", typename)
@@ -294,15 +318,16 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 }
 {{end}}
 
-{{range $object := .Model.Objects}}
-func (r *GeneratedQueryResolver) {{$object.Name}}(ctx context.Context, id *string, q *string, filter *{{$object.Name}}FilterType) (*{{$object.Name}}, error) {
-	return r.Handlers.Query{{$object.Name}}(ctx, r, id, q, filter)
+{{range $obj := .Model.Objects}}
+{{if not $obj.IsExtended}}
+func (r *GeneratedQueryResolver) {{$obj.Name}}(ctx context.Context, id *string, q *string, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}, error) {
+	return r.Handlers.Query{{$obj.Name}}(ctx, r, id, q, filter)
 }
-func Query{{$object.Name}}Handler(ctx context.Context, r *GeneratedQueryResolver, id *string, q *string, filter *{{$object.Name}}FilterType) (*{{$object.Name}}, error) {
-	query := {{$object.Name}}QueryFilter{q}
+func Query{{$obj.Name}}Handler(ctx context.Context, r *GeneratedQueryResolver, id *string, q *string, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}, error) {
+	query := {{$obj.Name}}QueryFilter{q}
 	offset := 0
 	limit := 1
-	rt := &{{$object.Name}}ResultType{
+	rt := &{{$obj.Name}}ResultType{
 		EntityResultType: resolvers.EntityResultType{
 			Offset: &offset,
 			Limit:  &limit,
@@ -312,28 +337,28 @@ func Query{{$object.Name}}Handler(ctx context.Context, r *GeneratedQueryResolver
 	}
 	qb := r.DB.Query()
 	if id != nil {
-		qb = qb.Where("{{$object.TableName}}.id = ?", *id)
+		qb = qb.Where("{{$obj.TableName}}.id = ?", *id)
 	}
 
-	var items []*{{$object.Name}}
-	err := rt.GetItems(ctx, qb, "{{$object.TableName}}", &items)
+	var items []*{{$obj.Name}}
+	err := rt.GetItems(ctx, qb, "{{$obj.TableName}}", &items)
 	if err != nil {
 		return nil, err
 	}
 	if len(items) == 0 {
-		return nil, fmt.Errorf("{{$object.Name}} not found")
+		return nil, fmt.Errorf("{{$obj.Name}} not found")
 	}
 	return items[0], err
 }
-func (r *GeneratedQueryResolver) {{$object.PluralName}}(ctx context.Context, offset *int, limit *int, q *string, sort []{{$object.Name}}SortType, filter *{{$object.Name}}FilterType) (*{{$object.Name}}ResultType, error) {
-	return r.Handlers.Query{{$object.PluralName}}(ctx, r, offset, limit, q , sort, filter)
+func (r *GeneratedQueryResolver) {{$obj.PluralName}}(ctx context.Context, offset *int, limit *int, q *string, sort []{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
+	return r.Handlers.Query{{$obj.PluralName}}(ctx, r, offset, limit, q , sort, filter)
 }
-func Query{{$object.PluralName}}Handler(ctx context.Context, r *GeneratedQueryResolver, offset *int, limit *int, q *string, sort []{{$object.Name}}SortType, filter *{{$object.Name}}FilterType) (*{{$object.Name}}ResultType, error) {
+func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedQueryResolver, offset *int, limit *int, q *string, sort []{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
 	_sort := []resolvers.EntitySort{}
 	for _, s := range sort {
 		_sort = append(_sort, s)
 	}
-	query := {{$object.Name}}QueryFilter{q}
+	query := {{$obj.Name}}QueryFilter{q}
 	
 	var selectionSet *ast.SelectionSet
 	for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
@@ -342,7 +367,7 @@ func Query{{$object.PluralName}}Handler(ctx context.Context, r *GeneratedQueryRe
 		}
 	}
 	
-	return &{{$object.Name}}ResultType{
+	return &{{$obj.Name}}ResultType{
 		EntityResultType: resolvers.EntityResultType{
 			Offset: offset,
 			Limit:  limit,
@@ -354,54 +379,61 @@ func Query{{$object.PluralName}}Handler(ctx context.Context, r *GeneratedQueryRe
 	}, nil
 }
 
-type Generated{{$object.Name}}ResultTypeResolver struct{ *GeneratedResolver }
+type Generated{{$obj.Name}}ResultTypeResolver struct{ *GeneratedResolver }
 
-func (r *Generated{{$object.Name}}ResultTypeResolver) Items(ctx context.Context, obj *{{$object.Name}}ResultType) (items []*{{$object.Name}}, err error) {
-	err = obj.GetItems(ctx, r.DB.db, "{{$object.TableName}}", &items)
+func (r *Generated{{$obj.Name}}ResultTypeResolver) Items(ctx context.Context, obj *{{$obj.Name}}ResultType) (items []*{{$obj.Name}}, err error) {
+	err = obj.GetItems(ctx, r.DB.db, "{{$obj.TableName}}", &items)
 	return
 }
 
-func (r *Generated{{$object.Name}}ResultTypeResolver) Count(ctx context.Context, obj *{{$object.Name}}ResultType) (count int, err error) {
-	return obj.GetCount(ctx, r.DB.db, &{{$object.Name}}{})
+func (r *Generated{{$obj.Name}}ResultTypeResolver) Count(ctx context.Context, obj *{{$obj.Name}}ResultType) (count int, err error) {
+	return obj.GetCount(ctx, r.DB.db, &{{$obj.Name}}{})
 }
+{{end}}
 
-{{if .HasAnyRelationships}}
-type Generated{{$object.Name}}Resolver struct { *GeneratedResolver }
+{{if or $obj.HasAnyRelationships $obj.HasReadonlyColumns}}
+type Generated{{$obj.Name}}Resolver struct { *GeneratedResolver }
 
-{{range $col := .Columns}}
+{{range $col := $obj.Columns}}
 {{if $col.IsReadonlyType}}
-func (r *Generated{{$object.Name}}Resolver) {{$col.MethodName}}(ctx context.Context, obj *{{$object.Name}}) (res {{$col.GoType}}, err error) {
-	return r.Handlers.{{$object.Name}}{{$col.MethodName}}(ctx, r, obj)
+func (r *Generated{{$obj.Name}}Resolver) {{$col.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
+	return r.Handlers.{{$obj.Name}}{{$col.MethodName}}(ctx, r, obj)
 }
-func {{$object.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *Generated{{$object.Name}}Resolver, obj *{{$object.Name}}) (res {{$col.GoType}}, err error) {
-	return nil, fmt.Errorf("Resolver for {{$object.Name}}.{{$col.MethodName}} not implemented")
+func {{$obj.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
+	return nil, fmt.Errorf("Resolver handler for {{$obj.Name}}{{$col.MethodName}} not implemented")
 }
 {{end}}
 {{end}}
 
-{{range $index, $relationship := .Relationships}}
-func (r *Generated{{$object.Name}}Resolver) {{$relationship.MethodName}}(ctx context.Context, obj *{{$object.Name}}) (res {{.ReturnType}}, err error) {
-{{if $relationship.IsToMany}}
-	items := []*{{.TargetType}}{}
-	err = r.DB.Query().Model(obj).Related(&items, "{{$relationship.MethodName}}").Error
-	res = items
-{{else}}
-	loaders := ctx.Value("loaders").(map[string]*dataloader.Loader)
-	if obj.{{$relationship.MethodName}}ID != nil {
-		item, _err := loaders["{{$relationship.Target.Name}}"].Load(ctx, dataloader.StringKey(*obj.{{$relationship.MethodName}}ID))()
-		res, _ = item.({{.ReturnType}})
-		err = _err
-	}
-{{end}}
+{{range $index, $rel := .Relationships}}
+func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
+	return r.Handlers.{{$obj.Name}}{{$rel.MethodName}}(ctx, r, obj)
+}
+func {{$obj.Name}}{{$rel.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
+	{{if $rel.Target.IsExtended}}
+		err = fmt.Errorf("not implemented")
+	{{else}}
+		{{if $rel.IsToMany}}
+			items := []*{{$rel.TargetType}}{}
+			err = r.DB.Query().Model(obj).Related(&items, "{{$rel.MethodName}}").Error
+			res = items
+		{{else}}
+			loaders := ctx.Value("loaders").(map[string]*dataloader.Loader)
+			if obj.{{$rel.MethodName}}ID != nil {
+				item, _err := loaders["{{$rel.Target.Name}}"].Load(ctx, dataloader.StringKey(*obj.{{$rel.MethodName}}ID))()
+				res, _ = item.({{$rel.ReturnType}})
+				err = _err
+			}
+		{{end}}
+	{{end}}
 	return 
 }
-{{if $relationship.IsToMany}}
-
-func (r *Generated{{$object.Name}}Resolver) {{$relationship.MethodName}}Ids(ctx context.Context, obj *{{$object.Name}}) (ids []string, err error) {
+{{if $rel.IsToMany}}
+func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}Ids(ctx context.Context, obj *{{$obj.Name}}) (ids []string, err error) {
 	ids = []string{}
 
-	items := []*{{$relationship.TargetType}}{}
-	err = r.DB.Query().Model(obj).Select("{{$relationship.Target.TableName}}.id").Related(&items, "{{$relationship.MethodName}}").Error
+	items := []*{{$rel.TargetType}}{}
+	err = r.DB.Query().Model(obj).Select("{{$rel.Target.TableName}}.id").Related(&items, "{{$rel.MethodName}}").Error
 
 	for _, item := range items {
 		ids = append(ids, item.ID)
@@ -409,6 +441,7 @@ func (r *Generated{{$object.Name}}Resolver) {{$relationship.MethodName}}Ids(ctx 
 
 	return
 }
+
 {{end}}
 
 {{end}}

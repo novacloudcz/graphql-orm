@@ -14,6 +14,9 @@ func createObjectSortType(obj Object) *ast.EnumDefinition {
 	values := []*ast.EnumValueDefinition{}
 
 	for _, col := range obj.Columns() {
+		if col.IsReadonlyType() {
+			continue
+		}
 		colName := strings.ToUpper(strcase.ToSnake(col.Name()))
 		asc := ast.EnumValueDefinition{
 			Kind: kinds.EnumValueDefinition,

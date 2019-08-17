@@ -16,25 +16,27 @@ resolver:
   package: gen
 
 models:
-  {{range .Model.Objects}}
-  {{.Name}}ResultType:
-    model: {{$config.Package}}/gen.{{.Name}}ResultType
+  {{range $obj := .Model.Objects}}
+  {{$obj.Name}}:
+    model: {{$config.Package}}/gen.{{$obj.Name}}
+    fields:{{range $col := $obj.Columns}}{{if $col.IsReadonlyType}}
+      {{$col.Name}}:
+        resolver: true{{end}}{{end}}{{range $rel := $obj.Relationships}}
+      {{$rel.Name}}:
+        resolver: true{{end}}
+  {{if not $obj.IsExtended}}
+  {{$obj.Name}}ResultType:
+    model: {{$config.Package}}/gen.{{$obj.Name}}ResultType
     fields:
       count:
         resolver: true
       items:
         resolver: true
-  {{.Name}}:
-    model: {{$config.Package}}/gen.{{.Name}}
-    fields:{{range $col := .Columns}}{{if $col.IsReadonlyType}}
-      {{$col.Name}}:
-        resolver: true{{end}}{{end}}{{range $rel := .Relationships}}
-      {{$rel.Name}}:
-        resolver: true{{end}}
-  {{.Name}}CreateInput:
+  {{$obj.Name}}CreateInput:
     model: "map[string]interface{}"
-  {{.Name}}UpdateInput:
+  {{$obj.Name}}UpdateInput:
     model: "map[string]interface{}"
+  {{end}}
   {{end}}
   _Any:
     model: {{$config.Package}}/gen._Any

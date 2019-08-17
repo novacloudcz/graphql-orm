@@ -10,12 +10,12 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-{{range $object := .Model.Objects}}
-
-func (f *{{$object.Name}}FilterType) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error {
-	return f.ApplyWithAlias(ctx, dialect, "{{$object.TableName}}", wheres, values, joins)
+{{range $obj := .Model.Objects}}
+{{if not $obj.IsExtended}}
+func (f *{{$obj.Name}}FilterType) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error {
+	return f.ApplyWithAlias(ctx, dialect, "{{$obj.TableName}}", wheres, values, joins)
 }
-func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, wheres *[]string, values *[]interface{}, joins *[]string) error {
+func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	if f == nil {
 		return nil
 	}
@@ -58,8 +58,9 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect
 		*joins = append(*joins, js...)
 	}
 	
-{{range $rel := $object.Relationships}}
-{{$varName := (printf "f.%s" $rel.MethodName)}}
+	{{range $rel := $obj.Relationships}}
+	{{if not $rel.Target.IsExtended}}
+	{{$varName := (printf "f.%s" $rel.MethodName)}}
 	if {{$varName}} != nil {
 		_alias := alias + "_{{$rel.Name}}"
 		*joins = append(*joins, {{$rel.JoinString}})
@@ -67,16 +68,16 @@ func (f *{{$object.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect
 		if err != nil {
 			return err
 		}
-	}{{end}}
+	}{{end}}{{end}}
 
 	return nil
 }
 
-func (f *{{$object.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix string) (conditions []string, values []interface{}) {
+func (f *{{$obj.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix string) (conditions []string, values []interface{}) {
 	conditions = []string{}
 	values = []interface{}{}
 
-{{range $col := $object.Columns}}{{if $col.IsWritableType}}
+{{range $col := $obj.Columns}}{{if $col.IsWritableType}}
 {{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
 	if {{$varName}} != nil {
 		conditions = append(conditions, aliasPrefix + dialect.Quote("{{$col.Name}}")+" {{$fm.Operator}}")
@@ -87,7 +88,7 @@ func (f *{{$object.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPre
 }
 
 // AndWith convenience method for combining two or more filters with AND statement
-func (f *{{$object.Name}}FilterType) AndWith(f2 ...*{{$object.Name}}FilterType) *{{$object.Name}}FilterType {
+func (f *{{$obj.Name}}FilterType) AndWith(f2 ...*{{$obj.Name}}FilterType) *{{$obj.Name}}FilterType {
 	_f2 := f2[:0]
 	for _, x := range f2 {
 		if x != nil {
@@ -97,13 +98,13 @@ func (f *{{$object.Name}}FilterType) AndWith(f2 ...*{{$object.Name}}FilterType) 
 	if len(_f2) == 0 {
 		return f
 	}
-	return &{{$object.Name}}FilterType{
+	return &{{$obj.Name}}FilterType{
 		And: append(_f2,f),
 	}
 }
 
 // OrWith convenience method for combining two or more filters with OR statement
-func (f *{{$object.Name}}FilterType) OrWith(f2 ...*{{$object.Name}}FilterType) *{{$object.Name}}FilterType {
+func (f *{{$obj.Name}}FilterType) OrWith(f2 ...*{{$obj.Name}}FilterType) *{{$obj.Name}}FilterType {
 	_f2 := f2[:0]
 	for _, x := range f2 {
 		if x != nil {
@@ -113,10 +114,11 @@ func (f *{{$object.Name}}FilterType) OrWith(f2 ...*{{$object.Name}}FilterType) *
 	if len(_f2) == 0 {
 		return f
 	}
-	return &{{$object.Name}}FilterType{
+	return &{{$obj.Name}}FilterType{
 		Or: append(_f2,f),
 	}
 }
 
+{{end}}
 {{end}}
 `
