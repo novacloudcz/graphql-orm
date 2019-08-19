@@ -272,6 +272,11 @@ func (r *GeneratedQueryResolver) _service(ctx context.Context) (*_Service, error
 }
 
 {{if .Model.HasFederatedTypes}}
+func getExecutionContext(ctx context.Context) executionContext {
+	e := ctx.Value(KeyExecutableSchema).(*executableSchema)
+	return executionContext{graphql.GetRequestContext(ctx), e}
+}
+
 func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations []interface{}) (res []_Entity, err error) {
 	res = []_Entity{}
 	for _, repr := range representations {
@@ -286,9 +291,6 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			break
 		}
 		
-		e := ctx.Value(KeyExecutableSchema).(*executableSchema)
-		ec := executionContext{graphql.GetRequestContext(ctx), e}
-
 		switch typename { {{range $obj := .Model.Objects}}{{if $obj.HasDirective "key"}}
 		case "{{$obj.Name}}":
 			{{if $obj.IsExtended}}
@@ -299,6 +301,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 					item.{{$col.MethodName}} = _v
 				}{{end}}{{end}}
 			{{else}}
+				ec := getExecutionContext(ctx)
 				f, _err := ec.unmarshalInput{{$obj.Name}}FilterType(ctx, anyValue)
 				err = _err
 				if err != nil {
