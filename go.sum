@@ -146,13 +146,7 @@ github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OS
 github.com/novacloudcz/goclitools v0.0.0-20190807112614-386f7ae41d2f h1:iyBr2gqABXac9DZuBI0q0Z29SNbaLP6JZT3q164Wb54=
 github.com/novacloudcz/goclitools v0.0.0-20190807112614-386f7ae41d2f/go.mod h1:vUMFKZv4Um2Gti7ZrJ25iP6UStRpA8n7OUR0rEgaGIY=
 github.com/novacloudcz/graphql-orm v0.0.0-20190811072339-5d7c5026cfbe/go.mod h1:5np8CM49Ux0A8h2L9S2iB1gBkp8G1ZCxfk8hM5kxvT8=
-github.com/novacloudcz/graphql-orm/test v0.0.0-20190811085658-b3707505072a h1:nxvtIcxw9/dIdK3JKRNFblo0rLcKcr/7eZ5ivndOZLI=
-github.com/novacloudcz/graphql-orm/test v0.0.0-20190811085658-b3707505072a/go.mod h1:KbIdb+P87topdDhClU9tdciYLhhZeePqS0afdnm2r1w=
-github.com/novacloudcz/graphql-orm/test v0.0.0-20190811213627-c90bee88150a h1:x8+rmDClYR0GeE+PekB+Ltd+/TAM4Hbzru679R3QlCg=
 github.com/novacloudcz/graphql-orm/test v0.0.0-20190811213627-c90bee88150a/go.mod h1:lSpA8RmGFrxAzkAYTBy9FG+R7JYSKhkmVL+oB1Zsnm0=
-github.com/novacloudcz/graphql-orm/test v0.0.0-20190812170515-0aca8809e3e6 h1:ZBgYYKgshEhDSwEixAjw8BY8HfUrOtNyoj7Y5IoZWf4=
-github.com/novacloudcz/graphql-orm/test v0.0.0-20190814131718-9ff4aaf09071 h1:Kl4IRp11PnLGq0FssbRMCYu+9PRMNS3aCiZRBx84SDA=
-github.com/novacloudcz/graphql-orm/test v0.0.0-20190814163124-432b2853dd67 h1:gMrV7o2Y/p6+b0vK4KOeojXJg2imvF66F7xhL+8aTnk=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
