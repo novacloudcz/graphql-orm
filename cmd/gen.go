@@ -85,8 +85,14 @@ func generate(filename, p string) error {
 
 	var re = regexp.MustCompile(`(?sm)schema {[^}]+}`)
 	schemaSDL = re.ReplaceAllString(schemaSDL, ``)
+	var re2 = regexp.MustCompile(`(?sm)type _Service {[^}]+}`)
+	schemaSDL = re2.ReplaceAllString(schemaSDL, ``)
 	schemaSDL = strings.Replace(schemaSDL, "\n  _service: _Service!", "", 1)
 	schemaSDL = strings.Replace(schemaSDL, "\n  _entities(representations: [_Any!]!): [_Entity]!", "", 1)
+	schemaSDL = strings.Replace(schemaSDL, "\nscalar _Any", "", 1)
+	var re3 = regexp.MustCompile(`(?sm)[\n]{3,}`)
+	schemaSDL = re3.ReplaceAllString(schemaSDL, "\n\n")
+	schemaSDL = strings.Trim(schemaSDL, "\n")
 	constants := map[string]interface{}{
 		"SchemaSDL": schemaSDL,
 	}
