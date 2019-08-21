@@ -140,7 +140,19 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 	if err := templates.WriteTemplate(templates.HTTPHandler, path.Join(p, "gen/http-handler.go"), data); err != nil {
 		return err
 	}
-	if err := templates.WriteTemplate(templates.GeneratedResolver, path.Join(p, "gen/resolver.go"), data); err != nil {
+	if err := templates.WriteTemplate(templates.ResolverCore, path.Join(p, "gen/resolver.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.ResolverQueries, path.Join(p, "gen/resolver-queries.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.ResolverMutations, path.Join(p, "gen/resolver-mutations.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.ResolverExtensions, path.Join(p, "gen/resolver-extensions.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.ResolverFederation, path.Join(p, "gen/resolver-federation.go"), data); err != nil {
 		return err
 	}
 	if err := templates.WriteTemplate(templates.Federation, path.Join(p, "gen/federation.go"), data); err != nil {

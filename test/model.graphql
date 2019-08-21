@@ -1,3 +1,7 @@
+# extend type Query {
+#   hello: String
+# }
+
 type Company @key(fields: "id") {
   name: String
 

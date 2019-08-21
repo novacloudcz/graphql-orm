@@ -11,9 +11,9 @@ import (
 )
 
 type Object struct {
-	Def        *ast.ObjectDefinition
-	Model      *Model
-	IsExtended bool
+	Def       *ast.ObjectDefinition
+	Model     *Model
+	Extension *ObjectExtension
 }
 
 func (o *Object) Name() string {
@@ -110,4 +110,7 @@ func (o *Object) isRelationship(f *ast.FieldDefinition) bool {
 		}
 	}
 	return false
+}
+func (o *Object) IsExtended() bool {
+	return o.Extension != nil
 }

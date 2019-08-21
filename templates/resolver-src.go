@@ -1,6 +1,6 @@
 package templates
 
-var Resolver = `package src
+var ResolverSrc = `package src
 
 import (
 	"{{.Config.Package}}/gen"

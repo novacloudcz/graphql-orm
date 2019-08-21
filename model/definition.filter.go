@@ -24,9 +24,7 @@ func createObjectFilterType(obj Object) *ast.InputObjectDefinition {
 		fields = append(fields, filterInputValues(&col, col.Def.Type)...)
 	}
 	for _, rel := range obj.Relationships() {
-		if !rel.Target().IsExtended {
-			fields = append(fields, filterInputValue(rel.Name(), namedType(rel.Target().Name()+"FilterType")))
-		}
+		fields = append(fields, filterInputValue(rel.Name(), namedType(rel.Target().Name()+"FilterType")))
 	}
 
 	return &ast.InputObjectDefinition{
