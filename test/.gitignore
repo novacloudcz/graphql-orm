@@ -1,4 +1,5 @@
 gen
+src/resolver_gen.go
 app
 test.db
 lambda.zip

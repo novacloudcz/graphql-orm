@@ -18,15 +18,13 @@ func EnrichModelObjects(m *Model) error {
 	updatedBy := fieldDefinition("updatedBy", "ID", false)
 
 	for _, o := range m.Objects() {
-		if !o.IsExtended {
-			o.Def.Fields = append(append([]*ast.FieldDefinition{id}, o.Def.Fields...))
-			for _, rel := range o.Relationships() {
-				if rel.IsToOne() {
-					o.Def.Fields = append(o.Def.Fields, fieldDefinition(rel.Name()+"Id", "ID", false))
-				}
+		o.Def.Fields = append(append([]*ast.FieldDefinition{id}, o.Def.Fields...))
+		for _, rel := range o.Relationships() {
+			if rel.IsToOne() {
+				o.Def.Fields = append(o.Def.Fields, fieldDefinition(rel.Name()+"Id", "ID", false))
 			}
-			o.Def.Fields = append(o.Def.Fields, updatedAt, createdAt, updatedBy, createdBy)
 		}
+		o.Def.Fields = append(o.Def.Fields, updatedAt, createdAt, updatedBy, createdBy)
 	}
 	return nil
 }
@@ -44,10 +42,8 @@ func EnrichModel(m *Model) error {
 				o.Def.Fields = append(o.Def.Fields, fieldDefinitionWithType(rel.Name()+"Ids", nonNull(listType(nonNull(namedType("ID"))))))
 			}
 		}
-		if !o.IsExtended {
-			definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o), createObjectSortType(o), createObjectFilterType(o))
-			definitions = append(definitions, objectResultTypeDefinition(&o))
-		}
+		definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o), createObjectSortType(o), createObjectFilterType(o))
+		definitions = append(definitions, objectResultTypeDefinition(&o))
 	}
 
 	schemaHeaderNodes := []ast.Node{
@@ -66,34 +62,20 @@ func EnrichModel(m *Model) error {
 
 func BuildFederatedModel(m *Model) error {
 
-	for _, def := range m.Doc.Definitions {
-		ext, ok := def.(*ast.TypeExtensionDefinition)
-		if ok {
-			m.Doc.Definitions = append(m.Doc.Definitions, getObjectDefinitionFromFederationExtension(ext))
+	for _, e := range m.ObjectExtensions() {
+		if e.IsFederatedType() {
+			m.Doc.Definitions = append(m.Doc.Definitions, getObjectDefinitionFromFederationExtension(e.Object.Def))
+			m.RemoveObjectExtension(&e)
 		}
 	}
 
 	for _, obj := range m.Objects() {
 		if obj.HasDirective("key") {
-			// obj.Def.Fields = append(obj.Def.Fields, getObjectResolverReferenceField(&obj))
 			obj.Def.Directives = filterDirective(obj.Def.Directives, "key")
 		}
 	}
 
-	m.Doc.Definitions = filterExtensions(m.Doc.Definitions)
-
 	return nil
-}
-
-func filterExtensions(def []ast.Node) []ast.Node {
-	res := []ast.Node{}
-	for _, d := range def {
-		_, ok := d.(*ast.TypeExtensionDefinition)
-		if !ok {
-			res = append(res, d)
-		}
-	}
-	return res
 }
 
 func scalarDefinition(name string) *ast.ScalarDefinition {

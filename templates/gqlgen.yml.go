@@ -24,7 +24,6 @@ models:
         resolver: true{{end}}{{end}}{{range $rel := $obj.Relationships}}
       {{$rel.Name}}:
         resolver: true{{end}}
-  {{if not $obj.IsExtended}}
   {{$obj.Name}}ResultType:
     model: {{$config.Package}}/gen.{{$obj.Name}}ResultType
     fields:
@@ -37,7 +36,15 @@ models:
   {{$obj.Name}}UpdateInput:
     model: "map[string]interface{}"
   {{end}}
-  {{end}}
+  
+  {{range $ext := .Model.ObjectExtensions}}{{$obj := $ext.Object}}{{if not $ext.ExtendsLocalObject}}
+  {{$obj.Name}}:
+    fields:{{range $col := $obj.Columns}}{{if $col.IsReadonlyType}}
+      {{$col.Name}}:
+        resolver: true{{end}}{{end}}{{range $rel := $obj.Relationships}}
+      {{$rel.Name}}:
+        resolver: true{{end}}
+  {{end}}{{end}}
   _Any:
     model: {{$config.Package}}/gen._Any
 `

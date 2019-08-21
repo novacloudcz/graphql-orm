@@ -14,15 +14,21 @@ type Model struct {
 func (m *Model) Objects() []Object {
 	objs := []Object{}
 	for _, def := range m.Doc.Definitions {
-		op, ok := def.(*ast.ObjectDefinition)
+		def, ok := def.(*ast.ObjectDefinition)
 		if ok {
-			objs = append(objs, Object{Def: op, Model: m, IsExtended: false})
+			objs = append(objs, Object{Def: def, Model: m})
 		}
 	}
+	return objs
+}
+
+func (m *Model) ObjectExtensions() []ObjectExtension {
+	objs := []ObjectExtension{}
 	for _, def := range m.Doc.Definitions {
-		op, ok := def.(*ast.TypeExtensionDefinition)
+		def, ok := def.(*ast.TypeExtensionDefinition)
 		if ok {
-			objs = append(objs, Object{Def: op.Definition, Model: m, IsExtended: true})
+			obj := &Object{Def: def.Definition, Model: m}
+			objs = append(objs, ObjectExtension{Def: def, Model: m, Object: obj})
 		}
 	}
 	return objs
@@ -38,6 +44,9 @@ func (m *Model) Object(name string) Object {
 }
 
 func (m *Model) HasObject(name string) bool {
+	if name == "Query" || name == "Mutation" || name == "Subscription" {
+		return true
+	}
 	for _, o := range m.Objects() {
 		if o.Name() == name {
 			return true
@@ -80,4 +89,14 @@ func (m *Model) HasEnum(name string) bool {
 		}
 	}
 	return false
+}
+
+func (m *Model) RemoveObjectExtension(oe *ObjectExtension) {
+	newDefinitions := []ast.Node{}
+	for _, d := range m.Doc.Definitions {
+		if d != oe.Def {
+			newDefinitions = append(newDefinitions, d)
+		}
+	}
+	m.Doc.Definitions = newDefinitions
 }

@@ -32,7 +32,7 @@ func createFederationEntityUnion(m *Model) *ast.UnionDefinition {
 	types := []*ast.Named{}
 
 	for _, o := range m.Objects() {
-		if o.HasDirective("key") {
+		if o.IsFederatedType() {
 			t := namedType(o.Name())
 			types = append(types, t.(*ast.Named))
 		}
@@ -59,16 +59,15 @@ func createFederationEntitiesQueryField() *ast.FieldDefinition {
 	}
 }
 
-func getObjectDefinitionFromFederationExtension(def *ast.TypeExtensionDefinition) *ast.ObjectDefinition {
+func getObjectDefinitionFromFederationExtension(def *ast.ObjectDefinition) *ast.ObjectDefinition {
 	federationDirectives := []string{"requires", "provides", "key", "extends", "external"}
-	objDef := def.Definition
 	for _, dir := range federationDirectives {
-		objDef.Directives = filterDirective(objDef.Directives, dir)
+		def.Directives = filterDirective(def.Directives, dir)
 	}
-	for _, field := range objDef.Fields {
+	for _, field := range def.Fields {
 		for _, dir := range federationDirectives {
 			field.Directives = filterDirective(field.Directives, dir)
 		}
 	}
-	return objDef
+	return def
 }
