@@ -18,9 +18,9 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 
 {{range $obj := .Model.Objects}}
 	func (r *GeneratedMutationResolver) Create{{$obj.Name}}(ctx context.Context, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
-		return r.Handlers.Create{{$obj.Name}}(ctx, r, input)
+		return r.Handlers.Create{{$obj.Name}}(ctx, r.GeneratedResolver, input)
 	}
-	func Create{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
+	func Create{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
 		principalID := getPrincipalIDFromContext(ctx)
 		now := time.Now()
 		item = &{{$obj.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
@@ -76,9 +76,9 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		return 
 	}
 	func (r *GeneratedMutationResolver) Update{{$obj.Name}}(ctx context.Context, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
-		return r.Handlers.Update{{$obj.Name}}(ctx, r, id, input)
+		return r.Handlers.Update{{$obj.Name}}(ctx, r.GeneratedResolver, id, input)
 	}
-	func Update{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
+	func Update{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
 		principalID := getPrincipalIDFromContext(ctx)
 		item = &{{$obj.Name}}{}
 		now := time.Now()
@@ -145,9 +145,9 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		return 
 	}
 	func (r *GeneratedMutationResolver) Delete{{$obj.Name}}(ctx context.Context, id string) (item *{{$obj.Name}}, err error) {
-		return r.Handlers.Delete{{$obj.Name}}(ctx, r, id)
+		return r.Handlers.Delete{{$obj.Name}}(ctx, r.GeneratedResolver, id)
 	}
-	func Delete{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, id string) (item *{{$obj.Name}}, err error) {
+	func Delete{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, id string) (item *{{$obj.Name}}, err error) {
 		principalID := getPrincipalIDFromContext(ctx)
 		item = &{{$obj.Name}}{}
 		now := time.Now()
@@ -182,9 +182,9 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		return 
 	}
 	func (r *GeneratedMutationResolver) DeleteAll{{$obj.PluralName}}(ctx context.Context) (bool, error) {
-		return r.Handlers.DeleteAll{{$obj.PluralName}}(ctx, r)
+		return r.Handlers.DeleteAll{{$obj.PluralName}}(ctx, r.GeneratedResolver)
 	}
-	func DeleteAll{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedMutationResolver) (bool, error) {
+	func DeleteAll{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver) (bool, error) {
 		err := r.DB.db.Delete(&{{$obj.Name}}{}).Error
 		return err == nil, err
 	}

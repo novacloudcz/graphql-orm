@@ -17,4 +17,9 @@ func New(db *gen.DB, ec *events.EventController) *gen.GeneratedResolver {
 
 	return resolver
 }
+
+// You can extend QueryResolver for adding custom fields in schema
+// func (r *QueryResolver) Hello(ctx context.Context) (string, error) {
+// 	return "world", nil
+// }
 `

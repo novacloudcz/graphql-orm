@@ -158,6 +158,9 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 	if err := templates.WriteTemplate(templates.Federation, path.Join(p, "gen/federation.go"), data); err != nil {
 		return err
 	}
+	if err := templates.WriteTemplate(templates.ResolverSrcGen, path.Join(p, "src/resolver_gen.go"), data); err != nil {
+		return err
+	}
 
 	return nil
 }

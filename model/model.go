@@ -44,6 +44,9 @@ func (m *Model) Object(name string) Object {
 }
 
 func (m *Model) HasObject(name string) bool {
+	if name == "Query" || name == "Mutation" || name == "Subscription" {
+		return true
+	}
 	for _, o := range m.Objects() {
 		if o.Name() == name {
 			return true

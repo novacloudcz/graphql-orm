@@ -49,7 +49,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			if err != nil {
 				return
 			}
-			item, qerr := r.Handlers.Query{{$obj.Name}}(ctx, r, nil, nil, &f)
+			item, qerr := r.{{$obj.Name}}(ctx, nil, nil, &f)
 			err = qerr
 			if err != nil {
 				return

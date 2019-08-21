@@ -21,3 +21,7 @@ type ObjectExtension struct {
 func (oe *ObjectExtension) IsFederatedType() bool {
 	return oe.Object.IsFederatedType()
 }
+
+func (oe *ObjectExtension) ExtendsLocalObject() bool {
+	return oe.Model.HasObject(oe.Object.Name())
+}

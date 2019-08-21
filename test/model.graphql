@@ -1,6 +1,7 @@
-# extend type Query {
-#   hello: String
-# }
+extend type Query {
+  hello: String!
+  topCompanies: [Company!]!
+}
 
 type Company @key(fields: "id") {
   name: String
@@ -8,6 +9,10 @@ type Company @key(fields: "id") {
   employees: [User!]! @relationship(inverse: "employers")
   reviews: [Review!]!
 }
+extend type Company {
+  uppercaseName: String!
+}
+
 type User {
   email: String
   firstName: String

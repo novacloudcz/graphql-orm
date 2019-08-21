@@ -17,11 +17,21 @@ import (
 type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 {{range $obj := .Model.Objects}}
-	func (r *GeneratedQueryResolver) {{$obj.Name}}(ctx context.Context, id *string, q *string, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}, error) {
-		return r.Handlers.Query{{$obj.Name}}(ctx, r, id, q, filter)
+	type Query{{$obj.Name}}HandlerOptions struct {
+		ID *string
+		Q      *string
+		Filter *{{$obj.Name}}FilterType
 	}
-	func Query{{$obj.Name}}Handler(ctx context.Context, r *GeneratedQueryResolver, id *string, q *string, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}, error) {
-		query := {{$obj.Name}}QueryFilter{q}
+	func (r *GeneratedQueryResolver) {{$obj.Name}}(ctx context.Context, id *string, q *string, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}, error) {
+		opts := Query{{$obj.Name}}HandlerOptions{
+			ID: id,
+			Q: q,
+			Filter: filter,
+		}
+		return r.Handlers.Query{{$obj.Name}}(ctx, r.GeneratedResolver, opts)
+	}
+	func Query{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.Name}}HandlerOptions) (*{{$obj.Name}}, error) {
+		query := {{$obj.Name}}QueryFilter{opts.Q}
 		offset := 0
 		limit := 1
 		rt := &{{$obj.Name}}ResultType{
@@ -29,12 +39,12 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				Offset: &offset,
 				Limit:  &limit,
 				Query:  &query,
-				Filter: filter,
+				Filter: opts.Filter,
 			},
 		}
 		qb := r.DB.Query()
-		if id != nil {
-			qb = qb.Where("{{$obj.TableName}}.id = ?", *id)
+		if opts.ID != nil {
+			qb = qb.Where("{{$obj.TableName}}.id = ?", *opts.ID)
 		}
 
 		var items []*{{$obj.Name}}
@@ -47,15 +57,30 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		}
 		return items[0], err
 	}
-	func (r *GeneratedQueryResolver) {{$obj.PluralName}}(ctx context.Context, offset *int, limit *int, q *string, sort []{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
-		return r.Handlers.Query{{$obj.PluralName}}(ctx, r, offset, limit, q , sort, filter)
+	
+	type Query{{$obj.PluralName}}HandlerOptions struct {
+		Offset *int
+		Limit  *int
+		Q      *string
+		Sort   []{{$obj.Name}}SortType
+		Filter *{{$obj.Name}}FilterType
 	}
-	func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedQueryResolver, offset *int, limit *int, q *string, sort []{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
+	func (r *GeneratedQueryResolver) {{$obj.PluralName}}(ctx context.Context, offset *int, limit *int, q *string, sort []{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
+		opts := Query{{$obj.PluralName}}HandlerOptions{
+			Offset: offset,
+			Limit: limit,
+			Q: q,
+			Sort: sort,
+			Filter: filter,
+		}
+		return r.Handlers.Query{{$obj.PluralName}}(ctx, r.GeneratedResolver, opts)
+	}
+	func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.PluralName}}HandlerOptions) (*{{$obj.Name}}ResultType, error) {
 		_sort := []resolvers.EntitySort{}
-		for _, s := range sort {
+		for _, s := range opts.Sort {
 			_sort = append(_sort, s)
 		}
-		query := {{$obj.Name}}QueryFilter{q}
+		query := {{$obj.Name}}QueryFilter{opts.Q}
 		
 		var selectionSet *ast.SelectionSet
 		for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
@@ -66,11 +91,11 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		
 		return &{{$obj.Name}}ResultType{
 			EntityResultType: resolvers.EntityResultType{
-				Offset: offset,
-				Limit:  limit,
+				Offset: opts.Offset,
+				Limit:  opts.Limit,
 				Query:  &query,
 				Sort: _sort,
-				Filter: filter,
+				Filter: opts.Filter,
 				SelectionSet: selectionSet,
 			},
 		}, nil
