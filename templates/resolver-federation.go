@@ -49,12 +49,22 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			if err != nil {
 				return
 			}
-			item, qerr := r.{{$obj.Name}}(ctx, nil, nil, &f)
-			err = qerr
-			if err != nil {
-				return
+
+			if f.IsEmpty(ctx, r.DB.Query().Dialect()) {
+				res = append(res, nil)
+				continue
 			}
-			res = append(res, item)
+			
+			item, qerr := r.{{$obj.Name}}(ctx, nil, nil, &f)
+			if qerr != nil {
+				if _, isNotFound := qerr.(*NotFoundError); !isNotFound {
+					err = qerr
+					return
+				}
+				res = append(res, nil)
+			} else {
+				res = append(res, item)
+			}
 			break;{{end}}{{end}}
 		default:
 			err = fmt.Errorf("The _entities resolver tried to load an entity for type \"%s\", but no object type of that name was found in the schema", typename)

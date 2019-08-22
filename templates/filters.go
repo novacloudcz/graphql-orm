@@ -12,6 +12,16 @@ import (
 
 {{range $obj := .Model.Objects}}
 {{if not $obj.IsExtended}}
+func (f *{{$obj.Name}}FilterType) IsEmpty(ctx context.Context, dialect gorm.Dialect) bool {
+	wheres := []string{}
+	values := []interface{}{}
+	joins := []string{}
+	err := f.ApplyWithAlias(ctx, dialect, "companies", &wheres, &values, &joins)
+	if err != nil {
+		panic(err)
+	}
+	return len(wheres) == 0
+}
 func (f *{{$obj.Name}}FilterType) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	return f.ApplyWithAlias(ctx, dialect, "{{$obj.TableName}}", wheres, values, joins)
 }

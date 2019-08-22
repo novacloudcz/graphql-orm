@@ -23,7 +23,7 @@ Feature: It should be possible fetch fields from apollo federation specs
             }
             """
 
-    Scenario: Fetching _entities
+    Scenario: Fetching _entities with empty representations should return null
         When I send query:
             """
             query { _entities(representations:[{__typename:"Company"}]) { __typename } }
@@ -32,9 +32,7 @@ Feature: It should be possible fetch fields from apollo federation specs
             """
             {
                 "_entities": [
-                    {
-                        "__typename": "Company"
-                    }
+                    null
                 ]
             }
             """
@@ -87,4 +85,41 @@ Feature: It should be possible fetch fields from apollo federation specs
                     }
                 ]
             }
+            """
+    Scenario: Fetching _entities by non existing fields with resolving reference
+        When I send query:
+            """
+            query { _entities(representations:[{__typename:"Company",blah:"xx"},{__typename:"Company",foo:"xx"}]) {
+            __typename
+            ... on Company { id name }
+            } }
+            """
+        Then the response should be:
+            """
+            {
+                "_entities": [
+                    null,
+                    null
+                ]
+            }
+            """
+    Scenario: Fetching _entities by nonexisting ID field with resolving reference
+        When I send query:
+            """
+            query { _entities(representations:[{__typename:"Company",id:"aaa"}]) {
+            __typename
+            ... on Company { id name }
+            } }
+            """
+        Then the response should be:
+            """
+            {
+                "_entities": [
+                    null
+                ]
+            }
+            """
+        And the error should be:
+            """
+            null
             """
