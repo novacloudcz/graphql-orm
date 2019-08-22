@@ -42,6 +42,14 @@ func (m *Model) Object(name string) Object {
 	}
 	panic(fmt.Sprintf("Object with name %s not found in model", name))
 }
+func (m *Model) ObjectExtension(name string) ObjectExtension {
+	for _, e := range m.ObjectExtensions() {
+		if e.Object.Name() == name {
+			return e
+		}
+	}
+	panic(fmt.Sprintf("Extension for object with name %s not found in model", name))
+}
 
 func (m *Model) HasObject(name string) bool {
 	if name == "Query" || name == "Mutation" || name == "Subscription" {
@@ -49,6 +57,15 @@ func (m *Model) HasObject(name string) bool {
 	}
 	for _, o := range m.Objects() {
 		if o.Name() == name {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *Model) HasObjectExtension(name string) bool {
+	for _, e := range m.ObjectExtensions() {
+		if e.Object.Name() == name {
 			return true
 		}
 	}

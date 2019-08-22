@@ -58,6 +58,20 @@ func (o *ObjectColumn) IsOptional() bool {
 func (o *ObjectColumn) IsList() bool {
 	return isListType(o.Def.Type)
 }
+func (o *ObjectColumn) HasTargetObject() bool {
+	return o.Obj.Model.HasObject(o.TargetType())
+}
+func (o *ObjectColumn) TargetObject() *Object {
+	obj := o.Obj.Model.Object(o.TargetType())
+	return &obj
+}
+func (o *ObjectColumn) HasTargetObjectExtension() bool {
+	return o.Obj.Model.HasObjectExtension(o.TargetType())
+}
+func (o *ObjectColumn) TargetObjectExtension() *ObjectExtension {
+	e := o.Obj.Model.ObjectExtension(o.TargetType())
+	return &e
+}
 func (o *ObjectColumn) IsSearchable() bool {
 	t := getNamedType(o.Def.Type).(*ast.Named)
 	return t.Name.Value == "String"
@@ -72,6 +86,15 @@ func (o *ObjectColumn) Directive(name string) *ast.Directive {
 }
 func (o *ObjectColumn) HasDirective(name string) bool {
 	return o.Directive(name) != nil
+}
+func (o *ObjectColumn) HasTargetTypeWithIDField() bool {
+	if o.HasTargetObject() && o.TargetObject().HasColumn("id") {
+		return true
+	}
+	if o.HasTargetObjectExtension() && o.TargetObjectExtension().Object.HasColumn("id") {
+		return true
+	}
+	return false
 }
 
 func (o *ObjectColumn) GoType() string {
