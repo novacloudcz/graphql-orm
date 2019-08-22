@@ -53,7 +53,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 			return nil, err
 		}
 		if len(items) == 0 {
-			return nil, fmt.Errorf("{{$obj.Name}} not found")
+			return nil, &NotFoundError{Entity: "{{$obj.Name}}"}
 		}
 		return items[0], err
 	}
