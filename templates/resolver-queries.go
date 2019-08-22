@@ -140,6 +140,10 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 					if obj.{{$rel.MethodName}}ID != nil {
 						item, _err := loaders["{{$rel.Target.Name}}"].Load(ctx, dataloader.StringKey(*obj.{{$rel.MethodName}}ID))()
 						res, _ = item.({{$rel.ReturnType}})
+						{{if $rel.IsNonNull}}
+						if res == nil {
+							_err = fmt.Errorf("{{$rel.Target.Name}} with id '%s' not found",*obj.{{$rel.MethodName}}ID)
+						}{{end}}
 						err = _err
 					}
 				{{end}}

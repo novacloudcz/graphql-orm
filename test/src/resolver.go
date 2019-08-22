@@ -35,7 +35,7 @@ func (r *QueryResolver) TopCompanies(ctx context.Context) (items []*gen.Company,
 
 func (r *CompanyResolver) UppercaseName(ctx context.Context, obj *gen.Company) (string, error) {
 	name := ""
-	if obj.Name != nil {
+	if obj.Name!=nil{
 		name = *obj.Name
 	}
 	return strings.ToUpper(name), nil

@@ -39,7 +39,9 @@ func GetLoaders(db *DB) map[string]*dataloader.Loader {
 			item, ok := itemMap[id]
 			if !ok {
 				results = append(results, &dataloader.Result{
-					Error: fmt.Errorf("{{$object.Name}} with id '%s' not found", id),
+					Data: nil,
+					Error: nil,
+					// Error: fmt.Errorf("{{$object.Name}} with id '%s' not found", id),
 				})
 			} else {
 				results = append(results, &dataloader.Result{

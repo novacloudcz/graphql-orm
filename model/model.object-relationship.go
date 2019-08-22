@@ -71,6 +71,9 @@ func (o *ObjectRelationship) IsMainRelationshipForManyToMany() bool {
 	main := o.MainRelationshipForManyToMany()
 	return o.Obj.Name() == main.Obj.Name() && o.Name() == main.Name()
 }
+func (o *ObjectRelationship) IsNonNull() bool {
+	return isNonNullType(o.Def.Type)
+}
 
 func (o *ObjectRelationship) ReturnType() string {
 	nt := getNamedType(o.Def.Type).(*ast.Named)
