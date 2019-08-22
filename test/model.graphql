@@ -6,6 +6,9 @@ extend type Query {
 type Company @key(fields: "id") {
   name: String
 
+  countryId: ID
+  country: Country
+
   employees: [User!]! @relationship(inverse: "employers")
   reviews: [Review!]!
 }
@@ -42,4 +45,8 @@ extend type Review @key(fields: "id") {
   id: ID! @external
   referenceID: ID! @external
   company: Company @requires(fields: "referenceID")
+}
+
+extend type Country @key(fields: "id") {
+  id: ID! @external
 }

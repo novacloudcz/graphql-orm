@@ -28,6 +28,9 @@ func (o *Object) LowerName() string {
 func (o *Object) TableName() string {
 	return strcase.ToSnake(inflection.Plural(o.LowerName()))
 }
+func (o *Object) HasColumn(name string) bool {
+	return o.Column(name) != nil
+}
 func (o *Object) Column(name string) *ObjectColumn {
 	for _, f := range o.Def.Fields {
 		if o.isColumn(f) && f.Name.Value == name {

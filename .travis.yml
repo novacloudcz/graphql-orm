@@ -3,9 +3,6 @@ language: go
 go:
   - 1.12.x
 
-env:
-  - GO111MODULE=on
-
 services:
   - docker
 
@@ -21,5 +18,4 @@ before_install:
   - go get golang.org/x/tools/cmd/goimports
 
 script:
-  - export GO111MODULE=on
   - make test

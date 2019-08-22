@@ -1,6 +1,6 @@
 test: test-generate test-build-lambda test-run
 test-generate:
-	go run main.go init test
+	GO111MODULE=on go run main.go init test
 test-start:
 	cd test && make run && cd ..
 # test-build:
