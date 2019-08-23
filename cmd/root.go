@@ -10,7 +10,7 @@ import (
 func Execute() {
 	app := cli.NewApp()
 	app.Name = "graphql-orm"
-	app.Usage = "This tool is for generating "
+	app.Usage = "This tool is for generating GraphQL API using gqlgen and gorm"
 	app.Version = "0.0.1"
 
 	app.Action = genCmd.Action
