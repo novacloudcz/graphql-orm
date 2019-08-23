@@ -23,5 +23,5 @@ COPY --from=builder /tmp/app /usr/local/bin/app
 RUN chmod +x /usr/local/bin/app
 
 ENTRYPOINT []
-CMD [ "/bin/sh", "-c", "wait-for ${DATABASE_URL} && app"]
+CMD [ "/bin/sh", "-c", "wait-for ${DATABASE_URL} && app start"]
 `
