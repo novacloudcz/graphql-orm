@@ -46,7 +46,13 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 				event.AddNewValue("{{$col.Name}}", changes.{{$col.MethodName}})
 			}
 		{{end}}{{end}}
-
+		
+		err = tx.Create(item).Error
+		if err != nil {
+			tx.Rollback()
+			return
+		}
+		
 		{{range $rel := $obj.Relationships}}
 			{{if $rel.IsToMany}}{{if not $rel.Target.IsExtended}}
 				if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
@@ -58,11 +64,6 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 			{{end}}{{end}}
 		{{end}}
 
-		err = tx.Create(item).Error
-		if err != nil {
-			tx.Rollback()
-			return
-		}
 		err = tx.Commit().Error
 		if err != nil {
 			tx.Rollback()
@@ -113,6 +114,12 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 			}
 		{{end}}
 		{{end}}
+		
+		err = tx.Save(item).Error
+		if err != nil {
+			tx.Rollback()
+			return
+		}
 
 		{{range $rel := $obj.Relationships}}
 		{{if $rel.IsToMany}}{{if not $rel.Target.IsExtended}}
@@ -125,11 +132,6 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		{{end}}{{end}}
 		{{end}}
 
-		err = tx.Save(item).Error
-		if err != nil {
-			tx.Rollback()
-			return
-		}
 		err = tx.Commit().Error
 		if err != nil {
 			tx.Rollback()
