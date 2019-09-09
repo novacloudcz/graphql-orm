@@ -38,7 +38,7 @@ func GetHTTPServeMux(r ResolverRoot, db *DB) *http.ServeMux {
 	return handler
 }
 
-func getPrincipalIDFromContext(ctx context.Context) *string {
+func GetPrincipalIDFromContext(ctx context.Context) *string {
 	v, _ := ctx.Value(KeyPrincipalID).(*string)
 	return v
 }
