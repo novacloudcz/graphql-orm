@@ -89,7 +89,7 @@ func (r *GeneratedMutationResolver) Create{{$obj.Name}}(ctx context.Context, inp
 	return r.Handlers.Create{{$obj.Name}}(ctx, r, input)
 }
 func Create{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
-	principalID := getPrincipalIDFromContext(ctx)
+	principalID := GetPrincipalIDFromContext(ctx)
 	now := time.Now()
 	item = &{{$obj.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
 	tx := r.DB.db.Begin()
@@ -148,7 +148,7 @@ func (r *GeneratedMutationResolver) Update{{$obj.Name}}(ctx context.Context, id 
 	return r.Handlers.Update{{$obj.Name}}(ctx, r, id, input)
 }
 func Update{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
-	principalID := getPrincipalIDFromContext(ctx)
+	principalID := GetPrincipalIDFromContext(ctx)
 	item = &{{$obj.Name}}{}
 	now := time.Now()
 	tx := r.DB.db.Begin()
@@ -217,7 +217,7 @@ func (r *GeneratedMutationResolver) Delete{{$obj.Name}}(ctx context.Context, id 
 	return r.Handlers.Delete{{$obj.Name}}(ctx, r, id)
 }
 func Delete{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolver, id string) (item *{{$obj.Name}}, err error) {
-	principalID := getPrincipalIDFromContext(ctx)
+	principalID := GetPrincipalIDFromContext(ctx)
 	item = &{{$obj.Name}}{}
 	now := time.Now()
 	tx := r.DB.db.Begin()

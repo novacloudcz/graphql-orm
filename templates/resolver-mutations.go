@@ -21,7 +21,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		return r.Handlers.Create{{$obj.Name}}(ctx, r.GeneratedResolver, input)
 	}
 	func Create{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
-		principalID := getPrincipalIDFromContext(ctx)
+		principalID := GetPrincipalIDFromContext(ctx)
 		now := time.Now()
 		item = &{{$obj.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
 		tx := r.DB.db.Begin()
@@ -80,7 +80,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		return r.Handlers.Update{{$obj.Name}}(ctx, r.GeneratedResolver, id, input)
 	}
 	func Update{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
-		principalID := getPrincipalIDFromContext(ctx)
+		principalID := GetPrincipalIDFromContext(ctx)
 		item = &{{$obj.Name}}{}
 		now := time.Now()
 		tx := r.DB.db.Begin()
@@ -150,7 +150,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		return r.Handlers.Delete{{$obj.Name}}(ctx, r.GeneratedResolver, id)
 	}
 	func Delete{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, id string) (item *{{$obj.Name}}, err error) {
-		principalID := getPrincipalIDFromContext(ctx)
+		principalID := GetPrincipalIDFromContext(ctx)
 		item = &{{$obj.Name}}{}
 		now := time.Now()
 		tx := r.DB.db.Begin()
