@@ -3,7 +3,6 @@ package src
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	"github.com/novacloudcz/graphql-orm/events"
