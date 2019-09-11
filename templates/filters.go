@@ -10,7 +10,7 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-{{range $obj := .Model.Objects}}
+{{range $obj := .Model.ObjectEntities}}
 {{if not $obj.IsExtended}}
 func (f *{{$obj.Name}}FilterType) IsEmpty(ctx context.Context, dialect gorm.Dialect) bool {
 	wheres := []string{}

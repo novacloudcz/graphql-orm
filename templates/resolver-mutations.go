@@ -16,7 +16,7 @@ import (
 
 type GeneratedMutationResolver struct{ *GeneratedResolver }
 
-{{range $obj := .Model.Objects}}
+{{range $obj := .Model.ObjectEntities}}
 	func (r *GeneratedMutationResolver) Create{{$obj.Name}}(ctx context.Context, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
 		return r.Handlers.Create{{$obj.Name}}(ctx, r.GeneratedResolver, input)
 	}

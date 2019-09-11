@@ -17,66 +17,72 @@ var goTypeMap = map[string]string{
 	"Boolean": "bool",
 }
 
-type ObjectColumn struct {
+type ObjectField struct {
 	Def *ast.FieldDefinition
 	Obj *Object
 }
 
-func (o *ObjectColumn) Name() string {
+func (o *ObjectField) Name() string {
 	return o.Def.Name.Value
 }
-func (o *ObjectColumn) MethodName() string {
+func (o *ObjectField) MethodName() string {
 	name := o.Name()
 	return templates.ToGo(name)
 }
 
-func (o *ObjectColumn) TargetType() string {
+func (o *ObjectField) TargetType() string {
 	nt := getNamedType(o.Def.Type).(*ast.Named)
 	return nt.Name.Value
 }
-func (o *ObjectColumn) IsCreatable() bool {
+func (o *ObjectField) IsColumn() bool {
+	return o.HasDirective("column")
+}
+func (o *ObjectField) IsRelationship() bool {
+	return o.HasDirective("relationship")
+}
+func (o *ObjectField) IsCreatable() bool {
 	return !(o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy") && !o.IsReadonlyType()
 }
-func (o *ObjectColumn) IsUpdatable() bool {
+func (o *ObjectField) IsUpdatable() bool {
 	return !(o.Name() == "id" || o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy") && !o.IsReadonlyType()
 }
-func (o *ObjectColumn) IsReadonlyType() bool {
+func (o *ObjectField) IsReadonlyType() bool {
 	return !(o.IsScalarType() || o.IsEnumType()) || o.Obj.Model.HasObject(o.TargetType())
 }
-func (o *ObjectColumn) IsWritableType() bool {
+func (o *ObjectField) IsWritableType() bool {
 	return !o.IsReadonlyType()
 }
-func (o *ObjectColumn) IsScalarType() bool {
+func (o *ObjectField) IsScalarType() bool {
 	return o.Obj.Model.HasScalar(o.TargetType())
 }
-func (o *ObjectColumn) IsEnumType() bool {
+func (o *ObjectField) IsEnumType() bool {
 	return o.Obj.Model.HasEnum(o.TargetType())
 }
-func (o *ObjectColumn) IsOptional() bool {
+func (o *ObjectField) IsOptional() bool {
 	return !isNonNullType(o.Def.Type)
 }
-func (o *ObjectColumn) IsList() bool {
+func (o *ObjectField) IsList() bool {
 	return isListType(o.Def.Type)
 }
-func (o *ObjectColumn) HasTargetObject() bool {
+func (o *ObjectField) HasTargetObject() bool {
 	return o.Obj.Model.HasObject(o.TargetType())
 }
-func (o *ObjectColumn) TargetObject() *Object {
+func (o *ObjectField) TargetObject() *Object {
 	obj := o.Obj.Model.Object(o.TargetType())
 	return &obj
 }
-func (o *ObjectColumn) HasTargetObjectExtension() bool {
+func (o *ObjectField) HasTargetObjectExtension() bool {
 	return o.Obj.Model.HasObjectExtension(o.TargetType())
 }
-func (o *ObjectColumn) TargetObjectExtension() *ObjectExtension {
+func (o *ObjectField) TargetObjectExtension() *ObjectExtension {
 	e := o.Obj.Model.ObjectExtension(o.TargetType())
 	return &e
 }
-func (o *ObjectColumn) IsSearchable() bool {
+func (o *ObjectField) IsSearchable() bool {
 	t := getNamedType(o.Def.Type).(*ast.Named)
 	return t.Name.Value == "String"
 }
-func (o *ObjectColumn) Directive(name string) *ast.Directive {
+func (o *ObjectField) Directive(name string) *ast.Directive {
 	for _, d := range o.Def.Directives {
 		if d.Name.Value == name {
 			return d
@@ -84,23 +90,26 @@ func (o *ObjectColumn) Directive(name string) *ast.Directive {
 	}
 	return nil
 }
-func (o *ObjectColumn) HasDirective(name string) bool {
+func (o *ObjectField) NeedsQueryResolver() bool {
+	return !o.IsColumn() && !o.IsRelationship()
+}
+func (o *ObjectField) HasDirective(name string) bool {
 	return o.Directive(name) != nil
 }
-func (o *ObjectColumn) HasTargetTypeWithIDField() bool {
-	if o.HasTargetObject() && o.TargetObject().HasColumn("id") {
+func (o *ObjectField) HasTargetTypeWithIDField() bool {
+	if o.HasTargetObject() && o.TargetObject().HasField("id") {
 		return true
 	}
-	if o.HasTargetObjectExtension() && o.TargetObjectExtension().Object.HasColumn("id") {
+	if o.HasTargetObjectExtension() && o.TargetObjectExtension().Object.HasField("id") {
 		return true
 	}
 	return false
 }
 
-func (o *ObjectColumn) GoType() string {
+func (o *ObjectField) GoType() string {
 	return o.GoTypeWithPointer(true)
 }
-func (o *ObjectColumn) GoTypeWithPointer(showPointer bool) string {
+func (o *ObjectField) GoTypeWithPointer(showPointer bool) string {
 	t := o.Def.Type
 	st := ""
 
@@ -127,7 +136,7 @@ func (o *ObjectColumn) GoTypeWithPointer(showPointer bool) string {
 	return st
 }
 
-func (o *ObjectColumn) ModelTags() string {
+func (o *ObjectField) ModelTags() string {
 	_gorm := fmt.Sprintf("column:%s", o.Name())
 	if o.Name() == "id" {
 		_gorm += ";primary_key"
@@ -160,7 +169,7 @@ func (f *FilterMappingItem) WrapValueVariable(v string) string {
 	return fmt.Sprintf(f.ValueFormat, v)
 }
 
-func (o *ObjectColumn) FilterMapping() []FilterMappingItem {
+func (o *ObjectField) FilterMapping() []FilterMappingItem {
 	t := getNamedType(o.Def.Type)
 	mapping := []FilterMappingItem{
 		FilterMappingItem{"", "= ?", t, "%s"},

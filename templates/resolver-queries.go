@@ -16,7 +16,7 @@ import (
 
 type GeneratedQueryResolver struct{ *GeneratedResolver }
 
-{{range $obj := .Model.Objects}}
+{{range $obj := .Model.ObjectEntities}}
 	type Query{{$obj.Name}}HandlerOptions struct {
 		ID *string
 		Q      *string
@@ -115,21 +115,21 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 	{{if $obj.NeedsQueryResolver}}
 		type Generated{{$obj.Name}}Resolver struct { *GeneratedResolver }
 
-		{{range $col := $obj.Columns}}
-			{{if $col.IsReadonlyType}}
-			func (r *Generated{{$obj.Name}}Resolver) {{$col.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
-				return r.Handlers.{{$obj.Name}}{{$col.MethodName}}(ctx, r, obj)
-			}
-			func {{$obj.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
-				{{if and (not $col.IsList) $col.HasTargetTypeWithIDField ($obj.HasColumn (print $col.Name "Id"))}}
-				if obj.{{$col.MethodName}}ID != nil {
-					res = &{{$col.TargetType}}{ID: *obj.{{$col.MethodName}}ID}
+		{{range $col := $obj.Fields}}
+			{{if $col.NeedsQueryResolver}}
+				func (r *Generated{{$obj.Name}}Resolver) {{$col.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
+					return r.Handlers.{{$obj.Name}}{{$col.MethodName}}(ctx, r, obj)
 				}
-				{{else}}
-				err = fmt.Errorf("Resolver handler for {{$obj.Name}}{{$col.MethodName}} not implemented")
-				{{end}}
-				return 
-			}
+				func {{$obj.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
+					{{if and (not $col.IsList) $col.HasTargetTypeWithIDField ($obj.HasColumn (print $col.Name "Id"))}}
+						if obj.{{$col.MethodName}}ID != nil {
+							res = &{{$col.TargetType}}{ID: *obj.{{$col.MethodName}}ID}
+						}
+					{{else}}
+						err = fmt.Errorf("Resolver handler for {{$obj.Name}}{{$col.MethodName}} not implemented")
+					{{end}}
+					return 
+				}
 			{{end}}
 		{{end}}
 

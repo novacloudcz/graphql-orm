@@ -3,10 +3,10 @@ extend type Query {
   topCompanies: [Company!]!
 }
 
-type Company @key(fields: "id") {
-  name: String
+type Company @entity @key(fields: "id") {
+  name: String @column
 
-  countryId: ID
+  countryId: ID @column
   country: Country
 
   employees: [User!]! @relationship(inverse: "employers")
@@ -16,10 +16,10 @@ extend type Company {
   uppercaseName: String!
 }
 
-type User {
-  email: String
-  firstName: String
-  lastName: String
+type User @entity {
+  email: String @column
+  firstName: String @column
+  lastName: String @column
 
   employers: [Company!]! @relationship(inverse: "employees")
   tasks: [Task!]! @relationship(inverse: "assignee")
@@ -31,29 +31,29 @@ enum TaskState {
   IN_PROGRESS
   RESOLVED
 }
-type Task {
-  title: String
-  completed: Boolean
-  state: TaskState
-  dueDate: Time
+type Task @entity {
+  title: String @column
+  completed: Boolean @column
+  state: TaskState @column
+  dueDate: Time @column
 
   assignee: User @relationship(inverse: "tasks")
   owner: User! @relationship(inverse: "createdTasks")
 }
 
-extend type Review @key(fields: "id") {
+extend type Review @entity @key(fields: "id") {
   id: ID! @external
   referenceID: ID! @external
   company: Company @requires(fields: "referenceID")
 }
 
-extend type Country @key(fields: "id") {
+extend type Country @entity @key(fields: "id") {
   id: ID! @external
 }
 
-type PlainEntity {
-  date: Time
-  text: String
+type PlainEntity @entity {
+  date: Time @column
+  text: String @column(type: "text")
 }
 extend type PlainEntity {
   shortText: String!

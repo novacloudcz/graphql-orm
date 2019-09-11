@@ -16,7 +16,7 @@ resolver:
   package: gen
 
 models:
-  {{range $obj := .Model.Objects}}
+  {{range $obj := .Model.ObjectEntities}}
   {{$obj.Name}}:
     model: {{$config.Package}}/gen.{{$obj.Name}}
     fields:{{range $col := $obj.Columns}}{{if $col.IsReadonlyType}}

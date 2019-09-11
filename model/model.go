@@ -21,6 +21,19 @@ func (m *Model) Objects() []Object {
 	}
 	return objs
 }
+func (m *Model) ObjectEntities() []Object {
+	objs := []Object{}
+	for _, def := range m.Doc.Definitions {
+		def, ok := def.(*ast.ObjectDefinition)
+		if ok {
+			obj := Object{Def: def, Model: m}
+			if obj.HasDirective("entity") {
+				objs = append(objs, obj)
+			}
+		}
+	}
+	return objs
+}
 
 func (m *Model) ObjectExtensions() []ObjectExtension {
 	objs := []ObjectExtension{}

@@ -20,7 +20,7 @@ func (e *NotFoundError) Error() string {
 	return fmt.Sprintf("%s not found", e.Entity)
 }
 
-{{range $object := .Model.Objects}}
+{{range $object := .Model.ObjectEntities}}
 
 type {{.Name}}ResultType struct {
 	resolvers.EntityResultType

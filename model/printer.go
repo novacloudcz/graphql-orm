@@ -26,6 +26,7 @@ func PrintSchema(model Model) (string, error) {
 			fields = append(fields, f)
 		}
 		o.Def.Fields = fields
+		o.Def.Directives = filterDirective(o.Def.Directives, "entity")
 	}
 
 	printed := printer.Print(model.Doc)
