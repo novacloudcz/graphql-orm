@@ -41,7 +41,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			break
 		}
 		
-		switch typename { {{range $obj := .Model.Objects}}{{if $obj.IsFederatedType}}
+		switch typename { {{range $obj := .Model.ObjectEntities}}{{if $obj.IsFederatedType}}
 		case "{{$obj.Name}}":
 			ec := getExecutionContext(ctx)
 			f, _err := ec.unmarshalInput{{$obj.Name}}FilterType(ctx, anyValue)

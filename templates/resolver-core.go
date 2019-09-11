@@ -15,7 +15,7 @@ import (
 )
 
 type ResolutionHandlers struct {
-	{{range $obj := .Model.Objects}}
+	{{range $obj := .Model.ObjectEntities}}
 		Create{{$obj.Name}} func (ctx context.Context, r *GeneratedResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error)
 		Update{{$obj.Name}} func(ctx context.Context, r *GeneratedResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error)
 		Delete{{$obj.Name}} func(ctx context.Context, r *GeneratedResolver, id string) (item *{{$obj.Name}}, err error)
@@ -33,7 +33,7 @@ type ResolutionHandlers struct {
 
 func DefaultResolutionHandlers() ResolutionHandlers {
 	handlers := ResolutionHandlers{
-		{{range $obj := .Model.Objects}}
+		{{range $obj := .Model.ObjectEntities}}
 			Create{{$obj.Name}}: Create{{$obj.Name}}Handler,
 			Update{{$obj.Name}}: Update{{$obj.Name}}Handler,
 			Delete{{$obj.Name}}: Delete{{$obj.Name}}Handler,

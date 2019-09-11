@@ -31,7 +31,7 @@ func (r *Resolver) Query() gen.QueryResolver {
 }
 
 
-{{range $obj := .Model.Objects}}
+{{range $obj := .Model.ObjectEntities}}
 	type {{$obj.Name}}ResultTypeResolver struct {
 		*gen.Generated{{$obj.Name}}ResultTypeResolver
 	}

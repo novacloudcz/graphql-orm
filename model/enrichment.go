@@ -18,7 +18,7 @@ func EnrichModelObjects(m *Model) error {
 	updatedBy := fieldDefinition("updatedBy", "ID", false)
 
 	for _, o := range m.Objects() {
-		o.Def.Fields = append(append([]*ast.FieldDefinition{id}, o.Def.Fields...))
+		o.Def.Fields = append([]*ast.FieldDefinition{id}, o.Def.Fields...)
 		for _, rel := range o.Relationships() {
 			if rel.IsToOne() {
 				o.Def.Fields = append(o.Def.Fields, fieldDefinition(rel.Name()+"Id", "ID", false))

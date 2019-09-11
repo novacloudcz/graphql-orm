@@ -16,7 +16,7 @@ import (
 
 type GeneratedQueryResolver struct{ *GeneratedResolver }
 
-{{range $obj := .Model.Objects}}
+{{range $obj := .Model.ObjectEntities}}
 	type Query{{$obj.Name}}HandlerOptions struct {
 		ID *string
 		Q      *string

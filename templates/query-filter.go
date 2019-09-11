@@ -11,7 +11,7 @@ import (
 	"github.com/vektah/gqlparser/ast"
 )
 
-{{range $object := .Model.Objects}}
+{{range $object := .Model.ObjectEntities}}
 
 type {{$object.Name}}QueryFilter struct {
 	Query *string

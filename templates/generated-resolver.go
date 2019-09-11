@@ -15,7 +15,7 @@ import (
 )
 
 type resolutionHandlers struct {
-	{{range $obj := .Model.Objects}}
+	{{range $obj := .Model.ObjectEntities}}
 	{{if not $obj.IsExtended}}
 	Create{{$obj.Name}} func (ctx context.Context, r *GeneratedMutationResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error)
 	Update{{$obj.Name}} func(ctx context.Context, r *GeneratedMutationResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error)
@@ -35,7 +35,7 @@ type resolutionHandlers struct {
 
 func NewResolver(db *DB, ec *events.EventController) *GeneratedResolver {
 	handlers := resolutionHandlers{
-		{{range $obj := .Model.Objects}}
+		{{range $obj := .Model.ObjectEntities}}
 		{{if not $obj.IsExtended}}
 		Create{{$obj.Name}}: Create{{$obj.Name}}Handler,
 		Update{{$obj.Name}}: Update{{$obj.Name}}Handler,
@@ -68,7 +68,7 @@ func (r *GeneratedResolver) Query() QueryResolver {
 	return &GeneratedQueryResolver{r}
 }
 
-{{range $obj := .Model.Objects}}
+{{range $obj := .Model.ObjectEntities}}
 {{if not $obj.IsExtended}}
 func (r *GeneratedResolver) {{$obj.Name}}ResultType() {{$obj.Name}}ResultTypeResolver {
 	return &Generated{{$obj.Name}}ResultTypeResolver{r}
@@ -83,7 +83,7 @@ func (r *GeneratedResolver) {{$obj.Name}}() {{$obj.Name}}Resolver {
 
 type GeneratedMutationResolver struct{ *GeneratedResolver }
 
-{{range $obj := .Model.Objects}}
+{{range $obj := .Model.ObjectEntities}}
 {{if not $obj.IsExtended}}
 func (r *GeneratedMutationResolver) Create{{$obj.Name}}(ctx context.Context, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
 	return r.Handlers.Create{{$obj.Name}}(ctx, r, input)
@@ -291,7 +291,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			break
 		}
 		
-		switch typename { {{range $obj := .Model.Objects}}{{if $obj.HasDirective "key"}}
+		switch typename { {{range $obj := .Model.ObjectEntities}}{{if $obj.HasDirective "key"}}
 		case "{{$obj.Name}}":
 			{{if $obj.IsExtended}}
 				item := &{{$obj.Name}}{}
@@ -324,7 +324,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 }
 {{end}}
 
-{{range $obj := .Model.Objects}}
+{{range $obj := .Model.ObjectEntities}}
 {{if not $obj.IsExtended}}
 func (r *GeneratedQueryResolver) {{$obj.Name}}(ctx context.Context, id *string, q *string, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}, error) {
 	return r.Handlers.Query{{$obj.Name}}(ctx, r, id, q, filter)

@@ -3,7 +3,7 @@ extend type Query {
   topCompanies: [Company!]!
 }
 
-type Company @key(fields: "id") {
+type Company @entity @key(fields: "id") {
   name: String
 
   countryId: ID
@@ -16,7 +16,7 @@ extend type Company {
   uppercaseName: String!
 }
 
-type User {
+type User @entity {
   email: String
   firstName: String
   lastName: String
@@ -31,7 +31,7 @@ enum TaskState {
   IN_PROGRESS
   RESOLVED
 }
-type Task {
+type Task @entity {
   title: String
   completed: Boolean
   state: TaskState
@@ -41,19 +41,19 @@ type Task {
   owner: User! @relationship(inverse: "createdTasks")
 }
 
-extend type Review @key(fields: "id") {
+extend type Review @entity @key(fields: "id") {
   id: ID! @external
   referenceID: ID! @external
   company: Company @requires(fields: "referenceID")
 }
 
-extend type Country @key(fields: "id") {
+extend type Country @entity @key(fields: "id") {
   id: ID! @external
 }
 
-type PlainEntity {
+type PlainEntity @entity {
   date: Time
-  text: String
+  text: String @column(type: "text")
 }
 extend type PlainEntity {
   shortText: String!
