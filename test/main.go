@@ -78,7 +78,6 @@ func startServer(enableCors bool, port string) error {
 
 	db := gen.NewDBFromEnvVars()
 	defer db.Close()
-	db.AutoMigrate()
 
 	eventController, err := events.NewEventController()
 	if err != nil {

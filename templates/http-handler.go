@@ -48,10 +48,6 @@ func getJWTClaimsFromContext(ctx context.Context) *JWTClaims {
 }
 
 func getPrincipalID(req *http.Request) *string {
-	pID := req.Header.Get("principal-id")
-	if pID != "" {
-		return &pID
-	}
 	c, _ := getJWTClaims(req)
 	if c == nil {
 		return nil
