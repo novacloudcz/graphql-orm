@@ -72,6 +72,14 @@ func (o *Object) Fields() []ObjectField {
 	}
 	return fields
 }
+func (o *Object) HasEmbeddedField() bool {
+	for _, f := range o.Fields() {
+		if f.IsEmbedded() {
+			return true
+		}
+	}
+	return false
+}
 func (o *Object) HasReadonlyColumns() bool {
 	for _, c := range o.Columns() {
 		if c.IsReadonlyType() {
@@ -116,10 +124,7 @@ func (o *Object) HasRelationship(name string) bool {
 	return false
 }
 func (o *Object) NeedsQueryResolver() bool {
-	if o.HasAnyRelationships() || o.HasReadonlyColumns() {
-		return true
-	}
-	return o.Model.HasObjectExtension(o.Name())
+	return o.HasAnyRelationships() || o.HasEmbeddedField() || o.Model.HasObjectExtension(o.Name())
 }
 func (o *Object) Directive(name string) *ast.Directive {
 	for _, d := range o.Def.Directives {

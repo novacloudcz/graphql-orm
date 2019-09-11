@@ -17,7 +17,7 @@ func queryDefinition(m *Model) *ast.ObjectDefinition {
 		fields = append(fields, createFederationEntitiesQueryField())
 	}
 
-	for _, obj := range m.Objects() {
+	for _, obj := range m.ObjectEntities() {
 		fields = append(fields, fetchFieldDefinition(obj), listFieldDefinition(obj))
 	}
 	return &ast.ObjectDefinition{
