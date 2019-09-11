@@ -2,6 +2,8 @@ package src
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/novacloudcz/graphql-orm/events"
@@ -19,6 +21,14 @@ func New(db *gen.DB, ec *events.EventController) *Resolver {
 				ID: "2",
 			},
 		}, nil
+	}
+
+	resolver.Handlers.UserAddress = func(ctx context.Context, r *gen.GeneratedUserResolver, obj *gen.User) (res *gen.Address, err error) {
+		if obj.AddressRaw != nil {
+			res = &gen.Address{}
+			err = json.Unmarshal([]byte(*obj.AddressRaw), res)
+		}
+		return
 	}
 
 	return resolver

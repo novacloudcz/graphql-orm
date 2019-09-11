@@ -17,7 +17,7 @@ func EnrichModelObjects(m *Model) error {
 	createdBy := columnDefinition("createdBy", "ID", false)
 	updatedBy := columnDefinition("updatedBy", "ID", false)
 
-	for _, o := range m.Objects() {
+	for _, o := range m.ObjectEntities() {
 		o.Def.Fields = append([]*ast.FieldDefinition{id}, o.Def.Fields...)
 		for _, rel := range o.Relationships() {
 			if rel.IsToOne() {
@@ -36,7 +36,7 @@ func EnrichModel(m *Model) error {
 	}
 
 	definitions := []ast.Node{}
-	for _, o := range m.Objects() {
+	for _, o := range m.ObjectEntities() {
 		for _, rel := range o.Relationships() {
 			if rel.IsToMany() {
 				o.Def.Fields = append(o.Def.Fields, columnDefinitionWithType(rel.Name()+"Ids", nonNull(listType(nonNull(namedType("ID"))))))

@@ -16,10 +16,18 @@ extend type Company {
   uppercaseName: String!
 }
 
+type Address {
+  street: String
+  city: String
+  zip: String
+}
+
 type User @entity {
   email: String @column
   firstName: String @column
   lastName: String @column
+  addressRaw: String @column
+  address: Address
 
   employers: [Company!]! @relationship(inverse: "employees")
   tasks: [Task!]! @relationship(inverse: "assignee")
@@ -54,7 +62,5 @@ extend type Country @entity @key(fields: "id") {
 type PlainEntity @entity {
   date: Time @column
   text: String @column(type: "text")
-}
-extend type PlainEntity {
   shortText: String!
 }

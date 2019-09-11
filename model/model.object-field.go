@@ -64,6 +64,9 @@ func (o *ObjectField) IsOptional() bool {
 func (o *ObjectField) IsList() bool {
 	return isListType(o.Def.Type)
 }
+func (o *ObjectField) IsEmbedded() bool {
+	return !o.IsColumn() && !o.IsRelationship()
+}
 func (o *ObjectField) HasTargetObject() bool {
 	return o.Obj.Model.HasObject(o.TargetType())
 }
@@ -91,7 +94,7 @@ func (o *ObjectField) Directive(name string) *ast.Directive {
 	return nil
 }
 func (o *ObjectField) NeedsQueryResolver() bool {
-	return !o.IsColumn() && !o.IsRelationship()
+	return o.IsEmbedded()
 }
 func (o *ObjectField) HasDirective(name string) bool {
 	return o.Directive(name) != nil

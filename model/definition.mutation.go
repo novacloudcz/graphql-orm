@@ -16,7 +16,7 @@ var idInput = ast.InputValueDefinition{
 func mutationDefinition(m *Model) *ast.ObjectDefinition {
 	fields := []*ast.FieldDefinition{}
 
-	for _, obj := range m.Objects() {
+	for _, obj := range m.ObjectEntities() {
 		fields = append(fields, createFieldDefinition(obj), updateFieldDefinition(obj), deleteFieldDefinition(obj), deleteAllFieldDefinition(obj))
 	}
 	return &ast.ObjectDefinition{
