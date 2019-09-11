@@ -4,9 +4,9 @@ extend type Query {
 }
 
 type Company @entity @key(fields: "id") {
-  name: String
+  name: String @column
 
-  countryId: ID
+  countryId: ID @column
   country: Country
 
   employees: [User!]! @relationship(inverse: "employers")
@@ -17,9 +17,9 @@ extend type Company {
 }
 
 type User @entity {
-  email: String
-  firstName: String
-  lastName: String
+  email: String @column
+  firstName: String @column
+  lastName: String @column
 
   employers: [Company!]! @relationship(inverse: "employees")
   tasks: [Task!]! @relationship(inverse: "assignee")
@@ -32,10 +32,10 @@ enum TaskState {
   RESOLVED
 }
 type Task @entity {
-  title: String
-  completed: Boolean
-  state: TaskState
-  dueDate: Time
+  title: String @column
+  completed: Boolean @column
+  state: TaskState @column
+  dueDate: Time @column
 
   assignee: User @relationship(inverse: "tasks")
   owner: User! @relationship(inverse: "createdTasks")
@@ -52,7 +52,7 @@ extend type Country @entity @key(fields: "id") {
 }
 
 type PlainEntity @entity {
-  date: Time
+  date: Time @column
   text: String @column(type: "text")
 }
 extend type PlainEntity {

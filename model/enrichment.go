@@ -11,17 +11,17 @@ import (
 
 // EnrichModelObjects ...
 func EnrichModelObjects(m *Model) error {
-	id := fieldDefinition("id", "ID", true)
-	createdAt := fieldDefinition("createdAt", "Time", true)
-	updatedAt := fieldDefinition("updatedAt", "Time", false)
-	createdBy := fieldDefinition("createdBy", "ID", false)
-	updatedBy := fieldDefinition("updatedBy", "ID", false)
+	id := columnDefinition("id", "ID", true)
+	createdAt := columnDefinition("createdAt", "Time", true)
+	updatedAt := columnDefinition("updatedAt", "Time", false)
+	createdBy := columnDefinition("createdBy", "ID", false)
+	updatedBy := columnDefinition("updatedBy", "ID", false)
 
 	for _, o := range m.Objects() {
 		o.Def.Fields = append([]*ast.FieldDefinition{id}, o.Def.Fields...)
 		for _, rel := range o.Relationships() {
 			if rel.IsToOne() {
-				o.Def.Fields = append(o.Def.Fields, fieldDefinition(rel.Name()+"Id", "ID", false))
+				o.Def.Fields = append(o.Def.Fields, columnDefinition(rel.Name()+"Id", "ID", false))
 			}
 		}
 		o.Def.Fields = append(o.Def.Fields, updatedAt, createdAt, updatedBy, createdBy)
@@ -39,7 +39,7 @@ func EnrichModel(m *Model) error {
 	for _, o := range m.Objects() {
 		for _, rel := range o.Relationships() {
 			if rel.IsToMany() {
-				o.Def.Fields = append(o.Def.Fields, fieldDefinitionWithType(rel.Name()+"Ids", nonNull(listType(nonNull(namedType("ID"))))))
+				o.Def.Fields = append(o.Def.Fields, columnDefinitionWithType(rel.Name()+"Ids", nonNull(listType(nonNull(namedType("ID"))))))
 			}
 		}
 		definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o), createObjectSortType(o), createObjectFilterType(o))
@@ -88,18 +88,24 @@ func scalarDefinition(name string) *ast.ScalarDefinition {
 	}
 }
 
-func fieldDefinition(fieldName, fieldType string, isNonNull bool) *ast.FieldDefinition {
-	t := namedType(fieldType)
+func columnDefinition(columnName, columnType string, isNonNull bool) *ast.FieldDefinition {
+	t := namedType(columnType)
 	if isNonNull {
 		t = nonNull(t)
 	}
-	return fieldDefinitionWithType(fieldName, t)
+	return columnDefinitionWithType(columnName, t)
 }
-func fieldDefinitionWithType(fieldName string, t ast.Type) *ast.FieldDefinition {
+func columnDefinitionWithType(fieldName string, t ast.Type) *ast.FieldDefinition {
 	return &ast.FieldDefinition{
 		Name: nameNode(fieldName),
 		Kind: kinds.FieldDefinition,
 		Type: t,
+		Directives: []*ast.Directive{
+			&ast.Directive{
+				Kind: kinds.Directive,
+				Name: nameNode("column"),
+			},
+		},
 	}
 }
 

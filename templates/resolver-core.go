@@ -22,7 +22,7 @@ type ResolutionHandlers struct {
 		DeleteAll{{$obj.PluralName}} func (ctx context.Context, r *GeneratedResolver) (bool, error) 
 		Query{{$obj.Name}} func (ctx context.Context, r *GeneratedResolver, opts Query{{$obj.Name}}HandlerOptions) (*{{$obj.Name}}, error)
 		Query{{$obj.PluralName}} func (ctx context.Context, r *GeneratedResolver, opts Query{{$obj.PluralName}}HandlerOptions) (*{{$obj.Name}}ResultType, error)
-		{{range $col := $obj.Columns}}{{if $col.IsReadonlyType}}
+		{{range $col := $obj.Fields}}{{if $col.NeedsQueryResolver}}
 			{{$obj.Name}}{{$col.MethodName}} func (ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error)
 		{{end}}{{end}}
 		{{range $rel := $obj.Relationships}}
@@ -40,7 +40,7 @@ func DefaultResolutionHandlers() ResolutionHandlers {
 			DeleteAll{{$obj.PluralName}}: DeleteAll{{$obj.PluralName}}Handler,
 			Query{{$obj.Name}}: Query{{$obj.Name}}Handler,
 			Query{{$obj.PluralName}}: Query{{$obj.PluralName}}Handler,
-			{{range $col := $obj.Columns}}{{if $col.IsReadonlyType}}
+			{{range $col := $obj.Fields}}{{if $col.NeedsQueryResolver}}
 				{{$obj.Name}}{{$col.MethodName}}: {{$obj.Name}}{{$col.MethodName}}Handler,
 			{{end}}{{end}}
 			{{range $rel := $obj.Relationships}}

@@ -31,22 +31,46 @@ func (o *Object) TableName() string {
 func (o *Object) HasColumn(name string) bool {
 	return o.Column(name) != nil
 }
-func (o *Object) Column(name string) *ObjectColumn {
+func (o *Object) HasField(name string) bool {
+	return o.Field(name) != nil
+}
+func (o *Object) Column(name string) *ObjectField {
 	for _, f := range o.Def.Fields {
-		if o.isColumn(f) && f.Name.Value == name {
-			return &ObjectColumn{f, o}
+		if f.Name.Value == name {
+			field := &ObjectField{f, o}
+			if field.IsColumn() {
+				return field
+			} else {
+				return nil
+			}
 		}
 	}
 	return nil
 }
-func (o *Object) Columns() []ObjectColumn {
-	columns := []ObjectColumn{}
-	for _, f := range o.Def.Fields {
-		if o.isColumn(f) {
-			columns = append(columns, ObjectColumn{f, o})
+func (o *Object) Columns() []ObjectField {
+	columns := []ObjectField{}
+	for _, f := range o.Fields() {
+		if f.IsColumn() {
+			columns = append(columns, f)
 		}
 	}
 	return columns
+}
+
+func (o *Object) Field(name string) *ObjectField {
+	for _, f := range o.Def.Fields {
+		if f.Name.Value == name {
+			return &ObjectField{f, o}
+		}
+	}
+	return nil
+}
+func (o *Object) Fields() []ObjectField {
+	fields := []ObjectField{}
+	for _, f := range o.Def.Fields {
+		fields = append(fields, ObjectField{f, o})
+	}
+	return fields
 }
 func (o *Object) HasReadonlyColumns() bool {
 	for _, c := range o.Columns() {
@@ -56,7 +80,7 @@ func (o *Object) HasReadonlyColumns() bool {
 	}
 	return false
 }
-func (o *Object) IsToManyColumn(c ObjectColumn) bool {
+func (o *Object) IsToManyColumn(c ObjectField) bool {
 	if c.Obj.Name() != o.Name() {
 		return false
 	}
@@ -109,9 +133,6 @@ func (o *Object) HasDirective(name string) bool {
 	return o.Directive(name) != nil
 }
 
-func (o *Object) isColumn(f *ast.FieldDefinition) bool {
-	return !o.isRelationship(f)
-}
 func (o *Object) isRelationship(f *ast.FieldDefinition) bool {
 	for _, d := range f.Directives {
 		if d != nil && d.Name.Value == "relationship" {
