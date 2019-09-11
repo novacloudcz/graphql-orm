@@ -35,7 +35,7 @@ func (r *QueryResolver) TopCompanies(ctx context.Context) (items []*gen.Company,
 
 func (r *CompanyResolver) UppercaseName(ctx context.Context, obj *gen.Company) (string, error) {
 	name := ""
-	if obj.Name!=nil{
+	if obj.Name != nil {
 		name = *obj.Name
 	}
 	return strings.ToUpper(name), nil
@@ -46,4 +46,12 @@ func (r *ReviewResolver) Company(ctx context.Context, obj *gen.Review) (*gen.Com
 		ID: &obj.ReferenceID,
 	}
 	return r.Handlers.QueryCompany(ctx, r.GeneratedResolver, opts)
+}
+
+func (r *PlainEntityResolver) ShortText(ctx context.Context, obj *gen.PlainEntity) (string, error) {
+	val := ""
+	if obj.Text != nil {
+		val = *obj.Text
+	}
+	return val, nil
 }

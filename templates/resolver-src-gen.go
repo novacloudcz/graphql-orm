@@ -38,7 +38,7 @@ func (r *Resolver) Query() gen.QueryResolver {
 	func (r *Resolver) {{$obj.Name}}ResultType() gen.{{$obj.Name}}ResultTypeResolver {
 		return &{{$obj.Name}}ResultTypeResolver{&gen.Generated{{$obj.Name}}ResultTypeResolver{r.GeneratedResolver}}
 	}
-	{{if or $obj.HasAnyRelationships $obj.HasReadonlyColumns}}
+	{{if $obj.NeedsQueryResolver}}
 		type {{$obj.Name}}Resolver struct {
 			*gen.Generated{{$obj.Name}}Resolver
 		}

@@ -50,3 +50,11 @@ extend type Review @key(fields: "id") {
 extend type Country @key(fields: "id") {
   id: ID! @external
 }
+
+type PlainEntity {
+  date: Time
+  text: String
+}
+extend type PlainEntity {
+  shortText: String!
+}

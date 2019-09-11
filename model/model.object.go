@@ -91,6 +91,12 @@ func (o *Object) HasRelationship(name string) bool {
 	}
 	return false
 }
+func (o *Object) NeedsQueryResolver() bool {
+	if o.HasAnyRelationships() || o.HasReadonlyColumns() {
+		return true
+	}
+	return o.Model.HasObjectExtension(o.Name())
+}
 func (o *Object) Directive(name string) *ast.Directive {
 	for _, d := range o.Def.Directives {
 		if d.Name.Value == name {
