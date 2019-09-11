@@ -112,7 +112,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		return obj.GetCount(ctx, r.DB.db, &{{$obj.Name}}{})
 	}
 	
-	{{if or $obj.HasAnyRelationships $obj.HasReadonlyColumns}}
+	{{if $obj.NeedsQueryResolver}}
 		type Generated{{$obj.Name}}Resolver struct { *GeneratedResolver }
 
 		{{range $col := $obj.Columns}}
