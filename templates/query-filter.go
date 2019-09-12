@@ -36,7 +36,7 @@ func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.D
 	queryParts := strings.Split(*qf.Query, " ")
 	for _, part := range queryParts {
 		ors := []string{}
-		if err := qf.applyQueryWithFields(dialect, fields, part, "{{$object.TableName}}", &ors, values, joins); err != nil {
+		if err := qf.applyQueryWithFields(dialect, fields, part, TableName("{{$object.TableName}}"), &ors, values, joins); err != nil {
 			return err
 		}
 		*wheres = append(*wheres, "("+strings.Join(ors, " OR ")+")")

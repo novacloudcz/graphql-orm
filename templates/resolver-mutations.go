@@ -168,7 +168,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 			PrincipalID: principalID,
 		})
 
-		err = tx.Delete(item, "{{$obj.TableName}}.id = ?", id).Error
+		err = tx.Delete(item, TableName("{{$obj.TableName}}") + ".id = ?", id).Error
 		if err != nil {
 			tx.Rollback()
 			return
