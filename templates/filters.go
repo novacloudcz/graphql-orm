@@ -23,7 +23,7 @@ func (f *{{$obj.Name}}FilterType) IsEmpty(ctx context.Context, dialect gorm.Dial
 	return len(wheres) == 0
 }
 func (f *{{$obj.Name}}FilterType) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error {
-	return f.ApplyWithAlias(ctx, dialect, "{{$obj.TableName}}", wheres, values, joins)
+	return f.ApplyWithAlias(ctx, dialect, TableName("{{$obj.TableName}}"), wheres, values, joins)
 }
 func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	if f == nil {

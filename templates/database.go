@@ -28,6 +28,14 @@ func NewDBFromEnvVars() *DB {
 	return NewDBWithString(urlString)
 }
 
+func TableName(name string) string {
+	prefix := os.Getenv("TABLE_NAME_PREFIX")
+	if prefix != "" {
+		return prefix + "_" + name
+	}
+	return name
+}
+
 // NewDB ...
 func NewDB(db *gorm.DB) *DB {
 	prefix := os.Getenv("TABLE_NAME_PREFIX")

@@ -235,7 +235,7 @@ func Delete{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolve
 		PrincipalID: principalID,
 	})
 
-	err = tx.Delete(item, "{{$obj.TableName}}.id = ?", id).Error
+	err = tx.Delete(item, TableName("{{$obj.TableName}}") + ".id = ?", id).Error
 	if err != nil {
 		tx.Rollback()
 		return
@@ -343,11 +343,11 @@ func Query{{$obj.Name}}Handler(ctx context.Context, r *GeneratedQueryResolver, i
 	}
 	qb := r.DB.Query()
 	if id != nil {
-		qb = qb.Where("{{$obj.TableName}}.id = ?", *id)
+		qb = qb.Where(TableName("{{$obj.TableName}}") + ".id = ?", *id)
 	}
 
 	var items []*{{$obj.Name}}
-	err := rt.GetItems(ctx, qb, "{{$obj.TableName}}", &items)
+	err := rt.GetItems(ctx, qb, TableName("{{$obj.TableName}}"), &items)
 	if err != nil {
 		return nil, err
 	}
@@ -388,7 +388,7 @@ func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedQueryResol
 type Generated{{$obj.Name}}ResultTypeResolver struct{ *GeneratedResolver }
 
 func (r *Generated{{$obj.Name}}ResultTypeResolver) Items(ctx context.Context, obj *{{$obj.Name}}ResultType) (items []*{{$obj.Name}}, err error) {
-	err = obj.GetItems(ctx, r.DB.db, "{{$obj.TableName}}", &items)
+	err = obj.GetItems(ctx, r.DB.db, TableName("{{$obj.TableName}}"), &items)
 	return
 }
 
@@ -439,7 +439,7 @@ func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}Ids(ctx context.Cont
 	ids = []string{}
 
 	items := []*{{$rel.TargetType}}{}
-	err = r.DB.Query().Model(obj).Select("{{$rel.Target.TableName}}.id").Related(&items, "{{$rel.MethodName}}").Error
+	err = r.DB.Query().Model(obj).Select(TableName("{{$rel.Target.TableName}}") + ".id").Related(&items, "{{$rel.MethodName}}").Error
 
 	for _, item := range items {
 		ids = append(ids, item.ID)

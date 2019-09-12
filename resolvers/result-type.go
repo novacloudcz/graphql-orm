@@ -86,7 +86,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 		q = q.Joins(join)
 	}
 
-	q = q.Group(alias + ".id")
+	// q = q.Group("id")
 	return q.Find(out).Error
 }
 

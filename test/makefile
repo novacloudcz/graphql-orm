@@ -5,10 +5,10 @@ reinit:
 	GO111MODULE=on go run github.com/novacloudcz/graphql-orm init
 
 migrate:
-	DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go migrate
+	TABLE_NAME_PREFIX=test DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go migrate
 
 run:
-	DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go start --cors
+	TABLE_NAME_PREFIX=test DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go start --cors
 
 voyager:
 	docker run --rm -v `pwd`/gen/schema.graphql:/app/schema.graphql -p 8080:80 graphql/voyager
