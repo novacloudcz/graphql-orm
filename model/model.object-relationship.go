@@ -135,11 +135,11 @@ func (o *ObjectRelationship) JoinString() string {
 	join := ""
 	if o.IsManyToMany() {
 		joinTable := o.ManyToManyJoinTable()
-		join += fmt.Sprintf("\"LEFT JOIN \"+dialect.Quote(\"%[1]s\")+\" \"+dialect.Quote(_alias+\"_jointable\")+\" ON \"+dialect.Quote(alias)+\".id = \"+dialect.Quote(_alias+\"_jointable\")+\".\"+dialect.Quote(\"%[3]s_id\")+\" LEFT JOIN \"+dialect.Quote(\"%[2]s\")+\" \"+dialect.Quote(_alias)+\" ON \"+dialect.Quote(_alias+\"_jointable\")+\".\"+dialect.Quote(\"%[4]s_id\")+\" = \"+dialect.Quote(_alias)+\".id\"", joinTable, o.Target().TableName(), inflection.Singular(o.InverseRelationshipName()), inflection.Singular(o.Name()))
+		join += fmt.Sprintf("\"LEFT JOIN \"+dialect.Quote(TableName(\"%[1]s\"))+\" \"+dialect.Quote(_alias+\"_jointable\")+\" ON \"+dialect.Quote(alias)+\".id = \"+dialect.Quote(_alias+\"_jointable\")+\".\"+dialect.Quote(\"%[3]s_id\")+\" LEFT JOIN \"+dialect.Quote(\"%[2]s\")+\" \"+dialect.Quote(_alias)+\" ON \"+dialect.Quote(_alias+\"_jointable\")+\".\"+dialect.Quote(\"%[4]s_id\")+\" = \"+dialect.Quote(_alias)+\".id\"", joinTable, o.Target().TableName(), inflection.Singular(o.InverseRelationshipName()), inflection.Singular(o.Name()))
 	} else if o.IsToOne() {
-		join += fmt.Sprintf("\"LEFT JOIN \"+dialect.Quote(\"%[1]s\")+\" \"+dialect.Quote(_alias)+\" ON \"+dialect.Quote(_alias)+\".id = \"+alias+\".\"+dialect.Quote(\"%[2]sId\")", o.Target().TableName(), o.Name())
+		join += fmt.Sprintf("\"LEFT JOIN \"+dialect.Quote(TableName(\"%[1]s\"))+\" \"+dialect.Quote(_alias)+\" ON \"+dialect.Quote(_alias)+\".id = \"+alias+\".\"+dialect.Quote(\"%[2]sId\")", o.Target().TableName(), o.Name())
 	} else if o.IsToMany() {
-		join += fmt.Sprintf("\"LEFT JOIN \"+dialect.Quote(\"%[1]s\")+\" \"+dialect.Quote(_alias)+\" ON \"+dialect.Quote(_alias)+\".\"+dialect.Quote(\"%[3]sId\")+\" = \"+dialect.Quote(alias)+\".id\"", o.Target().TableName(), o.Name(), o.InverseRelationshipName())
+		join += fmt.Sprintf("\"LEFT JOIN \"+dialect.Quote(TableName(\"%[1]s\"))+\" \"+dialect.Quote(_alias)+\" ON \"+dialect.Quote(_alias)+\".\"+dialect.Quote(\"%[3]sId\")+\" = \"+dialect.Quote(alias)+\".id\"", o.Target().TableName(), o.Name(), o.InverseRelationshipName())
 	}
 	return join
 }
