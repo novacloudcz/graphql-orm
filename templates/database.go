@@ -48,7 +48,7 @@ func NewDB(db *gorm.DB) *DB {
 	return &v
 }
 
-// NewDBWithString ...
+// NewDBWithString creates database instance with database URL string
 func NewDBWithString(urlString string) *DB {
 	u, err := url.Parse(urlString)
 	if err != nil {
@@ -61,10 +61,18 @@ func NewDBWithString(urlString string) *DB {
 	if err != nil {
 		panic(err)
 	}
-	db.DB().SetMaxIdleConns({{.Config.MaxIdleConnections}})
-	db.DB().SetConnMaxLifetime(time.Second*{{.Config.ConnMaxLifetime}})
-	db.DB().SetMaxOpenConns({{.Config.MaxOpenConnections}})
-	db.LogMode(true)
+	
+	if urlString == "sqlite3://:memory:" {
+		db.DB().SetMaxIdleConns(1)
+		db.DB().SetConnMaxLifetime(time.Second * 300)
+		db.DB().SetMaxOpenConns(1)
+	} else {
+		db.DB().SetMaxIdleConns({{.Config.MaxIdleConnections}})
+		db.DB().SetConnMaxLifetime(time.Second*{{.Config.ConnMaxLifetime}})
+		db.DB().SetMaxOpenConns({{.Config.MaxOpenConnections}})
+	}
+	db.LogMode(os.Getenv("DEBUG") == "true")
+	
 	return NewDB(db)
 }
 
