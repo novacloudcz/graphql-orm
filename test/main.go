@@ -121,17 +121,17 @@ func startServer(enableCors bool, port string) error {
 
 	ctx, _ := context.WithTimeout(context.Background(), 5*time.Second)
 
-	err = db.Close()
-	if err != nil {
-		return cli.NewExitError(err, 1)
-	}
-	log.Println("Database connection closed")
-
 	err = h.Shutdown(ctx)
 	if err != nil {
 		return cli.NewExitError(err, 1)
 	}
 	log.Println("Server gracefully stopped")
+
+	err = db.Close()
+	if err != nil {
+		return cli.NewExitError(err, 1)
+	}
+	log.Println("Database connection closed")
 
 	return nil
 }
