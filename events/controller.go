@@ -46,9 +46,6 @@ func NewEventController() (ec EventController, err error) {
 }
 
 func (c *EventController) send(ctx context.Context, e cloudevents.Event) error {
-	if c.clients == nil {
-		return nil
-	}
 	for _, client := range c.clients {
 		if _, err := client.Send(ctx, e); err != nil {
 			return err
@@ -59,6 +56,9 @@ func (c *EventController) send(ctx context.Context, e cloudevents.Event) error {
 
 // SendEvent ...
 func (c *EventController) SendEvent(ctx context.Context, e *Event) (err error) {
+	if len(c.clients) == 0 {
+		return
+	}
 	event := cloudevents.NewEvent()
 	event.SetID(e.ID)
 	event.SetType(ORMChangeEvent)
