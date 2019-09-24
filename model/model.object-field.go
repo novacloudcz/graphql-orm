@@ -83,6 +83,10 @@ func (o *ObjectField) TargetObjectExtension() *ObjectExtension {
 }
 func (o *ObjectField) IsSearchable() bool {
 	t := getNamedType(o.Def.Type).(*ast.Named)
+	return t.Name.Value == "String" || t.Name.Value == "Int" || t.Name.Value == "Float"
+}
+func (o *ObjectField) IsString() bool {
+	t := getNamedType(o.Def.Type).(*ast.Named)
 	return t.Name.Value == "String"
 }
 func (o *ObjectField) Directive(name string) *ast.Directive {

@@ -1,4 +1,4 @@
-Feature: Field xxxId should be automatically used for filling object for xxx field
+Feature: It should be possible to fetch embedded types
 
     Background: We have test company
         Given I send query:
@@ -9,7 +9,7 @@ Feature: Field xxxId should be automatically used for filling object for xxx fie
             }
             """
 
-    Scenario: Fetching country should use the countryId field as id
+    Scenario: Fetching embedded field address
         When I send query:
             """
             query {
