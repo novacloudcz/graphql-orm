@@ -23,6 +23,7 @@ type Address {
 }
 
 type User @entity {
+  code: Int @column
   email: String @column
   firstName: String @column
   lastName: String @column
