@@ -63,7 +63,7 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(dialect gorm.Dialect
 			if dialect.GetName() == "mysql" {
 				cast = "CHAR"
 			}
- 			column := fmt.Sprintf("CAST(%s"+dialect.Quote("code")+" AS %s)", dialect.Quote(alias)+".", cast)
+ 			column := fmt.Sprintf("CAST(%s"+dialect.Quote("{{$col.Name}}")+" AS %s)", dialect.Quote(alias)+".", cast)
 		{{end}}
 		*ors = append(*ors, fmt.Sprintf("%[1]s LIKE ? OR %[1]s LIKE ?", column))
 		*values = append(*values, query+"%", "% "+query+"%")
