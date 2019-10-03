@@ -126,6 +126,15 @@ func (o *Object) HasRelationship(name string) bool {
 func (o *Object) NeedsQueryResolver() bool {
 	return o.HasAnyRelationships() || o.HasEmbeddedField() || o.Model.HasObjectExtension(o.Name())
 }
+func (o *Object) PreloadableRelationships() []*ObjectRelationship {
+	result := []*ObjectRelationship{}
+	for _, r := range o.Relationships() {
+		if r.Preload() {
+			result = append(result, r)
+		}
+	}
+	return result
+}
 func (o *Object) Directive(name string) *ast.Directive {
 	for _, d := range o.Def.Directives {
 		if d.Name.Value == name {

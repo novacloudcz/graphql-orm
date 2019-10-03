@@ -30,7 +30,7 @@ type User @entity {
   addressRaw: String @column
   address: Address
 
-  employers: [Company!]! @relationship(inverse: "employees")
+  employers: [Company!]! @relationship(inverse: "employees", preload: true)
   tasks: [Task!]! @relationship(inverse: "assignee")
   createdTasks: [Task!]! @relationship(inverse: "owner")
 }
@@ -46,7 +46,7 @@ type Task @entity {
   state: TaskState @column
   dueDate: Time @column
 
-  assignee: User @relationship(inverse: "tasks")
+  assignee: User @relationship(inverse: "tasks", preload: true)
   owner: User! @relationship(inverse: "createdTasks")
 }
 
