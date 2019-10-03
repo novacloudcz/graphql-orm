@@ -1,4 +1,6 @@
-package resolvers
+package templates
+
+var ResultType = `package gen
 
 import (
 	"context"
@@ -9,6 +11,14 @@ import (
 
 	"github.com/jinzhu/gorm"
 )
+
+func GetItem(ctx context.Context, db *gorm.DB, out interface{}, id *string) error {
+	return db.Find(out, "id = ?", id).Error
+}
+
+func GetItemForRelation(ctx context.Context, db *gorm.DB, obj interface{}, relation string, out interface{}) error {
+	return db.Model(obj).Related(out, relation).Error
+}
 
 type EntityFilter interface {
 	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error
@@ -30,8 +40,13 @@ type EntityResultType struct {
 	SelectionSet *ast.SelectionSet
 }
 
+type GetItemsOptions struct {
+	Alias      string
+	Preloaders []string
+}
+
 // GetResultTypeItems ...
-func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias string, out interface{}) error {
+func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetItemsOptions, out interface{}) error {
 	q := db
 
 	if r.Limit != nil {
@@ -86,6 +101,11 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, alias stri
 		q = q.Joins(join)
 	}
 
+	if len(opts.Preloaders) > 0 {
+		for _, p := range opts.Preloaders {
+			q = q.Preload(p)
+		}
+	}
 	// q = q.Group("id")
 	return q.Find(out).Error
 }
@@ -134,3 +154,4 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interf
 func (r *EntityResultType) GetSortStrings() []string {
 	return []string{}
 }
+`

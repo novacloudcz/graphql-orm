@@ -21,21 +21,53 @@ func (o *ObjectRelationship) Name() string {
 func (o *ObjectRelationship) MethodName() string {
 	return strcase.ToCamel(o.Def.Name.Value)
 }
-func (o *ObjectRelationship) InverseRelationshipName() string {
+func (o *ObjectRelationship) ValueForRelationshipDirectiveAttribute(name string) (val interface{}, ok bool) {
 	for _, d := range o.Def.Directives {
 		if d.Name.Value == "relationship" {
 			for _, arg := range d.Arguments {
-				if arg.Name.Value == "inverse" {
-					v, ok := arg.Value.GetValue().(string)
-					if !ok {
-						panic(fmt.Sprintf("invalid inverse value for %s->%s relationship", o.Obj.Name(), o.Name()))
-					}
-					return v
+				if arg.Name.Value == name {
+					val = arg.Value.GetValue()
+					ok = true
+					return
 				}
 			}
 		}
 	}
-	panic(fmt.Sprintf("missing relationship directive/inverse argument for %s->%s relationship", o.Obj.Name(), o.Name()))
+	return
+}
+func (o *ObjectRelationship) StringForRelationshipDirectiveAttribute(name string) (val string, ok bool) {
+	value, ok := o.ValueForRelationshipDirectiveAttribute(name)
+	if !ok {
+		return
+	}
+	val, ok = value.(string)
+	if !ok {
+		panic(fmt.Sprintf("invalid %s value for %s->%s relationship", name, o.Obj.Name(), o.Name()))
+	}
+	return
+}
+func (o *ObjectRelationship) BoolForRelationshipDirectiveAttribute(name string) (val bool, ok bool) {
+	value, ok := o.ValueForRelationshipDirectiveAttribute(name)
+	if !ok {
+		return
+	}
+	val, ok = value.(bool)
+	if !ok {
+		panic(fmt.Sprintf("invalid %s value for %s->%s relationship", name, o.Obj.Name(), o.Name()))
+	}
+	return
+}
+func (o *ObjectRelationship) InverseRelationshipName() string {
+	val, ok := o.StringForRelationshipDirectiveAttribute("inverse")
+	if !ok {
+		panic(fmt.Sprintf("missing inverse value for %s->%s relationship", o.Obj.Name(), o.Name()))
+	}
+	return val
+}
+
+func (o *ObjectRelationship) Preload() bool {
+	val, _ := o.BoolForRelationshipDirectiveAttribute("preload")
+	return val
 }
 
 func (o *ObjectRelationship) Target() *Object {

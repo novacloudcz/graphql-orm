@@ -10,7 +10,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gofrs/uuid"
 	"github.com/novacloudcz/graphql-orm/events"
-	"github.com/novacloudcz/graphql-orm/resolvers"
 	"github.com/vektah/gqlparser/ast"
 )
 
@@ -35,7 +34,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		offset := 0
 		limit := 1
 		rt := &{{$obj.Name}}ResultType{
-			EntityResultType: resolvers.EntityResultType{
+			EntityResultType: EntityResultType{
 				Offset: &offset,
 				Limit:  &limit,
 				Query:  &query,
@@ -48,7 +47,13 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		}
 
 		var items []*{{$obj.Name}}
-		err := rt.GetItems(ctx, qb, TableName("{{$obj.TableName}}"), &items)
+		giOpts := GetItemsOptions{
+			Alias:TableName("{{$obj.TableName}}"),
+			Preloaders:[]string{ {{range $r := $obj.PreloadableRelationships}}
+				"{{$r.MethodName}}",{{end}}
+			},
+		}
+		err := rt.GetItems(ctx, qb, giOpts, &items)
 		if err != nil {
 			return nil, err
 		}
@@ -76,7 +81,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		return r.Handlers.Query{{$obj.PluralName}}(ctx, r.GeneratedResolver, opts)
 	}
 	func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.PluralName}}HandlerOptions) (*{{$obj.Name}}ResultType, error) {
-		_sort := []resolvers.EntitySort{}
+		_sort := []EntitySort{}
 		for _, s := range opts.Sort {
 			_sort = append(_sort, s)
 		}
@@ -90,7 +95,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		}
 		
 		return &{{$obj.Name}}ResultType{
-			EntityResultType: resolvers.EntityResultType{
+			EntityResultType: EntityResultType{
 				Offset: opts.Offset,
 				Limit:  opts.Limit,
 				Query:  &query,
@@ -104,7 +109,13 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 	type Generated{{$obj.Name}}ResultTypeResolver struct{ *GeneratedResolver }
 
 	func (r *Generated{{$obj.Name}}ResultTypeResolver) Items(ctx context.Context, obj *{{$obj.Name}}ResultType) (items []*{{$obj.Name}}, err error) {
-		err = obj.GetItems(ctx, r.DB.db, TableName("{{$obj.TableName}}"), &items)
+		giOpts := GetItemsOptions{
+			Alias:TableName("{{$obj.TableName}}"),
+			Preloaders:[]string{ {{range $r := $obj.PreloadableRelationships}}
+				"{{$r.MethodName}}",{{end}}
+			},
+		}
+		err = obj.GetItems(ctx, r.DB.db, giOpts, &items)
 		return
 	}
 
@@ -138,21 +149,25 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				return r.Handlers.{{$obj.Name}}{{$rel.MethodName}}(ctx, r, obj)
 			}
 			func {{$obj.Name}}{{$rel.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
-				{{if $rel.IsToMany}}
-					items := []*{{$rel.TargetType}}{}
-					err = r.DB.Query().Model(obj).Related(&items, "{{$rel.MethodName}}").Error
-					res = items
+				{{if $rel.Preload}}
+						res = obj.{{$rel.MethodName}}
 				{{else}}
-					loaders := ctx.Value(KeyLoaders).(map[string]*dataloader.Loader)
-					if obj.{{$rel.MethodName}}ID != nil {
-						item, _err := loaders["{{$rel.Target.Name}}"].Load(ctx, dataloader.StringKey(*obj.{{$rel.MethodName}}ID))()
-						res, _ = item.({{$rel.ReturnType}})
-						{{if $rel.IsNonNull}}
-						if res == nil {
-							_err = fmt.Errorf("{{$rel.Target.Name}} with id '%s' not found",*obj.{{$rel.MethodName}}ID)
-						}{{end}}
-						err = _err
-					}
+					{{if $rel.IsToMany}}
+							items := []*{{$rel.TargetType}}{}
+							err = r.DB.Query().Model(obj).Related(&items, "{{$rel.MethodName}}").Error
+							res = items
+					{{else}}
+						loaders := ctx.Value(KeyLoaders).(map[string]*dataloader.Loader)
+						if obj.{{$rel.MethodName}}ID != nil {
+							item, _err := loaders["{{$rel.Target.Name}}"].Load(ctx, dataloader.StringKey(*obj.{{$rel.MethodName}}ID))()
+							res, _ = item.({{$rel.ReturnType}})
+							{{if $rel.IsNonNull}}
+							if res == nil {
+								_err = fmt.Errorf("{{$rel.Target.Name}} with id '%s' not found",*obj.{{$rel.MethodName}}ID)
+							}{{end}}
+							err = _err
+						}
+					{{end}}
 				{{end}}
 				return 
 			}

@@ -9,7 +9,6 @@ import (
 	
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/mitchellh/mapstructure"
-	"github.com/novacloudcz/graphql-orm/resolvers"
 )
 
 type NotFoundError struct {
@@ -23,7 +22,7 @@ func (e *NotFoundError) Error() string {
 {{range $object := .Model.ObjectEntities}}
 
 type {{.Name}}ResultType struct {
-	resolvers.EntityResultType
+	EntityResultType
 }
 
 type {{.Name}} struct {

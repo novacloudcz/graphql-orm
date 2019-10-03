@@ -10,7 +10,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gofrs/uuid"
 	"github.com/novacloudcz/graphql-orm/events"
-	"github.com/novacloudcz/graphql-orm/resolvers"
 	"github.com/vektah/gqlparser/ast"
 )
 
@@ -99,7 +98,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 			return 
 		}
 
-		err = resolvers.GetItem(ctx, tx, item, &id)
+		err = GetItem(ctx, tx, item, &id)
 		if err != nil {
 			return 
 		}
@@ -155,7 +154,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		now := time.Now()
 		tx := r.DB.db.Begin()
 
-		err = resolvers.GetItem(ctx, tx, item, &id)
+		err = GetItem(ctx, tx, item, &id)
 		if err != nil {
 			return 
 		}

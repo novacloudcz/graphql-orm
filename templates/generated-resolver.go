@@ -10,7 +10,6 @@ import (
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/gofrs/uuid"
 	"github.com/novacloudcz/graphql-orm/events"
-	"github.com/novacloudcz/graphql-orm/resolvers"
 	"github.com/vektah/gqlparser/ast"
 )
 
@@ -167,7 +166,7 @@ func Update{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolve
 		return 
 	}
 
-	err = resolvers.GetItem(ctx, tx, item, &id)
+	err = GetItem(ctx, tx, item, &id)
 	if err != nil {
 		return 
 	}
@@ -222,7 +221,7 @@ func Delete{{$obj.Name}}Handler(ctx context.Context, r *GeneratedMutationResolve
 	now := time.Now()
 	tx := r.DB.db.Begin()
 
-	err = resolvers.GetItem(ctx, tx, item, &id)
+	err = GetItem(ctx, tx, item, &id)
 	if err != nil {
 		return 
 	}
@@ -334,7 +333,7 @@ func Query{{$obj.Name}}Handler(ctx context.Context, r *GeneratedQueryResolver, i
 	offset := 0
 	limit := 1
 	rt := &{{$obj.Name}}ResultType{
-		EntityResultType: resolvers.EntityResultType{
+		EntityResultType: EntityResultType{
 			Offset: &offset,
 			Limit:  &limit,
 			Query:  &query,
@@ -347,7 +346,7 @@ func Query{{$obj.Name}}Handler(ctx context.Context, r *GeneratedQueryResolver, i
 	}
 
 	var items []*{{$obj.Name}}
-	err := rt.GetItems(ctx, qb, TableName("{{$obj.TableName}}"), &items)
+	err := rt.GetItems(ctx, qb, GetItemsOptions{Alias:TableName("{{$obj.TableName}}")}, &items)
 	if err != nil {
 		return nil, err
 	}
@@ -360,7 +359,7 @@ func (r *GeneratedQueryResolver) {{$obj.PluralName}}(ctx context.Context, offset
 	return r.Handlers.Query{{$obj.PluralName}}(ctx, r, offset, limit, q , sort, filter)
 }
 func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedQueryResolver, offset *int, limit *int, q *string, sort []{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
-	_sort := []resolvers.EntitySort{}
+	_sort := []EntitySort{}
 	for _, s := range sort {
 		_sort = append(_sort, s)
 	}
@@ -374,7 +373,7 @@ func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedQueryResol
 	}
 	
 	return &{{$obj.Name}}ResultType{
-		EntityResultType: resolvers.EntityResultType{
+		EntityResultType: EntityResultType{
 			Offset: offset,
 			Limit:  limit,
 			Query:  &query,
@@ -388,7 +387,7 @@ func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedQueryResol
 type Generated{{$obj.Name}}ResultTypeResolver struct{ *GeneratedResolver }
 
 func (r *Generated{{$obj.Name}}ResultTypeResolver) Items(ctx context.Context, obj *{{$obj.Name}}ResultType) (items []*{{$obj.Name}}, err error) {
-	err = obj.GetItems(ctx, r.DB.db, TableName("{{$obj.TableName}}"), &items)
+	err = obj.GetItems(ctx, r.DB.db, GetItemsOptions{Alias:TableName("{{$obj.TableName}}")}, &items)
 	return
 }
 
