@@ -58,7 +58,7 @@ func fetchFieldDefinition(obj Object) *ast.FieldDefinition {
 }
 
 func listFieldDefinition(obj Object) *ast.FieldDefinition {
-	createObjectSortType(obj)
+	// createObjectSortType(obj)
 	return &ast.FieldDefinition{
 		Kind: kinds.FieldDefinition,
 		Name: nameNode(inflection.Plural(strcase.ToLowerCamel(obj.Name()))),

@@ -1,37 +1,56 @@
 package model
 
 import (
-	"strings"
-
-	"github.com/iancoleman/strcase"
-
 	"github.com/graphql-go/graphql/language/kinds"
 
 	"github.com/graphql-go/graphql/language/ast"
 )
 
-func createObjectSortType(obj Object) *ast.EnumDefinition {
-	values := []*ast.EnumValueDefinition{}
+func createObjectSortEnum() *ast.EnumDefinition {
+	values := []*ast.EnumValueDefinition{
+		&ast.EnumValueDefinition{
+			Kind: kinds.EnumValueDefinition,
+			Name: nameNode("ASC"),
+		},
+		&ast.EnumValueDefinition{
+			Kind: kinds.EnumValueDefinition,
+			Name: nameNode("DESC"),
+		},
+	}
+	return &ast.EnumDefinition{
+		Kind:   kinds.EnumDefinition,
+		Name:   nameNode("ObjectSortType"),
+		Values: values,
+	}
+}
+func createObjectSortType(obj Object) *ast.InputObjectDefinition {
+	fields := []*ast.InputValueDefinition{}
 
 	for _, col := range obj.Columns() {
 		if col.IsReadonlyType() {
 			continue
 		}
-		colName := strings.ToUpper(strcase.ToSnake(col.Name()))
-		asc := ast.EnumValueDefinition{
-			Kind: kinds.EnumValueDefinition,
-			Name: nameNode(colName + "_ASC"),
+
+		field := ast.InputValueDefinition{
+			Kind: kinds.InputValueDefinition,
+			Name: nameNode(col.Name()),
+			Type: namedType("ObjectSortType"),
 		}
-		desc := ast.EnumValueDefinition{
-			Kind: kinds.EnumValueDefinition,
-			Name: nameNode(colName + "_DESC"),
-		}
-		values = append(values, &asc, &desc)
+		fields = append(fields, &field)
 	}
 
-	return &ast.EnumDefinition{
-		Kind:   kinds.EnumDefinition,
+	for _, rel := range obj.Relationships() {
+		field := ast.InputValueDefinition{
+			Kind: kinds.InputValueDefinition,
+			Name: nameNode(rel.Name()),
+			Type: namedType(rel.Target().Name() + "SortType"),
+		}
+		fields = append(fields, &field)
+	}
+
+	return &ast.InputObjectDefinition{
+		Kind:   kinds.InputObjectDefinition,
 		Name:   nameNode(obj.Name() + "SortType"),
-		Values: values,
+		Fields: fields,
 	}
 }

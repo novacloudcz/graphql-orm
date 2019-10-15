@@ -135,6 +135,9 @@ func (o *Object) PreloadableRelationships() []*ObjectRelationship {
 	}
 	return result
 }
+func (o *Object) HasPreloadableRelationships() bool {
+	return len(o.PreloadableRelationships()) > 0
+}
 func (o *Object) Directive(name string) *ast.Directive {
 	for _, d := range o.Def.Directives {
 		if d.Name.Value == name {

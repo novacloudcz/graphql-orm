@@ -52,6 +52,7 @@ func EnrichModel(m *Model) error {
 		schemaDefinition(m),
 		queryDefinition(m),
 		mutationDefinition(m),
+		createObjectSortEnum(),
 	}
 	m.Doc.Definitions = append(schemaHeaderNodes, m.Doc.Definitions...)
 	m.Doc.Definitions = append(m.Doc.Definitions, definitions...)
