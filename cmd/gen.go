@@ -131,6 +131,9 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 	if err := templates.WriteTemplate(templates.Filters, path.Join(p, "gen/filters.go"), data); err != nil {
 		return err
 	}
+	if err := templates.WriteTemplate(templates.Sorting, path.Join(p, "gen/sorting.go"), data); err != nil {
+		return err
+	}
 	if err := templates.WriteTemplate(templates.QueryFilters, path.Join(p, "gen/query-filters.go"), data); err != nil {
 		return err
 	}

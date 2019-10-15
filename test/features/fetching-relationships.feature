@@ -1,4 +1,4 @@
-Feature: It should be possible to mutate with relationships
+Feature: It should be possible to fetch with relationships
 
     Background: We have users Johny and Jane with task and company
         Given I send query:
@@ -18,7 +18,7 @@ Feature: It should be possible to mutate with relationships
         When I send query:
             """
             query {
-            users(sort:[FIRST_NAME_DESC]) { items { firstName lastName createdBy updatedBy employers { name } } count }
+            users(sort:[{firstName:DESC}]) { items { firstName lastName createdBy updatedBy employers { name } } count }
             companies { items { name employees { firstName } } }
             }
             """

@@ -81,6 +81,9 @@ func (o *ObjectField) TargetObjectExtension() *ObjectExtension {
 	e := o.Obj.Model.ObjectExtension(o.TargetType())
 	return &e
 }
+func (o *ObjectField) IsSortable() bool {
+	return !o.IsReadonlyType() && o.IsScalarType()
+}
 func (o *ObjectField) IsSearchable() bool {
 	t := getNamedType(o.Def.Type).(*ast.Named)
 	return t.Name.Value == "String" || t.Name.Value == "Int" || t.Name.Value == "Float"

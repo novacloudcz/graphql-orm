@@ -67,10 +67,10 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		Offset *int
 		Limit  *int
 		Q      *string
-		Sort   []{{$obj.Name}}SortType
+		Sort   []*{{$obj.Name}}SortType
 		Filter *{{$obj.Name}}FilterType
 	}
-	func (r *GeneratedQueryResolver) {{$obj.PluralName}}(ctx context.Context, offset *int, limit *int, q *string, sort []{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
+	func (r *GeneratedQueryResolver) {{$obj.PluralName}}(ctx context.Context, offset *int, limit *int, q *string, sort []*{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
 		opts := Query{{$obj.PluralName}}HandlerOptions{
 			Offset: offset,
 			Limit: limit,
@@ -81,10 +81,6 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		return r.Handlers.Query{{$obj.PluralName}}(ctx, r.GeneratedResolver, opts)
 	}
 	func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.PluralName}}HandlerOptions) (*{{$obj.Name}}ResultType, error) {
-		_sort := []EntitySort{}
-		for _, s := range opts.Sort {
-			_sort = append(_sort, s)
-		}
 		query := {{$obj.Name}}QueryFilter{opts.Q}
 		
 		var selectionSet *ast.SelectionSet
@@ -92,6 +88,11 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 			if f.Field.Name == "items" {
 				selectionSet = &f.Field.SelectionSet
 			}
+		}
+
+		_sort := []EntitySort{}
+		for _, sort := range opts.Sort {
+			_sort = append(_sort, sort)
 		}
 		
 		return &{{$obj.Name}}ResultType{
@@ -116,6 +117,12 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 			},
 		}
 		err = obj.GetItems(ctx, r.DB.db, giOpts, &items)
+		{{if $obj.HasPreloadableRelationships}}
+			for _, item := range items {
+				{{range $rel := $obj.PreloadableRelationships}}
+				item.{{$rel.MethodName}}Preloaded = true{{end}}
+			}
+		{{end}}
 		return
 	}
 
@@ -150,8 +157,10 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 			}
 			func {{$obj.Name}}{{$rel.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
 				{{if $rel.Preload}}
-						res = obj.{{$rel.MethodName}}
-				{{else}}
+				if obj.{{$rel.MethodName}}Preloaded {
+					res = obj.{{$rel.MethodName}}
+				}else {
+				{{end}}
 					{{if $rel.IsToMany}}
 							items := []*{{$rel.TargetType}}{}
 							err = r.DB.Query().Model(obj).Related(&items, "{{$rel.MethodName}}").Error
@@ -168,6 +177,8 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 							err = _err
 						}
 					{{end}}
+				{{if $rel.Preload}}
+				}
 				{{end}}
 				return 
 			}
