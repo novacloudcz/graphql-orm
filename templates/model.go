@@ -31,7 +31,7 @@ type {{.Name}} struct {
 
 {{range $rel := $object.Relationships}}
 {{$rel.MethodName}} {{$rel.GoType}} ` + "`" + `{{$rel.ModelTags}}` + "`" + `
-{{if $rel.Preload}}{{$rel.MethodName}}Preloaded bool ` + "`gorm=\"-\"`" + `{{end}}
+{{if $rel.Preload}}{{$rel.MethodName}}Preloaded bool ` + "`gorm:\"-\"`" + `{{end}}
 {{end}}
 }
 
