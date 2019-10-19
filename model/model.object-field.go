@@ -152,13 +152,19 @@ func (o *ObjectField) ModelTags() string {
 		_gorm += ";primary_key"
 	}
 
-	for _, d := range o.Def.Directives {
-		if d.Name.Value == "column" {
-			for _, arg := range d.Arguments {
-				if arg.Name.Value == "type" {
-					_gorm += fmt.Sprintf(";type:%v", arg.Value.GetValue())
-				}
+	columnDirective := o.Directive("column")
+	for _, arg := range columnDirective.Arguments {
+		if arg.Name.Value == "type" {
+			_gorm += fmt.Sprintf(";type:%v", arg.Value.GetValue())
+		}
+		if arg.Name.Value == "unique" {
+			val, ok := arg.Value.GetValue().(bool)
+			if ok && val {
+				_gorm += fmt.Sprintf(";unique")
 			}
+		}
+		if arg.Name.Value == "index" {
+			_gorm += fmt.Sprintf(";index:%v", arg.Value.GetValue())
 		}
 	}
 
