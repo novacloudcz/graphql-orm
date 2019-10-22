@@ -54,7 +54,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		
 		{{range $rel := $obj.Relationships}}
 			{{if $rel.IsToMany}}{{if not $rel.Target.IsExtended}}
-				if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
+				if ids,exists:=input["{{$rel.Name}}Ids"]; exists {
 					items := []{{$rel.TargetType}}{}
 					tx.Find(&items, "id IN (?)", ids)
 					association := tx.Model(&item).Association("{{$rel.MethodName}}")
@@ -122,7 +122,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 
 		{{range $rel := $obj.Relationships}}
 		{{if $rel.IsToMany}}{{if not $rel.Target.IsExtended}}
-			if ids,ok:=input["{{$rel.Name}}Ids"].([]interface{}); ok {
+			if ids,exists:=input["{{$rel.Name}}Ids"]; exists {
 				items := []{{$rel.TargetType}}{}
 				tx.Find(&items, "id IN (?)", ids)
 				association := tx.Model(&item).Association("{{$rel.MethodName}}")
