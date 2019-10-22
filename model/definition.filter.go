@@ -37,8 +37,11 @@ func createObjectFilterType(obj Object) *ast.InputObjectDefinition {
 func filterInputValues(column *ObjectField, t ast.Type) []*ast.InputValueDefinition {
 	values := []*ast.InputValueDefinition{}
 	for _, val := range column.FilterMapping() {
-		values = append(values, filterInputValue(fmt.Sprintf("%s%s", column.Name(), val.Suffix), val.InputType))
+		name := fmt.Sprintf("%s%s", column.Name(), val.Suffix)
+		values = append(values, filterInputValue(name, val.InputType))
 	}
+	nullName := fmt.Sprintf("%s_null", column.Name())
+	values = append(values, filterInputValue(nullName, namedType("Boolean")))
 	return values
 }
 

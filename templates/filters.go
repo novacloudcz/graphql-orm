@@ -87,12 +87,22 @@ func (f *{{$obj.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix
 	conditions = []string{}
 	values = []interface{}{}
 
-{{range $col := $obj.Columns}}{{if $col.IsWritableType}}
-{{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
-	if {{$varName}} != nil {
-		conditions = append(conditions, aliasPrefix + dialect.Quote("{{$col.Name}}")+" {{$fm.Operator}}")
-		values = append(values, {{$fm.WrapValueVariable $varName}})
-	}{{end}}{{end}}{{end}}
+	{{range $col := $obj.Columns}}{{if $col.IsWritableType}}
+		{{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
+			if {{$varName}} != nil {
+				conditions = append(conditions, aliasPrefix + dialect.Quote("{{$col.Name}}")+" {{$fm.Operator}}")
+				values = append(values, {{$fm.WrapValueVariable $varName}})
+			}
+		{{end}}
+		if f.{{$col.MethodName}}Null != nil {
+			if *f.{{$col.MethodName}}Null {
+				conditions = append(conditions, aliasPrefix+dialect.Quote("{{$col.Name}}")+" IS NULL")
+			} else {
+				conditions = append(conditions, aliasPrefix+dialect.Quote("{{$col.Name}}")+" IS NOT NULL")
+			}
+		}
+	{{end}}
+{{end}}
 
 	return
 }
