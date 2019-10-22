@@ -40,10 +40,12 @@ func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect go
 		vs := []interface{}{}
 		js := []string{}
 		for _, or := range f.Or {
-			err := or.ApplyWithAlias(ctx, dialect, alias, &cs, &vs, &js)
+			_cs := []string{}
+			err := or.ApplyWithAlias(ctx, dialect, alias, &_cs, &vs, &js)
 			if err != nil {
 				return err
 			}
+			cs = append(cs, strings.Join(_cs, " AND "))
 		}
 		if len(cs) > 0 {
 			*wheres = append(*wheres, "("+strings.Join(cs, " OR ")+")")
