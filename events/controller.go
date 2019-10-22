@@ -15,12 +15,13 @@ const (
 )
 
 type EventController struct {
-	clients []cloudevents.Client
+	clients map[string]cloudevents.Client
+	debug   bool
 }
 
 func NewEventController() (ec EventController, err error) {
 	URLs := getENVArray("EVENT_TRANSPORT_URL")
-	_clients := []cloudevents.Client{}
+	_clients := map[string]cloudevents.Client{}
 	for _, URL := range URLs {
 		if URL != "" {
 			t, tErr := cloudevents.NewHTTPTransport(
@@ -38,16 +39,20 @@ func NewEventController() (ec EventController, err error) {
 				return
 			}
 			log.Printf("Created cloudevents client with target %s", URL)
-			_clients = append(_clients, client)
+			_clients[URL] = client
 		}
 	}
-	ec = EventController{_clients}
+	debug := os.Getenv("DEBUG") == "true"
+	ec = EventController{clients: _clients, debug: debug}
 	return
 }
 
 func (c *EventController) send(ctx context.Context, e cloudevents.Event) error {
-	for _, client := range c.clients {
+	for URL, client := range c.clients {
 		if _, err := client.Send(ctx, e); err != nil {
+			if c.debug {
+				fmt.Printf("received cloudevents error %s from server %s\n", err.Error(), URL)
+			}
 			return err
 		}
 	}
