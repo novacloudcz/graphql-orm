@@ -90,3 +90,17 @@ Feature: It should be possible to mutate with relationships
                 }
             }
             """
+    Scenario: Fetching with or filter should correctly compose and filter for single object
+        When I send query:
+            """
+            query { users(filter:{OR:[{id:"johny",firstName:"Jane"}]}) { items {id} count } }
+            """
+        Then the response should be:
+            """
+            {
+                "users": {
+                    "items": [],
+                    "count": 0
+                }
+            }
+            """
