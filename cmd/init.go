@@ -152,5 +152,5 @@ func createResolverFile(p string) error {
 }
 
 func runGenerate(p string) error {
-	return generate("model.graphql", p)
+	return generate("model*.graphql", p)
 }

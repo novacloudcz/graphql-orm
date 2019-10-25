@@ -35,21 +35,6 @@ type User @entity {
   createdTasks: [Task!]! @relationship(inverse: "owner")
 }
 
-enum TaskState {
-  CREATED
-  IN_PROGRESS
-  RESOLVED
-}
-type Task @entity {
-  title: String @column
-  completed: Boolean @column
-  state: TaskState @column
-  dueDate: Time @column
-
-  assignee: User @relationship(inverse: "tasks", preload: true)
-  owner: User! @relationship(inverse: "createdTasks")
-}
-
 extend type Review @entity @key(fields: "id") {
   id: ID! @external
   referenceID: ID! @external

@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -19,22 +20,32 @@ var genCmd = cli.Command{
 	Name:  "generate",
 	Usage: "generate contents",
 	Action: func(ctx *cli.Context) error {
-		if err := generate("model.graphql", "."); err != nil {
+		if err := generate("model*.graphql", "."); err != nil {
 			return cli.NewExitError(err, 1)
 		}
 		return nil
 	},
 }
 
-func generate(filename, p string) error {
-	filename = path.Join(p, filename)
-	fmt.Println("Generating contents from", filename, "...")
-	modelSource, err := ioutil.ReadFile(filename)
+func generate(filePattern, p string) error {
+	filePattern = path.Join(p, filePattern)
+	matches, err := filepath.Glob(filePattern)
 	if err != nil {
 		return err
 	}
 
-	m, err := model.Parse(string(modelSource))
+	fmt.Println("Generating contents from", matches, "...")
+	modelSource := ""
+	for _, file := range matches {
+		fmt.Println("Appending content from model file", file)
+		source, err := ioutil.ReadFile(file)
+		if err != nil {
+			return err
+		}
+		modelSource += string(source) + "\n"
+	}
+
+	m, err := model.Parse(modelSource)
 	if err != nil {
 		return err
 	}
