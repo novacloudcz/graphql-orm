@@ -37,6 +37,10 @@ type {{.Name}} struct {
 
 func (m *{{.Name}}) Is_Entity() {}
 
+{{range $interface := $object.Interfaces}}
+func (m *{{$object.Name}}) Is{{$interface}}() {}
+{{end}}
+
 type {{.Name}}Changes struct {
 	{{range $col := $object.Columns}}
 	{{$col.MethodName}} {{$col.GoType}}{{end}}

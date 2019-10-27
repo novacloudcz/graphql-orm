@@ -161,3 +161,10 @@ func (o *Object) isRelationship(f *ast.FieldDefinition) bool {
 func (o *Object) IsExtended() bool {
 	return o.Extension != nil
 }
+func (o *Object) Interfaces() []string {
+	interfaces := []string{}
+	for _, item := range o.Def.Interfaces {
+		interfaces = append(interfaces, item.Name.Value)
+	}
+	return interfaces
+}

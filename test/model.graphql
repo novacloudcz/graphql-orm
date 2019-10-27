@@ -3,7 +3,11 @@ extend type Query {
   topCompanies: [Company!]!
 }
 
-type Company @entity @key(fields: "id") {
+interface NamedEntity {
+  name: String
+}
+
+type Company implements NamedEntity @entity @key(fields: "id") {
   name: String @column
 
   countryId: ID @column
