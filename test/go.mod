@@ -11,6 +11,8 @@ require (
 	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365
 	github.com/jinzhu/gorm v1.9.10
 	github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047
-	github.com/novacloudcz/graphql-orm v0.0.0-20190814163124-432b2853dd67
+	github.com/novacloudcz/graphql-orm v0.0.0
 	github.com/vektah/gqlparser v1.1.2
 )
+
+replace github.com/novacloudcz/graphql-orm v0.0.0 => ../

@@ -70,6 +70,10 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		}
 
 		if len(event.Changes) > 0 {
+			err = r.Handlers.OnEvent(ctx, r, &event)
+			if err != nil {
+				return
+			}
 			err = r.EventController.SendEvent(ctx, &event)
 		}
 
@@ -138,6 +142,10 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		}
 
 		if len(event.Changes) > 0 {
+			err = r.Handlers.OnEvent(ctx, r, &event)
+			if err != nil {
+				return
+			}
 			err = r.EventController.SendEvent(ctx, &event)
 			// data, _ := json.Marshal(event)
 			// fmt.Println("?",string(data))
@@ -177,7 +185,11 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 			tx.Rollback()
 			return
 		}
-
+		
+		err = r.Handlers.OnEvent(ctx, r, &event)
+		if err != nil {
+			return
+		}
 		err = r.EventController.SendEvent(ctx, &event)
 		
 		return 
