@@ -37,6 +37,9 @@ func (o *ObjectField) TargetType() string {
 func (o *ObjectField) IsColumn() bool {
 	return o.HasDirective("column")
 }
+func (o *ObjectField) IsIdentifier() bool {
+	return o.Name() == "id"
+}
 func (o *ObjectField) IsRelationship() bool {
 	return o.HasDirective("relationship")
 }
