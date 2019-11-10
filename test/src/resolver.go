@@ -14,11 +14,16 @@ func New(db *gen.DB, ec *events.EventController) *Resolver {
 	resolver := NewResolver(db, ec)
 
 	resolver.Handlers.OnEvent = func(ctx context.Context, r *gen.GeneratedResolver, e *events.Event) (err error) {
-		if e.Entity == "User" && e.Type == events.EventTypeUpdated && e.HasChangedColumn("firstName") {
-			_, err = r.Handlers.CreateTask(ctx, r, map[string]interface{}{
-				"title":      fmt.Sprintf("Hello %s!", e.NewValueString("firstName")),
-				"assigneeId": e.EntityID,
-			})
+		if e.Entity == "User" && e.Type == events.EventTypeUpdated {
+			change := e.Change("firstName")
+			if change != nil {
+				var firstName string
+				change.NewValueAs(&firstName)
+				_, err = r.Handlers.CreateTask(ctx, r, map[string]interface{}{
+					"title":      fmt.Sprintf("Hello %s!", firstName),
+					"assigneeId": e.EntityID,
+				})
+			}
 		}
 		return nil
 	}
