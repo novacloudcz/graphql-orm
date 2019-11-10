@@ -42,6 +42,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		{{range $col := .Columns}}{{if $col.IsCreatable}}
 			if _, ok := input["{{$col.Name}}"]; ok && (item.{{$col.MethodName}} != changes.{{$col.MethodName}}){{if $col.IsOptional}} && (item.{{$col.MethodName}} == nil || changes.{{$col.MethodName}} == nil || *item.{{$col.MethodName}} != *changes.{{$col.MethodName}}){{end}} {
 				item.{{$col.MethodName}} = changes.{{$col.MethodName}}
+				{{if $col.IsIdentifier}}event.EntityID = item.{{$col.MethodName}}{{end}}
 				event.AddNewValue("{{$col.Name}}", changes.{{$col.MethodName}})
 			}
 		{{end}}{{end}}
