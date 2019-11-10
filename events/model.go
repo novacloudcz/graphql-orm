@@ -78,6 +78,19 @@ func (e Event) NewValue(c string) (*EventDataValue, bool) {
 	return v, ok
 }
 
+// NewValueString returns new value for column as string
+func (e Event) NewValueString(c string) string {
+	v := e.NewValues[c]
+	if v == nil {
+		return ""
+	}
+	s := (*v).(*string)
+	if s == nil {
+		return ""
+	}
+	return *s
+}
+
 // ChangedColumns returns list of names of changed columns
 func (e Event) ChangedColumns() []string {
 	columns := []string{}
@@ -100,8 +113,8 @@ func (e *Event) Change(column string) (ec *EventChange) {
 }
 
 // AddNewValue ...
-func (e *Event) AddNewValue(column string, value interface{}) {
-	v := EventDataValue(value)
+func (e *Event) AddNewValue(column string, v EventDataValue) {
+	// v := EventDataValue(value)
 	e.NewValues[column] = &v
 	change := e.Change(column)
 	if change == nil {
@@ -113,8 +126,8 @@ func (e *Event) AddNewValue(column string, value interface{}) {
 }
 
 // AddOldValue ...
-func (e *Event) AddOldValue(column string, value interface{}) {
-	v := EventDataValue(value)
+func (e *Event) AddOldValue(column string, v EventDataValue) {
+	// v := EventDataValue(value)
 	e.NewValues[column] = &v
 	change := e.Change(column)
 	if change == nil {

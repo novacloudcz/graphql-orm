@@ -3,6 +3,7 @@ package src
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	"github.com/novacloudcz/graphql-orm/events"
@@ -11,6 +12,16 @@ import (
 
 func New(db *gen.DB, ec *events.EventController) *Resolver {
 	resolver := NewResolver(db, ec)
+
+	resolver.Handlers.OnEvent = func(ctx context.Context, r *gen.GeneratedResolver, e *events.Event) (err error) {
+		if e.Entity == "User" && e.Type == events.EventTypeUpdated && e.HasChangedColumn("firstName") {
+			_, err = r.Handlers.CreateTask(ctx, r, map[string]interface{}{
+				"title":      fmt.Sprintf("Hello %s!", e.NewValueString("firstName")),
+				"assigneeId": e.EntityID,
+			})
+		}
+		return nil
+	}
 
 	resolver.Handlers.CompanyReviews = func(ctx context.Context, r *gen.GeneratedCompanyResolver, obj *gen.Company) (res []*gen.Review, err error) {
 		return []*gen.Review{

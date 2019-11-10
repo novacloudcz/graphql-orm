@@ -14,6 +14,7 @@ import (
 )
 
 type ResolutionHandlers struct {
+	OnEvent        func(ctx context.Context, r *GeneratedResolver, e *events.Event) error
 	{{range $obj := .Model.ObjectEntities}}
 		Create{{$obj.Name}} func (ctx context.Context, r *GeneratedResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error)
 		Update{{$obj.Name}} func(ctx context.Context, r *GeneratedResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error)
@@ -32,6 +33,7 @@ type ResolutionHandlers struct {
 
 func DefaultResolutionHandlers() ResolutionHandlers {
 	handlers := ResolutionHandlers{
+		OnEvent: func(ctx context.Context, r *GeneratedResolver, e *events.Event) error { return nil },
 		{{range $obj := .Model.ObjectEntities}}
 			Create{{$obj.Name}}: Create{{$obj.Name}}Handler,
 			Update{{$obj.Name}}: Update{{$obj.Name}}Handler,
