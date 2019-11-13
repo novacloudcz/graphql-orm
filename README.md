@@ -20,6 +20,8 @@ _NOTE: Make sure you have Go installed on your system._
 1. open create `model.graphql` and create your custom model schema
 1. each time you change model, run `make generate` or `go run github.com/novacloudcz/graphql-orm` to recreate generated source codes
 
+_NOTE: graphql-orm requires Go modules for installation. If you are running in \$GOPATH, make sure you are running init command with GO111MODULE=on_
+
 ## Running locally
 
 For running locally you can use:
