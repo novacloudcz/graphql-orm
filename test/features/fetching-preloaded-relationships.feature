@@ -19,7 +19,7 @@ Feature: It should be possible to mutate with relationships
         When I send query:
             """
             query {
-            users { items { id lastName firstName employers { id name } } }
+            users(sort:[{id:DESC}]) { items { id lastName firstName employers { id name } } }
             }
             """
         Then the response should be:
