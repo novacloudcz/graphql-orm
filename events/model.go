@@ -63,8 +63,6 @@ type Event struct {
 	EventMetadata
 	ID      string         `json:"id"`
 	Changes []*EventChange `json:"changes"`
-	// OldValues map[string]*EventDataValue `json:"oldValues"`
-	// NewValues map[string]*EventDataValue `json:"newValues"`
 }
 
 // NewEvent ...
@@ -73,8 +71,6 @@ func NewEvent(meta EventMetadata) Event {
 		EventMetadata: meta,
 		ID:            uuid.Must(uuid.NewV4()).String(),
 		Changes:       []*EventChange{},
-		// OldValues:     map[string]*EventDataValue{},
-		// NewValues:     map[string]*EventDataValue{},
 	}
 }
 
@@ -87,31 +83,6 @@ func (e Event) HasChangedColumn(c string) bool {
 	}
 	return false
 }
-
-// // OldValue returns old value for column
-// func (e Event) OldValue(c string) (*EventDataValue, bool) {
-// 	v, ok := e.OldValues[c]
-// 	return v, ok
-// }
-
-// // NewValue returns new value for column
-// func (e Event) NewValue(c string) (*EventDataValue, bool) {
-// 	v, ok := e.NewValues[c]
-// 	return v, ok
-// }
-
-// // NewValueString returns new value for column as string
-// func (e Event) NewValueString(c string) string {
-// 	v := e.NewValues[c]
-// 	if v == nil {
-// 		return ""
-// 	}
-// 	s := (*v).(*string)
-// 	if s == nil {
-// 		return ""
-// 	}
-// 	return *s
-// }
 
 // ChangedColumns returns list of names of changed columns
 func (e Event) ChangedColumns() []string {
@@ -136,8 +107,6 @@ func (e *Event) Change(column string) (ec *EventChange) {
 
 // AddNewValue ...
 func (e *Event) AddNewValue(column string, v EventDataValue) {
-	// v := EventDataValue(value)
-	// e.NewValues[column] = &v
 	change := e.Change(column)
 	if change == nil {
 		c := EventChange{Name: column}
@@ -151,8 +120,6 @@ func (e *Event) AddNewValue(column string, v EventDataValue) {
 
 // AddOldValue ...
 func (e *Event) AddOldValue(column string, v EventDataValue) {
-	// v := EventDataValue(value)
-	// e.NewValues[column] = &v
 	change := e.Change(column)
 	if change == nil {
 		c := EventChange{Name: column}
