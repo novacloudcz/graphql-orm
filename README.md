@@ -36,6 +36,20 @@ or without makefile:
 DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go
 ```
 
+## Environment variables
+
+- `DATABASE_URL` - connection string for database in format `db://user:password@host:port/tablename` (eg. `mysql://root:pass@localhost:3306/test`; required)
+- `EXPOSE_MIGRATION_ENDPOINT` - expose `/migration` endpoint which triggers database migration (migrates to latest database schema; default: false)
+- `TABLE_NAME_PREFIX` - set global prefix for all table names (default: "")
+
+### Sqlite connection
+
+In case you want to connect with sqlite, you can use local file storage:
+`sqlite3://path/to/file.db`
+
+Or use in-memory storage:
+`sqlite3://:memory:`
+
 # Example
 
 You can find example project at [graphql-orm-example repo](https://github.com/novacloudcz/graphql-orm-example)
