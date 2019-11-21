@@ -20,6 +20,15 @@ func GetHTTPServeMux(r ResolverRoot, db *DB) *http.ServeMux {
 	loaders := GetLoaders(db)
 
 	playgroundHandler := handler.Playground("GraphQL playground", "/graphql")
+	if os.Getenv("EXPOSE_MIGRATION_ENDPOINT") == "true" {
+		mux.HandleFunc("/migrate", func(res http.ResponseWriter, req *http.Request) {
+			err := db.AutoMigrate().Error
+			if err != nil {
+				http.Error(res, err.Error(), 400)
+			}
+			fmt.Fprintf(res, "OK")
+		})
+	}
 	mux.HandleFunc("/graphql", func(res http.ResponseWriter, req *http.Request) {
 		claims, _ := getJWTClaims(req)
 		var principalID *string
