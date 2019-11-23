@@ -51,7 +51,6 @@ func (ec *EventChange) NewValueAs(data interface{}) error {
 
 type EventMetadata struct {
 	Type        EventType `json:"type"`
-	Cursor      string    `json:"cursor"`
 	Entity      string    `json:"entity"`
 	EntityID    string    `json:"entityId"`
 	Date        time.Time `json:"date"`
@@ -61,8 +60,10 @@ type EventMetadata struct {
 // Event ...
 type Event struct {
 	EventMetadata
-	ID      string         `json:"id"`
-	Changes []*EventChange `json:"changes"`
+	ID        string                    `json:"id"`
+	Changes   []*EventChange            `json:"changes"`
+	OldValues map[string]EventDataValue `json:"oldValues"`
+	NewValues map[string]EventDataValue `json:"newValues"`
 }
 
 // NewEvent ...
@@ -71,6 +72,8 @@ func NewEvent(meta EventMetadata) Event {
 		EventMetadata: meta,
 		ID:            uuid.Must(uuid.NewV4()).String(),
 		Changes:       []*EventChange{},
+		OldValues:     map[string]EventDataValue{},
+		NewValues:     map[string]EventDataValue{},
 	}
 }
 
@@ -116,6 +119,7 @@ func (e *Event) AddNewValue(column string, v EventDataValue) {
 	if err := change.SetNewValue(v); err != nil {
 		panic("failed to set new value" + err.Error())
 	}
+	e.NewValues[column] = v
 }
 
 // AddOldValue ...
@@ -129,4 +133,5 @@ func (e *Event) AddOldValue(column string, v EventDataValue) {
 	if err := change.SetOldValue(v); err != nil {
 		panic("failed to set new value" + err.Error())
 	}
+	e.OldValues[column] = v
 }

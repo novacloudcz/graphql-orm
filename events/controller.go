@@ -18,11 +18,17 @@ const (
 )
 
 type EventController struct {
-	clients map[string]cloudevents.Client
-	debug   bool
+	clients  map[string]cloudevents.Client
+	debug    bool
+	hostname string
 }
 
 func NewEventController() (ec EventController, err error) {
+	hostname, err := os.Hostname()
+	if err != nil {
+		return
+	}
+
 	URLs := getENVArray("EVENT_TRANSPORT_URL")
 	_clients := map[string]cloudevents.Client{}
 	for _, URL := range URLs {
@@ -38,12 +44,12 @@ func NewEventController() (ec EventController, err error) {
 			if err != nil {
 				return
 			}
-			log.Printf("Created cloudevents client with target %s", URL)
+			log.Printf("Created cloudevents client with target %s (hostname: %s)", URL, hostname)
 			_clients[URL] = client
 		}
 	}
 	debug := os.Getenv("DEBUG") == "true"
-	ec = EventController{clients: _clients, debug: debug}
+	ec = EventController{clients: _clients, debug: debug, hostname: hostname}
 	return
 }
 
@@ -67,12 +73,12 @@ func (c *EventController) SendEvent(ctx context.Context, e *Event) (err error) {
 	event := cloudevents.NewEvent()
 	event.SetID(e.ID)
 	event.SetType(ORMChangeEvent)
-	event.SetSource("http://graphql-orm/graphql")
+	event.SetSource("http://" + c.hostname + "/graphql")
+	event.SetTime(e.Date)
 	err = event.SetData(e)
 	if err != nil {
 		return
 	}
-
 	err = c.send(ctx, event)
 	return
 }
