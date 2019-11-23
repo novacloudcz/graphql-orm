@@ -68,6 +68,7 @@ func (c *EventController) SendEvent(ctx context.Context, e *Event) (err error) {
 	event.SetID(e.ID)
 	event.SetType(ORMChangeEvent)
 	event.SetSource("http://graphql-orm/graphql")
+	event.SetTime(e.Date)
 	err = event.SetData(e)
 	if err != nil {
 		return
