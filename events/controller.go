@@ -4,13 +4,13 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net/url"
 	"os"
 	"strings"
-	"net/url"
 
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
-	"github.com/jakubknejzlik/cloudevents-aws-transport"
+	cloudeventsaws "github.com/jakubknejzlik/cloudevents-aws-transport"
 )
 
 const (
@@ -49,7 +49,7 @@ func NewEventController() (ec EventController, err error) {
 
 func (c *EventController) send(ctx context.Context, e cloudevents.Event) error {
 	for URL, client := range c.clients {
-		if _,_, err := client.Send(ctx, e); err != nil {
+		if _, _, err := client.Send(ctx, e); err != nil {
 			if c.debug {
 				fmt.Printf("received cloudevents error %s from server %s\n", err.Error(), URL)
 			}
@@ -96,29 +96,33 @@ func getENVArray(name string) []string {
 	return arr
 }
 
-func transportForURL(URL string) (t transport.Transport,err error) {
+func transportForURL(URL string) (t transport.Transport, err error) {
 
-	if strings.HasPrefix(URL,"arn:aws:sns") {
-		t,err=cloudeventsaws.NewSNSTransport(URL)
-		return 
+	if strings.HasPrefix(URL, "arn:aws:sns") {
+		t, err = cloudeventsaws.NewSNSTransport(URL)
+		return
+	}
+	if strings.HasPrefix(URL, "arn:aws:events") {
+		t, err = cloudeventsaws.NewEventBridgeTransport(URL)
+		return
 	}
 
-	u,err := url.Parse(URL)
-	if err!=nil{
-		return 
+	u, err := url.Parse(URL)
+	if err != nil {
+		return
 	}
 	switch u.Scheme {
 	case "http":
 	case "https":
-		t,err=cloudevents.NewHTTPTransport(
+		t, err = cloudevents.NewHTTPTransport(
 			cloudevents.WithTarget(URL),
 			cloudevents.WithBinaryEncoding(),
 		)
 	case "sqs+https":
 		u.Scheme = "https"
-		t,err=cloudeventsaws.NewSQSTransport(u.String())
+		t, err = cloudeventsaws.NewSQSTransport(u.String())
 	default:
-		err = fmt.Errorf("unknown scheme %s",u.Scheme)
+		err = fmt.Errorf("unknown scheme %s", u.Scheme)
 
 	}
 	return
