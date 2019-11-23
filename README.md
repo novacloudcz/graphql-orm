@@ -41,6 +41,7 @@ DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go
 - `DATABASE_URL` - connection string for database in format `db://user:password@host:port/tablename` (eg. `mysql://root:pass@localhost:3306/test`; required)
 - `EXPOSE_MIGRATION_ENDPOINT` - expose `/migration` endpoint which triggers database migration (migrates to latest database schema; default: false)
 - `TABLE_NAME_PREFIX` - set global prefix for all table names (default: "")
+- `EVENT_TRANSPORT_URL` - destination url for sending mutation events (array supported in format `EVENT_TRANSPORT_URL_[INDEX]`) see [Events transport](#installation)
 
 ### Sqlite connection
 
@@ -85,3 +86,13 @@ If you want to create your own docker image, you can check the example repositor
 # What's this library for?
 
 While following microservices design patterns we ended up with many "model services". gqlgen is perfect tool, but implementing resolvers in every service is getting more and more cumbersome. Using this tool we only have to update `model.graphql` and all resolvers get generated automatically.
+
+# Events transport
+
+For event driven architecture it's necessary that the service is able to send events about changes in state.
+Services built using this library automatically send event for every mutation using CloudEvents (entity created/updated/deleted and changed column and their values). Supported targets are:
+
+- HTTP/HTTPS
+- AWS Services using [cloudevents-aws-transport](github.com/jakubknejzlik/cloudevents-aws-transport) (SNS/SQS/EventBridge)
+
+For more information about event structure see: https://github.com/novacloudcz/graphql-orm/blob/master/events/model.go
