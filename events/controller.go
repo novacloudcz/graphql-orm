@@ -18,15 +18,20 @@ const (
 )
 
 type EventController struct {
-	clients  map[string]cloudevents.Client
-	debug    bool
-	hostname string
+	clients map[string]cloudevents.Client
+	debug   bool
+	source  string
 }
 
 func NewEventController() (ec EventController, err error) {
-	hostname, err := os.Hostname()
-	if err != nil {
-		return
+	source := os.Getenv("EVENT_TRANSPORT_SOURCE")
+	if source == "" {
+		hostname, _err := os.Hostname()
+		if err != nil {
+			err = _err
+			return
+		}
+		source = "http://" + hostname + "/graphql"
 	}
 
 	URLs := getENVArray("EVENT_TRANSPORT_URL")
@@ -44,12 +49,15 @@ func NewEventController() (ec EventController, err error) {
 			if err != nil {
 				return
 			}
-			log.Printf("Created cloudevents client with target %s (hostname: %s)", URL, hostname)
+			log.Printf("Created cloudevents client with target %s", URL)
 			_clients[URL] = client
 		}
 	}
 	debug := os.Getenv("DEBUG") == "true"
-	ec = EventController{clients: _clients, debug: debug, hostname: hostname}
+	ec = EventController{clients: _clients, debug: debug, source: source}
+
+	log.Printf("Created EventController with source %s", source)
+
 	return
 }
 
@@ -73,7 +81,7 @@ func (c *EventController) SendEvent(ctx context.Context, e *Event) (err error) {
 	event := cloudevents.NewEvent()
 	event.SetID(e.ID)
 	event.SetType(ORMChangeEvent)
-	event.SetSource("http://" + c.hostname + "/graphql")
+	event.SetSource(c.source)
 	event.SetTime(e.Date)
 	err = event.SetData(e)
 	if err != nil {

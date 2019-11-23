@@ -42,6 +42,7 @@ DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go
 - `EXPOSE_MIGRATION_ENDPOINT` - expose `/migration` endpoint which triggers database migration (migrates to latest database schema; default: false)
 - `TABLE_NAME_PREFIX` - set global prefix for all table names (default: "")
 - `EVENT_TRANSPORT_URL` - destination url for sending mutation events (array supported in format `EVENT_TRANSPORT_URL_[INDEX]`) see [Events transport](#installation)
+- `EVENT_TRANSPORT_SOURCE` - custom value for CloudEvent source attribute (default: `http://{hostname}/graphql`)
 
 ### Sqlite connection
 
