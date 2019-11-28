@@ -21,7 +21,7 @@ Feature: It should be possible to fetch nested relationships with preload enable
         When I send query:
             """
             query {
-            tasks(sort:[{assignee:{employers:{name:ASC}}},{assignee:{firstName:DESC}}]) { items { id assignee { id firstName employers { id name } } } }
+            tasks(sort:[{assignee:{employers:{name:ASC}}},{assignee:{firstName:DESC}},{id:ASC}]) { items { id assignee { id firstName employers { id name } } } }
             }
             """
         Then the response should be:
