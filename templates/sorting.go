@@ -18,7 +18,7 @@ func (s {{$obj.Name}}SortType) ApplyWithAlias(ctx context.Context, dialect gorm.
 	
 	{{range $col := $obj.Columns}}{{if $col.IsSortable}}
 	if s.{{$col.MethodName}} != nil {
-		*sorts = append(*sorts, aliasPrefix+"{{$col.Name}} "+s.{{$col.MethodName}}.String())
+		*sorts = append(*sorts, aliasPrefix+dialect.Quote("{{$col.Name}}")+" "+s.{{$col.MethodName}}.String())
 	}
 	{{end}}{{end}}
 	
