@@ -12,7 +12,7 @@ test-run-sqlite3:
 test-run-postgres:
 	cd test && DATABASE_URL=postgres://postgres@localhost:5432/test?sslmode=disable make test && cd ..
 test-run-mysql:
-	cd test && DATABASE_URL=mysql://root:test@localhost:3306/test make test && cd ..
+	cd test && DATABASE_URL=mysql://root:@localhost/test make test && cd ..
 test-build-lambda:
 	cd test && make build-lambda-function && cd ..
 test-cleanup:

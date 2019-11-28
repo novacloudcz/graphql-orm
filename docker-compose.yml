@@ -12,6 +12,7 @@ services:
       - "3306:3306"
     image: "mariadb:10.3.2"
     environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 1
       MYSQL_DATABASE: test
       MYSQL_USER: root
-      MYSQL_ROOT_PASSWORD: test
+      MYSQL_PASSWORD: null
