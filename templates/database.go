@@ -79,8 +79,14 @@ func NewDBWithString(urlString string) *DB {
 func getConnectionString(u *url.URL) string {
 	if u.Scheme == "postgres" {
 		password, _ := u.User.Password()
-		host := strings.Split(u.Host, ":")[0]
-		return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, u.Port(), u.User.Username(), password, strings.TrimPrefix(u.Path, "/"))
+		params := u.Query()
+		params.Set("host", strings.Split(u.Host, ":")[0])
+		params.Set("port", u.Port())
+		params.Set("user", u.User.Username())
+		params.Set("password", password)
+		params.Set("dbname", strings.TrimPrefix(u.Path, "/"))
+		return strings.Replace(params.Encode(),"&"," ",-1)
+		// return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, u.Port(), u.User.Username(), password, strings.TrimPrefix(u.Path, "/"))
 	}
 	if u.Scheme != "sqlite3" {
 		u.Host = "tcp(" + u.Host + ")"

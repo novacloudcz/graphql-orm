@@ -8,10 +8,12 @@ Feature: It should be possible to fetch nested relationships with preload enable
             deleteAllTasks
             johny:createUser(input:{id:"johny",firstName:"John",lastName:"Doe"}) { id }
             jane:createUser(input:{id:"jane",firstName:"Jane",lastName:"Siri"}) { id }
+            dummy:createUser(input:{id:"dummy",firstName:"dummy",lastName:"User"}) { id }
             c1:createCompany(input:{id:"test",name:"test company",employeesIds:["johny"]}) { id }
-            c2:createCompany(input:{id:"test2",name:"AAA company",employeesIds:["jane"]}) { id }
+            c2:createCompany(input:{id:"test2",name:"AAA company",employeesIds:["jane","dummy"]}) { id }
             task1:createTask(input:{id:"test",title:"do something",completed:true,assigneeId:"jane"}) { id }
             task2:createTask(input:{id:"test2",title:"do another thing",completed:false,assigneeId:"johny"}) { id }
+            task3:createTask(input:{id:"test3",title:"do another second thing",completed:false,assigneeId:"johny"}) { id }
             }
             """
 
@@ -28,32 +30,46 @@ Feature: It should be possible to fetch nested relationships with preload enable
                 "tasks": {
                     "items": [
                         {
+                            "id": "test",
                             "assignee": {
+                                "id": "jane",
+                                "firstName": "Jane",
                                 "employers": [
                                     {
                                         "id": "test2",
                                         "name": "AAA company"
                                     }
-                                ],
-                                "firstName": "Jane",
-                                "id": "jane"
-                            },
-                            "id": "test"
+                                ]
+                            }
                         },
                         {
+                            "id": "test2",
                             "assignee": {
+                                "id": "johny",
+                                "firstName": "John",
                                 "employers": [
                                     {
                                         "id": "test",
                                         "name": "test company"
                                     }
-                                ],
+                                ]
+                            }
+                        },
+                        {
+                            "id": "test3",
+                            "assignee": {
+                                "id": "johny",
                                 "firstName": "John",
-                                "id": "johny"
-                            },
-                            "id": "test2"
+                                "employers": [
+                                    {
+                                        "id": "test",
+                                        "name": "test company"
+                                    }
+                                ]
+                            }
                         }
                     ]
                 }
             }
             """
+        And the error should be empty
