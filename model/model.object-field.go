@@ -13,7 +13,7 @@ var goTypeMap = map[string]string{
 	"Time":    "time.Time",
 	"ID":      "string",
 	"Float":   "float64",
-	"Int":     "int64",
+	"Int":     "int",
 	"Boolean": "bool",
 }
 
