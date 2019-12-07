@@ -15,15 +15,64 @@ import (
 
 type GeneratedMutationResolver struct{ *GeneratedResolver }
 
+type MutationEvents struct {
+	Events []events.Event
+}
+
+func enrichContextWithMutations(ctx context.Context, r *GeneratedResolver) context.Context {
+	_ctx := context.WithValue(ctx, KeyMutationTransaction, r.DB.db.Begin())
+	_ctx = context.WithValue(_ctx, KeyMutationEvents, &MutationEvents{})
+	return _ctx
+}
+func getTransaction(ctx context.Context) *gorm.DB {
+	return ctx.Value(KeyMutationTransaction).(*gorm.DB)
+}
+func getMutationEventStore(ctx context.Context) *MutationEvents {
+	return ctx.Value(KeyMutationEvents).(*MutationEvents)
+}
+func addMutationEvent(ctx context.Context, e events.Event) {
+	s := getMutationEventStore(ctx)
+	s.Events = append(s.Events, e)
+}
+func finishMutationContext(ctx context.Context, r *GeneratedResolver) (err error) {
+	s := getMutationEventStore(ctx)
+
+	for _, event := range s.Events {
+		err = r.Handlers.OnEvent(ctx, r, &event)
+		if err != nil {
+			return
+		}
+	}
+
+	tx:=getTransaction(ctx)
+	err = tx.Commit().Error
+	if err != nil {
+		tx.Rollback()
+		return
+	}
+
+	for _, event := range s.Events {
+		err = r.EventController.SendEvent(ctx, &event)
+	}
+
+	return
+}
+
 {{range $obj := .Model.ObjectEntities}}
 	func (r *GeneratedMutationResolver) Create{{$obj.Name}}(ctx context.Context, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
-		return r.Handlers.Create{{$obj.Name}}(ctx, r.GeneratedResolver, input)
+		ctx = enrichContextWithMutations(ctx, r.GeneratedResolver)
+		item, err = r.Handlers.Create{{$obj.Name}}(ctx, r.GeneratedResolver, input)
+		if err!=nil{
+			return
+		}
+		err = finishMutationContext(ctx, r.GeneratedResolver)
+		return
 	}
 	func Create{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
 		principalID := GetPrincipalIDFromContext(ctx)
 		now := time.Now()
 		item = &{{$obj.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
-		tx := r.DB.db.Begin()
+		tx := getTransaction(ctx)
 
 		event := events.NewEvent(events.EventMetadata{
 			Type:        events.EventTypeCreated,
@@ -36,6 +85,7 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		var changes {{$obj.Name}}Changes
 		err = ApplyChanges(input, &changes)
 		if err != nil {
+			tx.Rollback()
 			return 
 		}
 
@@ -64,30 +114,26 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 			{{end}}{{end}}
 		{{end}}
 
-		err = tx.Commit().Error
-		if err != nil {
-			tx.Rollback()
-			return
-		}
-
 		if len(event.Changes) > 0 {
-			err = r.Handlers.OnEvent(ctx, r, &event)
-			if err != nil {
-				return
-			}
-			err = r.EventController.SendEvent(ctx, &event)
+			addMutationEvent(ctx, event)
 		}
 
 		return 
 	}
 	func (r *GeneratedMutationResolver) Update{{$obj.Name}}(ctx context.Context, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
-		return r.Handlers.Update{{$obj.Name}}(ctx, r.GeneratedResolver, id, input)
+		ctx = enrichContextWithMutations(ctx, r.GeneratedResolver)
+		item,err = r.Handlers.Update{{$obj.Name}}(ctx, r.GeneratedResolver, id, input)
+		if err!=nil{
+			return
+		}
+		err = finishMutationContext(ctx, r.GeneratedResolver)
+		return
 	}
 	func Update{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, id string, input map[string]interface{}) (item *{{$obj.Name}}, err error) {
 		principalID := GetPrincipalIDFromContext(ctx)
 		item = &{{$obj.Name}}{}
 		now := time.Now()
-		tx := r.DB.db.Begin()
+		tx := getTransaction(ctx)
 
 		event := events.NewEvent(events.EventMetadata{
 			Type:        events.EventTypeUpdated,
@@ -100,11 +146,13 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		var changes {{$obj.Name}}Changes
 		err = ApplyChanges(input, &changes)
 		if err != nil {
+			tx.Rollback()
 			return 
 		}
 
 		err = GetItem(ctx, tx, item, &id)
 		if err != nil {
+			tx.Rollback()
 			return 
 		}
 
@@ -136,35 +184,30 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 		{{end}}{{end}}
 		{{end}}
 
-		err = tx.Commit().Error
-		if err != nil {
-			tx.Rollback()
-			return
-		}
-
 		if len(event.Changes) > 0 {
-			err = r.Handlers.OnEvent(ctx, r, &event)
-			if err != nil {
-				return
-			}
-			err = r.EventController.SendEvent(ctx, &event)
-			// data, _ := json.Marshal(event)
-			// fmt.Println("?",string(data))
+			addMutationEvent(ctx, event)
 		}
 
 		return 
 	}
 	func (r *GeneratedMutationResolver) Delete{{$obj.Name}}(ctx context.Context, id string) (item *{{$obj.Name}}, err error) {
-		return r.Handlers.Delete{{$obj.Name}}(ctx, r.GeneratedResolver, id)
+		ctx = enrichContextWithMutations(ctx, r.GeneratedResolver)
+		item,err = r.Handlers.Delete{{$obj.Name}}(ctx, r.GeneratedResolver, id)
+		if err!=nil{
+			return
+		}
+		err = finishMutationContext(ctx, r.GeneratedResolver)
+		return
 	}
 	func Delete{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, id string) (item *{{$obj.Name}}, err error) {
 		principalID := GetPrincipalIDFromContext(ctx)
 		item = &{{$obj.Name}}{}
 		now := time.Now()
-		tx := r.DB.db.Begin()
+		tx := getTransaction(ctx)
 
 		err = GetItem(ctx, tx, item, &id)
 		if err != nil {
+			tx.Rollback()
 			return 
 		}
 
@@ -181,26 +224,27 @@ type GeneratedMutationResolver struct{ *GeneratedResolver }
 			tx.Rollback()
 			return
 		}
-		err = tx.Commit().Error
-		if err != nil {
-			tx.Rollback()
-			return
+
+		if len(event.Changes) > 0 {
+			addMutationEvent(ctx, event)
 		}
-		
-		err = r.Handlers.OnEvent(ctx, r, &event)
-		if err != nil {
-			return
-		}
-		err = r.EventController.SendEvent(ctx, &event)
-		
+
 		return 
 	}
 	func (r *GeneratedMutationResolver) DeleteAll{{$obj.PluralName}}(ctx context.Context) (bool, error) {
-		return r.Handlers.DeleteAll{{$obj.PluralName}}(ctx, r.GeneratedResolver)
+		ctx = enrichContextWithMutations(ctx, r.GeneratedResolver)
+		done,err:=r.Handlers.DeleteAll{{$obj.PluralName}}(ctx, r.GeneratedResolver)
+		err = finishMutationContext(ctx, r.GeneratedResolver)
+		return done,err
 	}
-	func DeleteAll{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver) (bool, error) {
-		err := r.DB.db.Delete(&{{$obj.Name}}{}).Error
-		return err == nil, err
+	func DeleteAll{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver) (bool,error) {
+		tx := getTransaction(ctx)
+		err := tx.Delete(&{{$obj.Name}}{}).Error
+		if err!=nil{
+			tx.Rollback()
+			return false, err
+		}
+		return true, err
 	}
 {{end}}
 `
