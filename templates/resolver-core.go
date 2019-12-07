@@ -23,10 +23,10 @@ type ResolutionHandlers struct {
 		Query{{$obj.Name}} func (ctx context.Context, r *GeneratedResolver, opts Query{{$obj.Name}}HandlerOptions) (*{{$obj.Name}}, error)
 		Query{{$obj.PluralName}} func (ctx context.Context, r *GeneratedResolver, opts Query{{$obj.PluralName}}HandlerOptions) (*{{$obj.Name}}ResultType, error)
 		{{range $col := $obj.Fields}}{{if $col.NeedsQueryResolver}}
-			{{$obj.Name}}{{$col.MethodName}} func (ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error)
+			{{$obj.Name}}{{$col.MethodName}} func (ctx context.Context,r *GeneratedResolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error)
 		{{end}}{{end}}
 		{{range $rel := $obj.Relationships}}
-			{{$obj.Name}}{{$rel.MethodName}} func (ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error)
+			{{$obj.Name}}{{$rel.MethodName}} func (ctx context.Context,r *GeneratedResolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error)
 		{{end}}
 	{{end}}
 }

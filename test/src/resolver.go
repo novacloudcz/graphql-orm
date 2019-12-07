@@ -28,7 +28,7 @@ func New(db *gen.DB, ec *events.EventController) *Resolver {
 		return nil
 	}
 
-	resolver.Handlers.CompanyReviews = func(ctx context.Context, r *gen.GeneratedCompanyResolver, obj *gen.Company) (res []*gen.Review, err error) {
+	resolver.Handlers.CompanyReviews = func(ctx context.Context, r *gen.GeneratedResolver, obj *gen.Company) (res []*gen.Review, err error) {
 		return []*gen.Review{
 			&gen.Review{
 				ID: "1",
@@ -38,7 +38,7 @@ func New(db *gen.DB, ec *events.EventController) *Resolver {
 		}, nil
 	}
 
-	resolver.Handlers.UserAddress = func(ctx context.Context, r *gen.GeneratedUserResolver, obj *gen.User) (res *gen.Address, err error) {
+	resolver.Handlers.UserAddress = func(ctx context.Context, r *gen.GeneratedResolver, obj *gen.User) (res *gen.Address, err error) {
 		if obj.AddressRaw != nil {
 			res = &gen.Address{}
 			err = json.Unmarshal([]byte(*obj.AddressRaw), res)

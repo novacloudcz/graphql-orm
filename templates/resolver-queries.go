@@ -136,9 +136,9 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		{{range $col := $obj.Fields}}
 			{{if $col.NeedsQueryResolver}}
 				func (r *Generated{{$obj.Name}}Resolver) {{$col.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
-					return r.Handlers.{{$obj.Name}}{{$col.MethodName}}(ctx, r, obj)
+					return r.Handlers.{{$obj.Name}}{{$col.MethodName}}(ctx, r.GeneratedResolver, obj)
 				}
-				func {{$obj.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
+				func {{$obj.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *GeneratedResolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
 					{{if and (not $col.IsList) $col.HasTargetTypeWithIDField ($obj.HasColumn (print $col.Name "Id"))}}
 						if obj.{{$col.MethodName}}ID != nil {
 							res = &{{$col.TargetType}}{ID: *obj.{{$col.MethodName}}ID}
@@ -153,9 +153,9 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 		{{range $index, $rel := $obj.Relationships}}
 			func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
-				return r.Handlers.{{$obj.Name}}{{$rel.MethodName}}(ctx, r, obj)
+				return r.Handlers.{{$obj.Name}}{{$rel.MethodName}}(ctx, r.GeneratedResolver, obj)
 			}
-			func {{$obj.Name}}{{$rel.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
+			func {{$obj.Name}}{{$rel.MethodName}}Handler(ctx context.Context,r *GeneratedResolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
 				{{if $rel.Preload}}
 				if obj.{{$rel.MethodName}}Preloaded {
 					res = obj.{{$rel.MethodName}}
