@@ -19,6 +19,17 @@ type MutationResolver struct {
 	*gen.GeneratedMutationResolver
 }
 
+func (r * MutationResolver)BeginTransaction(ctx context.Context,fn func(context.Context) error) error {
+	ctx = gen.EnrichContextWithMutations(ctx, r.GeneratedResolver)
+	err := fn(ctx)
+	if err!=nil{
+		tx := gen.GetTransaction(ctx)
+		tx.Rollback()
+		return err
+	}
+	return gen.FinishMutationContext(ctx, r.GeneratedResolver)
+}
+
 type QueryResolver struct {
 	*gen.GeneratedQueryResolver
 }

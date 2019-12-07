@@ -184,6 +184,7 @@ github.com/novacloudcz/graphql-orm/test v0.0.0-20191003121010-6e00c89b9715 h1:6b
 github.com/novacloudcz/graphql-orm/test v0.0.0-20191027011951-c852c8ef73d5 h1:Uh5iRPBjVzv2f4XGLRyxFNydN7uTr+7rMs/5MIo0k78=
 github.com/novacloudcz/graphql-orm/test v0.0.0-20191110004830-3f9b9eaa3e87 h1:6P1ANPMsDEyxCpVCKEHznAltxP+GFfpJO0+SyF7PH7g=
 github.com/novacloudcz/graphql-orm/test v0.0.0-20191115012212-6a5da38d6394 h1:6qqvWrMb6R9Myu8LequFYvlVNYeNCaijdzE69wTWqmU=
+github.com/novacloudcz/graphql-orm/test v0.0.0-20191207140844-f25da6ba1291 h1:mvCjh1Smgz/+OO5dQPpM/Fwzr4yp7BUfpGUpu4gZEZA=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.7.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
