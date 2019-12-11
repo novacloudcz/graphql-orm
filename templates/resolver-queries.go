@@ -123,6 +123,16 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				item.{{$rel.MethodName}}Preloaded = true{{end}}
 			}
 		{{end}}
+
+		uniqueItems := []*{{$obj.Name}}{}
+		idMap := map[string]bool{}
+		for _, item := range items {
+			if _,ok := idMap[item.ID]; !ok {
+				idMap[item.ID] = true
+				uniqueItems = append(uniqueItems, item)
+			}
+		}
+		items = uniqueItems
 		return
 	}
 

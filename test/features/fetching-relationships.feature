@@ -10,6 +10,7 @@ Feature: It should be possible to fetch with relationships
             johny:createUser(input:{id:"johny",firstName:"John",lastName:"Doe"}) { id }
             jane:createUser(input:{id:"jane",firstName:"Jane",lastName:"Siri"}) { id }
             createCompany(input:{id:"test",name:"test company",employeesIds:["johny"]}) { id }
+            company2:createCompany(input:{id:"test2",name:"test2 company",employeesIds:["johny","jane"]}) { id }
             createTask(input:{id:"test",title:"do something",completed:true,assigneeId:"jane"}) { id }
             }
             """
@@ -19,44 +20,51 @@ Feature: It should be possible to fetch with relationships
             """
             query {
             users(sort:[{firstName:DESC}]) { items { firstName lastName createdBy updatedBy employers { name } } count }
-            companies { items { name employees { firstName } } }
+            companies(filter:{id:"test"}) { items { name employees { firstName } } }
             }
             """
         Then the response should be:
             """
             {
-                "users": {
-                    "items": [
-                        {
-                            "firstName": "John",
-                            "lastName": "Doe",
-                            "createdBy": null,
-                            "updatedBy": null,
-                            "employers": [
-                                {
-                                    "name": "test company"
-                                }
-                            ]
-                        },
-                        {
-                            "firstName": "Jane",
-                            "lastName": "Siri",
-                            "createdBy": null,
-                            "updatedBy": null,
-                            "employers": []
-                        }
-                    ],
-                    "count": 2
-                },
                 "companies": {
                     "items": [
                         {
-                            "name": "test company",
                             "employees": [
                                 {
                                     "firstName": "John"
                                 }
-                            ]
+                            ],
+                            "name": "test company"
+                        }
+                    ]
+                },
+                "users": {
+                    "count": 2,
+                    "items": [
+                        {
+                            "createdBy": null,
+                            "employers": [
+                                {
+                                    "name": "test company"
+                                },
+                                {
+                                    "name": "test2 company"
+                                }
+                            ],
+                            "firstName": "John",
+                            "lastName": "Doe",
+                            "updatedBy": null
+                        },
+                        {
+                            "createdBy": null,
+                            "employers": [
+                                {
+                                    "name": "test2 company"
+                                }
+                            ],
+                            "firstName": "Jane",
+                            "lastName": "Siri",
+                            "updatedBy": null
                         }
                     ]
                 }
@@ -83,6 +91,9 @@ Feature: It should be possible to fetch with relationships
                             "employers": [
                                 {
                                     "name": "test company"
+                                },
+                                {
+                                    "name": "test2 company"
                                 }
                             ]
                         }
