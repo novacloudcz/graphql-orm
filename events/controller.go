@@ -126,8 +126,7 @@ func transportForURL(URL string) (t transport.Transport, err error) {
 		return
 	}
 	switch u.Scheme {
-	case "http":
-	case "https":
+	case "http", "https":
 		t, err = cloudevents.NewHTTPTransport(
 			cloudevents.WithTarget(URL),
 			cloudevents.WithBinaryEncoding(),
