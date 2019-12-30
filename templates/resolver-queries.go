@@ -30,6 +30,12 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		return r.Handlers.Query{{$obj.Name}}(ctx, r.GeneratedResolver, opts)
 	}
 	func Query{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.Name}}HandlerOptions) (*{{$obj.Name}}, error) {
+		selection := []ast.Selection{}
+		for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
+			selection = append(selection, f.Field)
+		}
+		selectionSet := ast.SelectionSet(selection)
+		
 		query := {{$obj.Name}}QueryFilter{opts.Q}
 		offset := 0
 		limit := 1
@@ -39,6 +45,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				Limit:  &limit,
 				Query:  &query,
 				Filter: opts.Filter,
+				SelectionSet: &selectionSet,
 			},
 		}
 		qb := r.DB.Query()
