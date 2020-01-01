@@ -15,6 +15,7 @@ go get golang.org/x/tools/cmd/goimports
 _NOTE: Make sure you have Go installed on your system._
 
 1. Create new project repository
+1. run `go mod init [MODULE]` to initialize your project with go modules
 1. run `go run github.com/novacloudcz/graphql-orm init`
 1. follow initialization instruction (creating makefile is suggested)
 1. open create `model.graphql` and create your custom model schema
