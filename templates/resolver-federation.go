@@ -49,7 +49,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 				return
 			}
 
-			if f.IsEmpty(ctx, r.DB.Query().Dialect()) {
+			if f.IsEmpty(ctx, r.GetDB(ctx).Dialect()) {
 				res = append(res, nil)
 				continue
 			}
@@ -89,7 +89,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			{{else}}
 				{{if $rel.IsToMany}}
 					items := []*{{$rel.TargetType}}{}
-					err = r.DB.Query().Model(obj).Related(&items, "{{$rel.MethodName}}").Error
+					err = r.GetDB(ctx).Model(obj).Related(&items, "{{$rel.MethodName}}").Error
 					res = items
 				{{else}}
 					loaders := ctx.Value(KeyLoaders).(map[string]*dataloader.Loader)

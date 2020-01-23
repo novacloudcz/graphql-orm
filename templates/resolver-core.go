@@ -57,4 +57,13 @@ type GeneratedResolver struct {
 	DB *DB
 	EventController *events.EventController
 }
+
+// GetDB returns database connection or transaction for given context (if exists)
+func (r *GeneratedResolver) GetDB(ctx context.Context) *gorm.DB {
+	db, _ := ctx.Value(KeyMutationTransaction).(*gorm.DB)
+	if db == nil {
+		db = r.DB.Query()
+	}
+	return db
+}
 `

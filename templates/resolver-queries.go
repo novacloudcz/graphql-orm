@@ -48,7 +48,10 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				SelectionSet: &selectionSet,
 			},
 		}
-		qb := r.DB.Query()
+		qb := r.GetDB(ctx)
+		if qb == nil {
+			qb = r.DB.Query()
+		}
 		if opts.ID != nil {
 			qb = qb.Where(TableName("{{$obj.TableName}}") + ".id = ?", *opts.ID)
 		}
@@ -192,7 +195,11 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				{{end}}
 					{{if $rel.IsToMany}}
 							items := []*{{$rel.TargetType}}{}
-							err = r.DB.Query().Model(obj).Related(&items, "{{$rel.MethodName}}").Error
+							db := r.GetDB(ctx)
+							if db == nil {
+								db = r.DB.Query()
+							}
+							err = db.Model(obj).Related(&items, "{{$rel.MethodName}}").Error
 							res = items
 					{{else}}
 						loaders := ctx.Value(KeyLoaders).(map[string]*dataloader.Loader)
@@ -216,7 +223,11 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 					ids = []string{}
 
 					items := []*{{$rel.TargetType}}{}
-					err = r.DB.Query().Model(obj).Select(TableName("{{$rel.Target.TableName}}") + ".id").Related(&items, "{{$rel.MethodName}}").Error
+					db := r.GetDB(ctx)
+					if db == nil {
+						db = r.DB.Query()
+					}
+					err = db.Model(obj).Select(TableName("{{$rel.Target.TableName}}") + ".id").Related(&items, "{{$rel.MethodName}}").Error
 
 					for _, item := range items {
 						ids = append(ids, item.ID)

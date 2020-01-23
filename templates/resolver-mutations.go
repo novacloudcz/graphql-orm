@@ -34,7 +34,7 @@ func FinishMutationContext(ctx context.Context, r *GeneratedResolver) (err error
 		}
 	}
 
-	tx := GetTransaction(ctx)
+	tx := r.GetDB(ctx)
 	err = tx.Commit().Error
 	if err != nil {
 		tx.Rollback()
@@ -46,9 +46,6 @@ func FinishMutationContext(ctx context.Context, r *GeneratedResolver) (err error
 	}
 
 	return
-}
-func GetTransaction(ctx context.Context) *gorm.DB {
-	return ctx.Value(KeyMutationTransaction).(*gorm.DB)
 }
 func GetMutationEventStore(ctx context.Context) *MutationEvents {
 	return ctx.Value(KeyMutationEvents).(*MutationEvents)
@@ -72,7 +69,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		principalID := GetPrincipalIDFromContext(ctx)
 		now := time.Now()
 		item = &{{$obj.Name}}{ID: uuid.Must(uuid.NewV4()).String(), CreatedAt: now, CreatedBy: principalID}
-		tx := GetTransaction(ctx)
+		tx := r.GetDB(ctx)
 
 		event := events.NewEvent(events.EventMetadata{
 			Type:        events.EventTypeCreated,
@@ -149,7 +146,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		principalID := GetPrincipalIDFromContext(ctx)
 		item = &{{$obj.Name}}{}
 		now := time.Now()
-		tx := GetTransaction(ctx)
+		tx := r.GetDB(ctx)
 
 		event := events.NewEvent(events.EventMetadata{
 			Type:        events.EventTypeUpdated,
@@ -240,7 +237,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		principalID := GetPrincipalIDFromContext(ctx)
 		item = &{{$obj.Name}}{}
 		now := time.Now()
-		tx := GetTransaction(ctx)
+		tx := r.GetDB(ctx)
 
 		err = GetItem(ctx, tx, item, &id)
 		if err != nil {
@@ -275,7 +272,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		return done,err
 	}
 	func DeleteAll{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver) (bool,error) {
-		tx := GetTransaction(ctx)
+		tx := r.GetDB(ctx)
 		err := tx.Delete(&{{$obj.Name}}{}).Error
 		if err!=nil{
 			tx.Rollback()

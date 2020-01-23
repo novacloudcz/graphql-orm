@@ -23,7 +23,7 @@ func (r * MutationResolver)BeginTransaction(ctx context.Context,fn func(context.
 	ctx = gen.EnrichContextWithMutations(ctx, r.GeneratedResolver)
 	err := fn(ctx)
 	if err!=nil{
-		tx := gen.GetTransaction(ctx)
+		tx := r.GeneratedResolver.GetDB(ctx)
 		tx.Rollback()
 		return err
 	}
