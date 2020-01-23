@@ -152,16 +152,28 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 		{{range $col := $obj.Fields}}
 			{{if $col.NeedsQueryResolver}}
-				func (r *Generated{{$obj.Name}}Resolver) {{$col.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
+				func (r *Generated{{$obj.Name}}Resolver) {{$col.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$col.GoResultType}}, err error) {
 					return r.Handlers.{{$obj.Name}}{{$col.MethodName}}(ctx, r.GeneratedResolver, obj)
 				}
-				func {{$obj.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *GeneratedResolver, obj *{{$obj.Name}}) (res {{$col.GoType}}, err error) {
+				func {{$obj.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *GeneratedResolver, obj *{{$obj.Name}}) (res {{$col.GoResultType}}, err error) {
 					{{if and (not $col.IsList) $col.HasTargetTypeWithIDField ($obj.HasColumn (print $col.Name "Id"))}}
 						if obj.{{$col.MethodName}}ID != nil {
 							res = &{{$col.TargetType}}{ID: *obj.{{$col.MethodName}}ID}
 						}
 					{{else}}
-						err = fmt.Errorf("Resolver handler for {{$obj.Name}}{{$col.MethodName}} not implemented")
+						{{if $col.IsEmbeddedColumn}}
+							{{if $col.IsOptional}}
+								if obj.{{$col.MethodName}} != nil && *obj.{{$col.MethodName}} != "" {
+									err = json.Unmarshal([]byte(*obj.{{$col.MethodName}}), &res)
+								}
+							{{else}}
+								if obj.{{$col.MethodName}} != "" {
+									err = json.Unmarshal([]byte(obj.{{$col.MethodName}}), &res)
+								}
+							{{end}}
+						{{else}}
+							err = fmt.Errorf("Resolver handler for {{$obj.Name}}{{$col.MethodName}} not implemented")
+						{{end}}
 					{{end}}
 					return 
 				}

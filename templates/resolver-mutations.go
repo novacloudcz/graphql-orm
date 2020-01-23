@@ -90,11 +90,27 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		}
 
 		{{range $col := .Columns}}{{if $col.IsCreatable}}
-			if _, ok := input["{{$col.Name}}"]; ok && (item.{{$col.MethodName}} != changes.{{$col.MethodName}}){{if $col.IsOptional}} && (item.{{$col.MethodName}} == nil || changes.{{$col.MethodName}} == nil || *item.{{$col.MethodName}} != *changes.{{$col.MethodName}}){{end}} {
-				item.{{$col.MethodName}} = changes.{{$col.MethodName}}
-				{{if $col.IsIdentifier}}event.EntityID = item.{{$col.MethodName}}{{end}}
-				event.AddNewValue("{{$col.Name}}", changes.{{$col.MethodName}})
-			}
+			{{if $col.IsEmbeddedColumn}}
+				if _, ok := input["{{$col.Name}}"]; ok {
+					_value,_err := json.Marshal(changes.{{$col.MethodName}})
+					if _err != nil {
+						err = _err
+						return
+					}
+					strval := string(_value)
+					value := {{if $col.IsOptional}}&{{end}}strval
+					if item.{{$col.MethodName}} != value {{if $col.IsOptional}}&& (item.{{$col.MethodName}} == nil || value == nil || *item.{{$col.MethodName}} != *value){{end}} { 
+						item.{{$col.MethodName}} = value
+						event.AddNewValue("{{$col.Name}}", value)
+					}
+				}
+			{{else}}
+				if _, ok := input["{{$col.Name}}"]; ok && (item.{{$col.MethodName}} != changes.{{$col.MethodName}}){{if $col.IsOptional}} && (item.{{$col.MethodName}} == nil || changes.{{$col.MethodName}} == nil || *item.{{$col.MethodName}} != *changes.{{$col.MethodName}}){{end}} {
+					item.{{$col.MethodName}} = changes.{{$col.MethodName}}
+					{{if $col.IsIdentifier}}event.EntityID = item.{{$col.MethodName}}{{end}}
+					event.AddNewValue("{{$col.Name}}", changes.{{$col.MethodName}})
+				}
+			{{end}}
 		{{end}}{{end}}
 		
 		err = tx.Create(item).Error
@@ -159,11 +175,32 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		item.UpdatedBy = principalID
 
 		{{range $col := .Columns}}{{if $col.IsUpdatable}}
-			if _, ok := input["{{$col.Name}}"]; ok && (item.{{$col.MethodName}} != changes.{{$col.MethodName}}){{if $col.IsOptional}} && (item.{{$col.MethodName}} == nil || changes.{{$col.MethodName}} == nil || *item.{{$col.MethodName}} != *changes.{{$col.MethodName}}){{end}} {
-				event.AddOldValue("{{$col.Name}}", item.{{$col.MethodName}})
-				event.AddNewValue("{{$col.Name}}", changes.{{$col.MethodName}})
-				item.{{$col.MethodName}} = changes.{{$col.MethodName}}
-			}
+			{{if $col.IsEmbeddedColumn}}
+				if _, ok := input["{{$col.Name}}"]; ok {
+					_value,_err := json.Marshal(changes.{{$col.MethodName}})
+					if _err != nil {
+						err = _err
+						return
+					}
+					if _err!=nil {
+						err = _err
+						return
+					}
+					strval := string(_value)
+					value := {{if $col.IsOptional}}&{{end}}strval
+					if item.{{$col.MethodName}} != value {{if $col.IsOptional}}&& (item.{{$col.MethodName}} == nil || value == nil || *item.{{$col.MethodName}} != *value){{end}} { 
+						event.AddOldValue("{{$col.Name}}", item.{{$col.MethodName}})
+						event.AddNewValue("{{$col.Name}}", value)
+						item.{{$col.MethodName}} = value
+					}
+				}
+			{{else}}
+				if _, ok := input["{{$col.Name}}"]; ok && (item.{{$col.MethodName}} != changes.{{$col.MethodName}}){{if $col.IsOptional}} && (item.{{$col.MethodName}} == nil || changes.{{$col.MethodName}} == nil || *item.{{$col.MethodName}} != *changes.{{$col.MethodName}}){{end}} {
+					event.AddOldValue("{{$col.Name}}", item.{{$col.MethodName}})
+					event.AddNewValue("{{$col.Name}}", changes.{{$col.MethodName}})
+					item.{{$col.MethodName}} = changes.{{$col.MethodName}}
+				}
+			{{end}}
 		{{end}}
 		{{end}}
 		

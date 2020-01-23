@@ -2,20 +2,12 @@ package model
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/99designs/gqlgen/codegen/templates"
 	"github.com/graphql-go/graphql/language/ast"
 	"github.com/iancoleman/strcase"
 )
-
-var goTypeMap = map[string]string{
-	"String":  "string",
-	"Time":    "time.Time",
-	"ID":      "string",
-	"Float":   "float64",
-	"Int":     "int",
-	"Boolean": "bool",
-}
 
 type ObjectField struct {
 	Def *ast.FieldDefinition
@@ -40,6 +32,9 @@ func (o *ObjectField) IsColumn() bool {
 func (o *ObjectField) IsIdentifier() bool {
 	return o.Name() == "id"
 }
+func (o *ObjectField) IsRelationshipIdentifier() bool {
+	return strings.HasSuffix(o.Name(), "Id") || strings.HasSuffix(o.Name(), "Ids")
+}
 func (o *ObjectField) IsRelationship() bool {
 	return o.HasDirective("relationship")
 }
@@ -47,13 +42,19 @@ func (o *ObjectField) IsCreatable() bool {
 	return !(o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy") && !o.IsReadonlyType()
 }
 func (o *ObjectField) IsUpdatable() bool {
-	return !(o.Name() == "id" || o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy") && !o.IsReadonlyType()
+	return !(o.IsIdentifier() || o.Name() == "createdAt" || o.Name() == "updatedAt" || o.Name() == "createdBy" || o.Name() == "updatedBy") && !o.IsReadonlyType()
 }
 func (o *ObjectField) IsReadonlyType() bool {
+	if o.IsEmbeddedColumn() {
+		return false
+	}
 	return !(o.IsScalarType() || o.IsEnumType()) || o.Obj.Model.HasObject(o.TargetType())
 }
 func (o *ObjectField) IsWritableType() bool {
 	return !o.IsReadonlyType()
+}
+func (o *ObjectField) IsFilterable() bool {
+	return !o.IsReadonlyType() && !o.IsEmbedded()
 }
 func (o *ObjectField) IsScalarType() bool {
 	return o.Obj.Model.HasScalar(o.TargetType())
@@ -68,7 +69,10 @@ func (o *ObjectField) IsList() bool {
 	return isListType(o.Def.Type)
 }
 func (o *ObjectField) IsEmbedded() bool {
-	return !o.IsColumn() && !o.IsRelationship()
+	return !o.IsColumn() && !o.IsRelationship() || o.IsEmbeddedColumn()
+}
+func (o *ObjectField) IsEmbeddedColumn() bool {
+	return (o.IsColumn() && o.ColumnType() == "embedded")
 }
 func (o *ObjectField) HasTargetObject() bool {
 	return o.Obj.Model.HasObject(o.TargetType())
@@ -109,6 +113,20 @@ func (o *ObjectField) NeedsQueryResolver() bool {
 func (o *ObjectField) HasDirective(name string) bool {
 	return o.Directive(name) != nil
 }
+func (o *ObjectField) ColumnType() (value string) {
+	directive := o.Directive("column")
+	if directive == nil {
+		return
+	}
+	for _, arg := range directive.Arguments {
+		if arg.Name.Value == "type" {
+			val := arg.Value.GetValue()
+			value, _ = val.(string)
+			break
+		}
+	}
+	return
+}
 func (o *ObjectField) HasTargetTypeWithIDField() bool {
 	if o.HasTargetObject() && o.TargetObject().HasField("id") {
 		return true
@@ -120,9 +138,9 @@ func (o *ObjectField) HasTargetTypeWithIDField() bool {
 }
 
 func (o *ObjectField) GoType() string {
-	return o.GoTypeWithPointer(true)
+	return o.GoTypeWithPointer(true, false)
 }
-func (o *ObjectField) GoTypeWithPointer(showPointer bool) string {
+func (o *ObjectField) GoTypeWithPointer(showPointer, ignoreEmbedded bool) string {
 	t := o.Def.Type
 	st := ""
 
@@ -132,8 +150,12 @@ func (o *ObjectField) GoTypeWithPointer(showPointer bool) string {
 		t = getNullableType(t)
 	}
 
+	if o.IsEmbeddedColumn() && !ignoreEmbedded {
+		return st + "string"
+	}
+
 	if isListType(t) {
-		st += "[]*"
+		st = "[]*"
 	}
 
 	v, ok := getNamedType(o.Def.Type).(*ast.Named)
@@ -148,6 +170,9 @@ func (o *ObjectField) GoTypeWithPointer(showPointer bool) string {
 
 	return st
 }
+func (o *ObjectField) GoResultType() string {
+	return o.GoTypeWithPointer(true, true)
+}
 
 func (o *ObjectField) ModelTags() string {
 	_gorm := fmt.Sprintf("column:%s", o.Name())
@@ -155,23 +180,57 @@ func (o *ObjectField) ModelTags() string {
 		_gorm += ";primary_key"
 	}
 
-	columnDirective := o.Directive("column")
-	for _, arg := range columnDirective.Arguments {
-		if arg.Name.Value == "type" {
-			_gorm += fmt.Sprintf(";type:%v", arg.Value.GetValue())
-		}
-		if arg.Name.Value == "unique" {
-			val, ok := arg.Value.GetValue().(bool)
-			if ok && val {
-				_gorm += fmt.Sprintf(";unique")
+	if o.IsEmbeddedColumn() {
+		_gorm += ";type:text"
+	} else {
+
+		columnDirective := o.Directive("column")
+		for _, arg := range columnDirective.Arguments {
+			if arg.Name.Value == "type" {
+				_gorm += fmt.Sprintf(";type:%v", arg.Value.GetValue())
 			}
-		}
-		if arg.Name.Value == "index" {
-			_gorm += fmt.Sprintf(";index:%v", arg.Value.GetValue())
+			if arg.Name.Value == "unique" {
+				val, ok := arg.Value.GetValue().(bool)
+				if ok && val {
+					_gorm += fmt.Sprintf(";unique")
+				}
+			}
+			if arg.Name.Value == "index" {
+				_gorm += fmt.Sprintf(";index:%v", arg.Value.GetValue())
+			}
 		}
 	}
 
 	return fmt.Sprintf(`json:"%s" gorm:"%s"`, o.Name(), _gorm)
+}
+func (o *ObjectField) InputType() ast.Type {
+	t := o.Def.Type
+	if o.IsIdentifier() {
+		t = nonNull(getNamedType(t))
+	}
+	isList := o.IsList()
+	isOptional := o.IsOptional()
+
+	if o.IsEmbeddedColumn() {
+		_t := getNamedType(t).(*ast.Named)
+		t = namedType(_t.Name.Value + "Input")
+
+		if isList {
+			t = listType(t)
+		}
+		if !isOptional {
+			t = nonNull(t)
+		}
+	}
+	if o.IsRelationshipIdentifier() {
+		t = getNullableType(t)
+	}
+
+	return t
+}
+func (o *ObjectField) InputTypeName() string {
+	t := o.InputType()
+	return astTypeToGoType(t)
 }
 
 type FilterMappingItem struct {

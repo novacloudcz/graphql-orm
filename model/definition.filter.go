@@ -18,10 +18,10 @@ func createObjectFilterType(obj Object) *ast.InputObjectDefinition {
 	// fields = append(fields, filterInputValues("id", namedType("ID"))...)
 
 	for _, col := range obj.Columns() {
-		if obj.IsToManyColumn(col) || col.IsReadonlyType() {
+		if obj.IsToManyColumn(col) || !col.IsFilterable() {
 			continue
 		}
-		fields = append(fields, filterInputValues(&col, col.Def.Type)...)
+		fields = append(fields, filterInputValues(&col, col.InputType())...)
 	}
 	for _, rel := range obj.Relationships() {
 		fields = append(fields, filterInputValue(rel.Name(), namedType(rel.Target().Name()+"FilterType")))

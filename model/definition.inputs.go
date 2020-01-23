@@ -12,12 +12,9 @@ func createObjectDefinition(obj Object) *ast.InputObjectDefinition {
 		if !col.IsCreatable() {
 			continue
 		}
-		t := col.Def.Type
-		if col.Name() == "id" {
+		t := col.InputType()
+		if col.IsIdentifier() {
 			t = getNamedType(t)
-		}
-		if isListType(getNullableType(t)) {
-			t = getNullableType(t)
 		}
 		fields = append(fields, &ast.InputValueDefinition{
 			Kind:        kinds.InputValueDefinition,
@@ -43,12 +40,29 @@ func updateObjectDefinition(obj Object) *ast.InputObjectDefinition {
 			Kind:        kinds.InputValueDefinition,
 			Name:        col.Def.Name,
 			Description: col.Def.Description,
-			Type:        getNullableType(col.Def.Type),
+			Type:        getNullableType(col.InputType()),
 		})
 	}
 	return &ast.InputObjectDefinition{
 		Kind:   kinds.InputObjectDefinition,
 		Name:   nameNode(obj.Name() + "UpdateInput"),
+		Fields: fields,
+	}
+}
+
+func embeddedObjectDefinition(obj Object) *ast.InputObjectDefinition {
+	fields := []*ast.InputValueDefinition{}
+	for _, field := range obj.Fields() {
+		fields = append(fields, &ast.InputValueDefinition{
+			Kind:        kinds.InputValueDefinition,
+			Name:        field.Def.Name,
+			Description: field.Def.Description,
+			Type:        field.Def.Type,
+		})
+	}
+	return &ast.InputObjectDefinition{
+		Kind:   kinds.InputObjectDefinition,
+		Name:   nameNode(obj.Def.Name.Value + "Input"),
 		Fields: fields,
 	}
 }

@@ -3,11 +3,20 @@ enum TaskState {
   IN_PROGRESS
   RESOLVED
 }
+
+type TaskMeta {
+  key: String!
+  value: String
+}
+
 type Task @entity {
   title: String @column
   completed: Boolean @column
   state: TaskState @column
   dueDate: Time @column
+
+  metas: [TaskMeta!] @column(type: embedded)
+  meta: TaskMeta @column(type: embedded)
 
   assignee: User @relationship(inverse: "tasks", preload: true)
   owner: User! @relationship(inverse: "createdTasks")

@@ -35,6 +35,23 @@ func (m *Model) ObjectEntities() []Object {
 	return objs
 }
 
+func (m *Model) EmbeddedObjects() []Object {
+	objs := []Object{}
+	objsMap := map[string]bool{}
+	for _, obj := range m.ObjectEntities() {
+		for _, col := range obj.Columns() {
+			if col.IsEmbeddedColumn() {
+				obj := col.TargetObject()
+				if _, exists := objsMap[obj.Name()]; !exists {
+					objs = append(objs, *obj)
+					objsMap[obj.Name()] = true
+				}
+			}
+		}
+	}
+	return objs
+}
+
 func (m *Model) ObjectExtensions() []ObjectExtension {
 	objs := []ObjectExtension{}
 	for _, def := range m.Doc.Definitions {

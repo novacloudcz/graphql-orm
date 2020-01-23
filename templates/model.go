@@ -43,7 +43,7 @@ func (m *{{$object.Name}}) Is{{$interface}}() {}
 
 type {{.Name}}Changes struct {
 	{{range $col := $object.Columns}}
-	{{$col.MethodName}} {{$col.GoType}}{{end}}
+	{{$col.MethodName}} {{$col.InputTypeName}}{{end}}
 	{{range $rel := $object.Relationships}}{{if $rel.IsToMany}}
 	{{$rel.ChangesName}} {{$rel.ChangesType}}{{end}}{{end}}
 }

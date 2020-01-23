@@ -61,3 +61,51 @@ func nameNode(name string) *ast.Name {
 		Value: name,
 	}
 }
+
+func astTypeToString(t ast.Type) string {
+	_t := getNamedType(t).(*ast.Named)
+	res := _t.Name.Value
+
+	if !isNonNullType(t) {
+		res = "*" + res
+	}
+
+	if isListType(getNullableType(t)) {
+		res = "[]" + res
+	}
+	return res
+}
+
+var goTypeMap = map[string]string{
+	"String":  "string",
+	"Time":    "time.Time",
+	"ID":      "string",
+	"Float":   "float64",
+	"Int":     "int",
+	"Boolean": "bool",
+}
+
+func astTypeToGoType(t ast.Type) string {
+	// _t := getNamedType(t).(*ast.Named)
+	// res := _t.Name.Value
+	res := ""
+
+	v, ok := getNamedType(t).(*ast.Named)
+	if ok {
+		_t, known := goTypeMap[v.Name.Value]
+		if known {
+			res += _t
+		} else {
+			res += v.Name.Value
+		}
+	}
+
+	if !isNonNullType(t) {
+		res = "*" + res
+	}
+
+	if isListType(getNullableType(t)) {
+		res = "[]" + res
+	}
+	return res
+}

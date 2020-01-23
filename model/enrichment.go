@@ -42,6 +42,11 @@ func EnrichModel(m *Model) error {
 		definitions = append(definitions, objectResultTypeDefinition(&o))
 	}
 
+	for _, o := range m.EmbeddedObjects() {
+		def := embeddedObjectDefinition(o)
+		definitions = append(definitions, def)
+	}
+
 	schemaHeaderNodes := []ast.Node{
 		scalarDefinition("Time"),
 		scalarDefinition("_Any"),

@@ -89,7 +89,7 @@ func (f *{{$obj.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix
 	conditions = []string{}
 	values = []interface{}{}
 
-	{{range $col := $obj.Columns}}{{if $col.IsWritableType}}
+	{{range $col := $obj.Columns}}{{if $col.IsFilterable}}
 		{{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
 			if {{$varName}} != nil {
 				conditions = append(conditions, aliasPrefix + dialect.Quote("{{$col.Name}}")+" {{$fm.Operator}}")
