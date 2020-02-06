@@ -4,10 +4,21 @@ Feature: Field xxxId should be automatically used for filling object for xxx fie
         Given I send query:
             """
             mutation {
-            deleteAllCompanies
-            deleteAllTasks
-            createCompany(input:{id:"test",name:"test company",countryId:"xxx"}) { id }
-            createTask(input:{id:"test",assigneeId:"xxx",ownerId:"xxx"}) { id }
+                deleteAllUsers
+                deleteAllCompanies
+                deleteAllTasks
+                createCompany(input: { id: "test", name: "test company", countryId: "xxx" }) {
+                    id
+                }
+                createUser(input: { id: "xxx" }) {
+                    id
+                }
+                createTask(input: { id: "test", assigneeId: "xxx", ownerId: "xxx" }) {
+                    id
+                }
+                deleteUser(id: "xxx") {
+                    id
+                }
             }
             """
 
@@ -42,7 +53,7 @@ Feature: Field xxxId should be automatically used for filling object for xxx fie
             {
                 "task": {
                     "id": "test",
-                    "assigneeId": "xxx",
+                    "assigneeId": null,
                     "assignee": null
                 }
             }
@@ -55,7 +66,7 @@ Feature: Field xxxId should be automatically used for filling object for xxx fie
         When I send query:
             """
             query {
-            task(id:"test") { id ownerId owner { id } }
+                task(id:"test") { id ownerId owner { id } }
             }
             """
         Then the response should be:
@@ -66,5 +77,5 @@ Feature: Field xxxId should be automatically used for filling object for xxx fie
             """
         And the error should be:
             """
-            graphql: User with id 'xxx' not found
+            graphql: must not be null
             """

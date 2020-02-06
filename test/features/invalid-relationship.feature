@@ -4,10 +4,32 @@ Feature: It should not fail to fetch entity with invalid ID (this situation prob
         Given I send query:
             """
             mutation {
-            deleteAllUsers
-            deleteAllCompanies
-            deleteAllTasks
-            createTask(input:{id:"test",title:"do something",completed:true,assigneeId:"jane",ownerId:"john"}) { id }
+                deleteAllUsers
+                deleteAllCompanies
+                deleteAllTasks
+                john: createUser(input: { id: "john" }) {
+                    id
+                }
+                jane: createUser(input: { id: "jane" }) {
+                    id
+                }
+                createTask(
+                    input: {
+                    id: "test"
+                    title: "do something"
+                    completed: true
+                    assigneeId: "jane"
+                    ownerId: "john"
+                    }
+                ) {
+                    id
+                }
+                deleteJohn:deleteUser(id: "john") {
+                    id
+                }
+                deleteJane:deleteUser(id: "jane") {
+                    id
+                }
             }
             """
 
@@ -15,7 +37,7 @@ Feature: It should not fail to fetch entity with invalid ID (this situation prob
         When I send query:
             """
             query {
-            task(id:"test"){ id title assignee { id firstName } }
+                task(id:"test"){ id title assignee { id firstName } }
             }
             """
         Then the response should be:
@@ -37,7 +59,7 @@ Feature: It should not fail to fetch entity with invalid ID (this situation prob
         When I send query:
             """
             query {
-            task(id:"test"){ id title owner { id firstName } }
+                task(id:"test"){ id title owner { id firstName } }
             }
             """
         Then the response should be:
@@ -48,5 +70,5 @@ Feature: It should not fail to fetch entity with invalid ID (this situation prob
             """
         And the error should be:
             """
-            graphql: User with id 'john' not found
+            graphql: must not be null
             """

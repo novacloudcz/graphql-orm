@@ -106,9 +106,25 @@ func (db *DB) Query() *gorm.DB {
 
 // AutoMigrate ...
 func (db *DB) AutoMigrate() *gorm.DB {
-	return db.db.AutoMigrate({{range $obj := .Model.ObjectEntities}}
+	_db := db.db.AutoMigrate({{range $obj := .Model.ObjectEntities}}
 		{{.Name}}{},{{end}}
 	)
+
+	if(_db.Dialect().GetName() != "sqlite3"){
+		{{range $obj := .Model.ObjectEntities}}
+			{{range $rel := $obj.Relationships}}
+				{{if $rel.IsToOne}}
+					_db.Model({{$obj.Name}}{}).RemoveForeignKey("{{$rel.Name}}Id","{{$rel.ForeignKeyDestinationName}}")
+					_db = _db.Model({{$obj.Name}}{}).AddForeignKey("{{$rel.Name}}Id","{{$rel.ForeignKeyDestinationName}}", "{{$rel.OnDelete}}", "{{$rel.OnUpdate}}")
+				{{else if $rel.IsManyToMany}}
+					_db.Model({{$rel.ManyToManyObjectName}}{}).RemoveForeignKey("{{$rel.ForeignKeyDestinationColumn}}","{{$rel.Obj.TableName}}(id)")
+					_db = _db.Model({{$rel.ManyToManyObjectName}}{}).AddForeignKey("{{$rel.ForeignKeyDestinationColumn}}","{{$rel.Obj.TableName}}(id)", "CASCADE", "CASCADE")
+				{{end}}
+			{{end}}
+		{{end}}
+	}
+
+	return _db
 }
 
 // Close ...

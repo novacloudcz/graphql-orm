@@ -21,32 +21,41 @@ func (e *NotFoundError) Error() string {
 
 {{range $object := .Model.ObjectEntities}}
 
-type {{.Name}}ResultType struct {
-	EntityResultType
-}
+	type {{.Name}}ResultType struct {
+		EntityResultType
+	}
 
-type {{.Name}} struct {
-{{range $col := $object.Columns}}
-	{{$col.MethodName}} {{$col.GoType}} ` + "`" + `{{$col.ModelTags}}` + "`" + `{{end}}
-
-{{range $rel := $object.Relationships}}
-{{$rel.MethodName}} {{$rel.GoType}} ` + "`" + `{{$rel.ModelTags}}` + "`" + `
-{{if $rel.Preload}}{{$rel.MethodName}}Preloaded bool ` + "`gorm:\"-\"`" + `{{end}}
-{{end}}
-}
-
-func (m *{{.Name}}) Is_Entity() {}
-
-{{range $interface := $object.Interfaces}}
-func (m *{{$object.Name}}) Is{{$interface}}() {}
-{{end}}
-
-type {{.Name}}Changes struct {
+	type {{.Name}} struct {
 	{{range $col := $object.Columns}}
-	{{$col.MethodName}} {{$col.InputTypeName}}{{end}}
-	{{range $rel := $object.Relationships}}{{if $rel.IsToMany}}
-	{{$rel.ChangesName}} {{$rel.ChangesType}}{{end}}{{end}}
-}
+		{{$col.MethodName}} {{$col.GoType}} ` + "`" + `{{$col.ModelTags}}` + "`" + `{{end}}
+
+	{{range $rel := $object.Relationships}}
+	{{$rel.MethodName}} {{$rel.GoType}} ` + "`" + `{{$rel.ModelTags}}` + "`" + `
+	{{if $rel.Preload}}{{$rel.MethodName}}Preloaded bool ` + "`gorm:\"-\"`" + `{{end}}
+	{{end}}
+	}
+
+	func (m *{{.Name}}) Is_Entity() {}
+
+	{{range $interface := $object.Interfaces}}
+	func (m *{{$object.Name}}) Is{{$interface}}() {}
+	{{end}}
+
+	type {{.Name}}Changes struct {
+		{{range $col := $object.Columns}}
+		{{$col.MethodName}} {{$col.InputTypeName}}{{end}}
+		{{range $rel := $object.Relationships}}{{if $rel.IsToMany}}
+		{{$rel.ChangesName}} {{$rel.ChangesType}}{{end}}{{end}}
+	}
+
+	{{range $rel := $object.Relationships}}
+		{{if and $rel.IsManyToMany $rel.IsMainRelationshipForManyToMany}}
+		type {{$rel.ManyToManyObjectName}} struct {
+			{{$rel.ForeignKeyDestinationColumn}} string
+			{{$rel.InverseRelationship.ForeignKeyDestinationColumn}} string
+		}
+		{{end}}
+	{{end}}
 {{end}}
 
 // used to convert map[string]interface{} to EntityChanges struct

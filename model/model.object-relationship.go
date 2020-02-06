@@ -156,6 +156,10 @@ func (o *ObjectRelationship) ManyToManyJoinTable() string {
 	m := o.MainRelationshipForManyToMany()
 	return m.Obj.LowerName() + "_" + m.Name()
 }
+func (o *ObjectRelationship) ManyToManyObjectName() string {
+	m := o.MainRelationshipForManyToMany()
+	return m.Obj.Name() + "_" + m.Name()
+}
 func (o *ObjectRelationship) MainRelationshipForManyToMany() *ObjectRelationship {
 	inversed := o.InverseRelationship()
 	if inversed.Name() > o.Name() {
@@ -174,4 +178,28 @@ func (o *ObjectRelationship) JoinString() string {
 		join += fmt.Sprintf("\"LEFT JOIN \"+dialect.Quote(TableName(\"%[1]s\"))+\" \"+dialect.Quote(_alias)+\" ON \"+dialect.Quote(_alias)+\".\"+dialect.Quote(\"%[3]sId\")+\" = \"+dialect.Quote(alias)+\".id\"", o.Target().TableName(), o.Name(), o.InverseRelationshipName())
 	}
 	return join
+}
+
+func (o *ObjectRelationship) ForeignKeyDestinationColumn() string {
+	if o.IsToOne() {
+		return "id"
+	}
+	if o.IsManyToMany() {
+		return inflection.Singular(o.InverseRelationshipName()) + "_id"
+	}
+	return ""
+}
+func (o *ObjectRelationship) ForeignKeyDestinationName() string {
+	if o.IsToOne() {
+		return o.Target().TableName() + "(" + o.ForeignKeyDestinationColumn() + ")"
+	} else if o.IsManyToMany() {
+		return o.ManyToManyJoinTable() + "(" + o.ForeignKeyDestinationColumn() + ")"
+	}
+	return ""
+}
+func (o *ObjectRelationship) OnDelete() string {
+	return "SET NULL"
+}
+func (o *ObjectRelationship) OnUpdate() string {
+	return "SET NULL"
 }
