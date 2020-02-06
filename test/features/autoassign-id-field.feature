@@ -21,6 +21,10 @@ Feature: Field xxxId should be automatically used for filling object for xxx fie
                 }
             }
             """
+        Then the error should be:
+            """
+            null
+            """
 
     Scenario: Fetching country should use the countryId field as id
         When I send query:
@@ -66,7 +70,7 @@ Feature: Field xxxId should be automatically used for filling object for xxx fie
         When I send query:
             """
             query {
-                task(id:"test") { id ownerId owner { id } }
+            task(id:"test") { id ownerId owner { id } }
             }
             """
         Then the response should be:

@@ -20,4 +20,6 @@ type Task @entity {
 
   assignee: User @relationship(inverse: "tasks", preload: true)
   owner: User! @relationship(inverse: "createdTasks")
+  parentTask: Task @relationship(inverse: "subtasks", onDelete: "CASCADE")
+  subtasks: [Task!]! @relationship(inverse: "parentTask")
 }

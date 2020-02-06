@@ -197,9 +197,17 @@ func (o *ObjectRelationship) ForeignKeyDestinationName() string {
 	}
 	return ""
 }
-func (o *ObjectRelationship) OnDelete() string {
-	return "SET NULL"
+func (o *ObjectRelationship) OnDelete(def string) string {
+	str, exists := o.StringForRelationshipDirectiveAttribute("onDelete")
+	if !exists {
+		return def
+	}
+	return str
 }
-func (o *ObjectRelationship) OnUpdate() string {
-	return "SET NULL"
+func (o *ObjectRelationship) OnUpdate(def string) string {
+	str, exists := o.StringForRelationshipDirectiveAttribute("onUpdate")
+	if !exists {
+		return def
+	}
+	return str
 }
