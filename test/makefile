@@ -7,6 +7,9 @@ reinit:
 migrate:
 	DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go migrate
 
+automigrate:
+	DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go automigrate
+
 run:
 	DATABASE_URL=sqlite3://test.db PORT=8080 go run *.go start --cors
 

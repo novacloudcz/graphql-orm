@@ -9,9 +9,10 @@ import (
 
 	"github.com/99designs/gqlgen/handler"
 	jwtgo "github.com/dgrijalva/jwt-go"
+	"gopkg.in/gormigrate.v1"
 )
 
-func GetHTTPServeMux(r ResolverRoot, db *DB) *http.ServeMux {
+func GetHTTPServeMux(r ResolverRoot, db *DB, migrations []*gormigrate.Migration) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	executableSchema := NewExecutableSchema(Config{Resolvers: r})
@@ -22,7 +23,14 @@ func GetHTTPServeMux(r ResolverRoot, db *DB) *http.ServeMux {
 	playgroundHandler := handler.Playground("GraphQL playground", "/graphql")
 	if os.Getenv("EXPOSE_MIGRATION_ENDPOINT") == "true" {
 		mux.HandleFunc("/migrate", func(res http.ResponseWriter, req *http.Request) {
-			err := db.AutoMigrate().Error
+			err := db.Migrate(migrations)
+			if err != nil {
+				http.Error(res, err.Error(), 400)
+			}
+			fmt.Fprintf(res, "OK")
+		})
+		mux.HandleFunc("/automigrate", func(res http.ResponseWriter, req *http.Request) {
+			err := db.AutoMigrate()
 			if err != nil {
 				http.Error(res, err.Error(), 400)
 			}

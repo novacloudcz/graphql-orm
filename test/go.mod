@@ -13,6 +13,7 @@ require (
 	github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047
 	github.com/novacloudcz/graphql-orm v0.0.0
 	github.com/vektah/gqlparser v1.1.2
+	gopkg.in/gormigrate.v1 v1.6.0
 )
 
 replace github.com/novacloudcz/graphql-orm v0.0.0 => ../

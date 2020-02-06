@@ -98,3 +98,18 @@ Services built using this library automatically send event for every mutation us
 - AWS Services using [cloudevents-aws-transport](github.com/jakubknejzlik/cloudevents-aws-transport) (SNS/SQS/EventBridge)
 
 For more information about event structure see: https://github.com/novacloudcz/graphql-orm/blob/master/events/model.go
+
+# Migrations and automigrations
+
+Since version `0.4.0` the migrations using gormigrate are introduced and it's possible to write custom migrations with rollbacks.
+The automigration (with foreign keys) is still available, but gormigrate migrations are used by default. You use following commands:
+
+- `make migrate` - runs gormigrate migrations
+- `make automigrate` - runs gorm basic automigration
+
+The same applies for HTTP endpoints (when `EXPOSE_MIGRATION_ENDPOINT=true`):
+
+- `POST /migrate` - runs gormigrate migrations
+- `post /automigrate` - runs gorm basic automigration
+
+To add new migration, edit `src/migrations` file and its GetMigrations method. For more information see [gormigrate Readme](https://github.com/go-gormigrate/gormigrate)

@@ -178,6 +178,14 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 	if err := templates.WriteTemplate(templates.ResolverSrcGen, path.Join(p, "src/resolver_gen.go"), data); err != nil {
 		return err
 	}
+	if err := templates.WriteTemplate(templates.Migrations, path.Join(p, "gen/migrations.go"), data); err != nil {
+		return err
+	}
+	if !fileExists(path.Join(p, "src/migrations.go")) {
+		if err := templates.WriteTemplate(templates.MigrationsSrc, path.Join(p, "src/migrations.go"), data); err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

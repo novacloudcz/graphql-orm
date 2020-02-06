@@ -19,5 +19,6 @@ require (
 	github.com/novacloudcz/graphql-orm/test v0.0.0-20190811213627-c90bee88150a // indirect
 	github.com/urfave/cli v1.21.0
 	github.com/vektah/gqlparser v1.1.2
+	gopkg.in/gormigrate.v1 v1.6.0 // indirect
 	gopkg.in/yaml.v2 v2.2.2
 )

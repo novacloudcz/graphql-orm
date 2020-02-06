@@ -12,6 +12,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
+	"gopkg.in/gormigrate.v1"
 )
 
 // DB ...
@@ -104,27 +105,16 @@ func (db *DB) Query() *gorm.DB {
 	return db.db
 }
 
-// AutoMigrate ...
-func (db *DB) AutoMigrate() *gorm.DB {
-	_db := db.db.AutoMigrate({{range $obj := .Model.ObjectEntities}}
-		{{.Name}}{},{{end}}
-	)
+// AutoMigrate run basic gorm automigration
+func (db *DB) AutoMigrate() error {
+	return AutoMigrate(db.db)
+}
 
-	if(_db.Dialect().GetName() != "sqlite3"){
-		{{range $obj := .Model.ObjectEntities}}
-			{{range $rel := $obj.Relationships}}
-				{{if $rel.IsToOne}}
-					_db.Model({{$obj.Name}}{}).RemoveForeignKey("{{$rel.Name}}Id","{{$rel.ForeignKeyDestinationName}}")
-					_db = _db.Model({{$obj.Name}}{}).AddForeignKey("{{$rel.Name}}Id","{{$rel.ForeignKeyDestinationName}}", "{{$rel.OnDelete "SET NULL"}}", "{{$rel.OnUpdate "SET NULL"}}")
-				{{else if $rel.IsManyToMany}}
-					_db.Model({{$rel.ManyToManyObjectName}}{}).RemoveForeignKey("{{$rel.ForeignKeyDestinationColumn}}","{{$rel.Obj.TableName}}(id)")
-					_db = _db.Model({{$rel.ManyToManyObjectName}}{}).AddForeignKey("{{$rel.ForeignKeyDestinationColumn}}","{{$rel.Obj.TableName}}(id)", "{{$rel.OnDelete "CASCADE"}}", "{{$rel.OnUpdate "CASCADE"}}")
-				{{end}}
-			{{end}}
-		{{end}}
-	}
-
-	return _db
+// Migrate run migrations using automigrate
+func (db *DB) Migrate(migrations []*gormigrate.Migration) error {
+	options := gormigrate.DefaultOptions
+	options.TableName = TableName("migrations")
+	return Migrate(db.db, options, migrations)
 }
 
 // Close ...

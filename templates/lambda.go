@@ -18,7 +18,7 @@ func main() {
 		panic(err)
 	}
 
-	handler := gen.GetHTTPServeMux(src.New(db, &eventController),db)
+	handler := gen.GetHTTPServeMux(src.New(db, &eventController), db, gen.GetMigrations(db))
 	algnhsa.ListenAndServe(handler, &algnhsa.Options{
 		UseProxyPath: true,
 	})
