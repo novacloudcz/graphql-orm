@@ -1,4 +1,4 @@
-test: test-generate test-build-lambda test-run-sqlite3 test-run-postgres test-run-mysql
+test: test-generate test-build-lambda test-run-postgres test-run-mysql
 test-sqlite3: test-generate test-run-sqlite3
 test-generate:
 	GO111MODULE=on go run main.go init test
