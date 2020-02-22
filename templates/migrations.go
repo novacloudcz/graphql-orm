@@ -31,11 +31,11 @@ func AutoMigrate(db *gorm.DB) error {
 		{{range $obj := .Model.ObjectEntities}}
 			{{range $rel := $obj.Relationships}}
 				{{if $rel.IsToOne}}
-					_db.Model({{$obj.Name}}{}).RemoveForeignKey("{{$rel.Name}}Id","{{$rel.ForeignKeyDestinationName}}")
-					_db = _db.Model({{$obj.Name}}{}).AddForeignKey("{{$rel.Name}}Id","{{$rel.ForeignKeyDestinationName}}", "{{$rel.OnDelete "SET NULL"}}", "{{$rel.OnUpdate "SET NULL"}}")
+					_db.Model({{$obj.Name}}{}).RemoveForeignKey("{{$rel.Name}}Id",TableName("{{$rel.Target.TableName}}")+"({{$rel.ForeignKeyDestinationColumn}})")
+					_db = _db.Model({{$obj.Name}}{}).AddForeignKey("{{$rel.Name}}Id",TableName("{{$rel.Target.TableName}}")+"({{$rel.ForeignKeyDestinationColumn}})", "{{$rel.OnDelete "SET NULL"}}", "{{$rel.OnUpdate "SET NULL"}}")
 				{{else if $rel.IsManyToMany}}
-					_db.Model({{$rel.ManyToManyObjectName}}{}).RemoveForeignKey("{{$rel.ForeignKeyDestinationColumn}}","{{$rel.Obj.TableName}}(id)")
-					_db = _db.Model({{$rel.ManyToManyObjectName}}{}).AddForeignKey("{{$rel.ForeignKeyDestinationColumn}}","{{$rel.Obj.TableName}}(id)", "{{$rel.OnDelete "CASCADE"}}", "{{$rel.OnUpdate "CASCADE"}}")
+					_db.Model({{$rel.ManyToManyObjectName}}{}).RemoveForeignKey("{{$rel.ForeignKeyDestinationColumn}}",TableName("{{$rel.Obj.TableName}}")+"(id)")
+					_db = _db.Model({{$rel.ManyToManyObjectName}}{}).AddForeignKey("{{$rel.ForeignKeyDestinationColumn}}",TableName("{{$rel.Obj.TableName}}")+"(id)", "{{$rel.OnDelete "CASCADE"}}", "{{$rel.OnUpdate "CASCADE"}}")
 				{{end}}
 			{{end}}
 		{{end}}

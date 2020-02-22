@@ -189,14 +189,6 @@ func (o *ObjectRelationship) ForeignKeyDestinationColumn() string {
 	}
 	return ""
 }
-func (o *ObjectRelationship) ForeignKeyDestinationName() string {
-	if o.IsToOne() {
-		return o.Target().TableName() + "(" + o.ForeignKeyDestinationColumn() + ")"
-	} else if o.IsManyToMany() {
-		return o.ManyToManyJoinTable() + "(" + o.ForeignKeyDestinationColumn() + ")"
-	}
-	return ""
-}
 func (o *ObjectRelationship) OnDelete(def string) string {
 	str, exists := o.StringForRelationshipDirectiveAttribute("onDelete")
 	if !exists {
