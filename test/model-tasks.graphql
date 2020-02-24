@@ -11,7 +11,7 @@ type TaskMeta {
 
 type Task @entity {
   title: String @column
-  completed: Boolean @column
+  completed: Boolean @column(default: false)
   state: TaskState @column
   dueDate: Time @column
 
