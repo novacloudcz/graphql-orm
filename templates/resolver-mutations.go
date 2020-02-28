@@ -47,6 +47,10 @@ func FinishMutationContext(ctx context.Context, r *GeneratedResolver) (err error
 
 	return
 }
+func RollbackMutationContext(ctx context.Context, r *GeneratedResolver) error {
+	tx := r.GetDB(ctx)
+	return tx.Rollback().Error
+}
 func GetMutationEventStore(ctx context.Context) *MutationEvents {
 	return ctx.Value(KeyMutationEvents).(*MutationEvents)
 }
@@ -137,6 +141,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		ctx = EnrichContextWithMutations(ctx, r.GeneratedResolver)
 		item,err = r.Handlers.Update{{$obj.Name}}(ctx, r.GeneratedResolver, id, input)
 		if err!=nil{
+			RollbackMutationContext(ctx, r.GeneratedResolver)
 			return
 		}
 		err = FinishMutationContext(ctx, r.GeneratedResolver)
@@ -228,6 +233,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		ctx = EnrichContextWithMutations(ctx, r.GeneratedResolver)
 		item,err = r.Handlers.Delete{{$obj.Name}}(ctx, r.GeneratedResolver, id)
 		if err!=nil{
+			RollbackMutationContext(ctx, r.GeneratedResolver)
 			return
 		}
 		err = FinishMutationContext(ctx, r.GeneratedResolver)
@@ -268,6 +274,10 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 	func (r *GeneratedMutationResolver) DeleteAll{{$obj.PluralName}}(ctx context.Context) (bool, error) {
 		ctx = EnrichContextWithMutations(ctx, r.GeneratedResolver)
 		done,err:=r.Handlers.DeleteAll{{$obj.PluralName}}(ctx, r.GeneratedResolver)
+		if err != nil {
+			RollbackMutationContext(ctx, r.GeneratedResolver)
+			return done, err
+		}
 		err = FinishMutationContext(ctx, r.GeneratedResolver)
 		return done,err
 	}
