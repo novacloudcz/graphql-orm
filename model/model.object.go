@@ -26,7 +26,7 @@ func (o *Object) LowerName() string {
 	return strcase.ToLowerCamel(o.Def.Name.Value)
 }
 func (o *Object) TableName() string {
-	return strcase.ToSnake(inflection.Plural(o.LowerName()))
+	return strcase.ToLowerCamel(inflection.Plural(o.LowerName()))
 }
 func (o *Object) HasColumn(name string) bool {
 	return o.Column(name) != nil
