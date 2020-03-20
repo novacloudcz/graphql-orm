@@ -154,7 +154,7 @@ func (o *ObjectRelationship) ModelTags() string {
 }
 func (o *ObjectRelationship) ManyToManyJoinTable() string {
 	m := o.MainRelationshipForManyToMany()
-	return m.Obj.LowerName() + "_" + m.Name()
+	return m.Obj.TableName() + "_" + m.Name()
 }
 func (o *ObjectRelationship) ManyToManyObjectName() string {
 	m := o.MainRelationshipForManyToMany()
