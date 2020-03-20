@@ -55,7 +55,7 @@ func (e *NotFoundError) Error() string {
 			{{$rel.InverseRelationship.ForeignKeyDestinationColumn}} string
 		}
 		func ({{$rel.ManyToManyObjectName}}) TableName() string {
-			return "{{$rel.ManyToManyJoinTable}}"
+			return TableName("{{$rel.ManyToManyJoinTable}}")
 		}
 		{{end}}
 	{{end}}
