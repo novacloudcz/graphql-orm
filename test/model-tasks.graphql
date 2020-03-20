@@ -22,4 +22,11 @@ type Task @entity {
   owner: User! @relationship(inverse: "createdTasks")
   parentTask: Task @relationship(inverse: "subtasks", onDelete: "CASCADE")
   subtasks: [Task!]! @relationship(inverse: "parentTask")
+  categories: [TaskCategory!]! @relationship(inverse: "tasks")
+}
+
+type TaskCategory @entity {
+  name: String @column
+
+  tasks: [Task!]! @relationship(inverse: "categories")
 }

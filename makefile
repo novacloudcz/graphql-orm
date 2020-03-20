@@ -10,6 +10,8 @@ test-start-postgres:
 	cd test && DATABASE_URL=postgres://postgres@localhost:5432/test?sslmode=disable PORT=8080 go run *.go start --cors && cd ..
 test-start:
 	cd test && make run && cd ..
+test-generate:
+	cd test && make generate && cd ..
 # test-build:
 # 	cd test && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -installsuffix cgo -o app *.go && cd ..
 test-run-sqlite3:
@@ -22,3 +24,5 @@ test-build-lambda:
 	cd test && make build-lambda-function && cd ..
 test-cleanup:
 	docker-compose -f test/docker-compose.yml down
+test-migrate-mysql:
+	cd test && DATABASE_URL=mysql://root:@localhost/test go run *.go migrate && cd ..
