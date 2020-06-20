@@ -44,7 +44,9 @@ func GetHTTPServeMux(r ResolverRoot, db *DB, migrations []*gormigrate.Migration)
 			principalID = &(*claims).Subject
 		}
 		ctx := context.WithValue(req.Context(), KeyJWTClaims, claims)
-		ctx = context.WithValue(ctx, KeyPrincipalID, principalID)
+		if principalID != nil {
+			ctx = context.WithValue(ctx, KeyPrincipalID, principalID)
+		}
 		ctx = context.WithValue(ctx, KeyLoaders, loaders)
 		ctx = context.WithValue(ctx, KeyExecutableSchema, executableSchema)
 		req = req.WithContext(ctx)
