@@ -131,9 +131,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 			{{end}}{{end}}
 		{{end}}
 
-		if len(event.Changes) > 0 {
-			AddMutationEvent(ctx, event)
-		}
+		AddMutationEvent(ctx, event)
 
 		return 
 	}
@@ -265,9 +263,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 			return
 		}
 
-		if len(event.Changes) > 0 {
-			AddMutationEvent(ctx, event)
-		}
+		AddMutationEvent(ctx, event)
 
 		return 
 	}
