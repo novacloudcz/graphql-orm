@@ -11,14 +11,6 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-type NotFoundError struct {
-	Entity string
-}
-
-func (e *NotFoundError) Error() string {
-	return fmt.Sprintf("%s not found", e.Entity)
-}
-
 {{range $object := .Model.ObjectEntities}}
 
 	type {{.Name}}ResultType struct {

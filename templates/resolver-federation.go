@@ -54,13 +54,14 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 				continue
 			}
 			
-			item, qerr := r.{{$obj.Name}}(ctx, nil, nil, &f)
-			if qerr != nil {
-				if _, isNotFound := qerr.(*NotFoundError); !isNotFound {
-					err = qerr
-					return
-				}
-				res = append(res, nil)
+			item, _err := r.{{$obj.Name}}(ctx, nil, nil, &f)
+			if _err != nil {
+				err = _err
+				return
+			} 
+			if item == nil {
+				// append nil object without reflected interface
+				res = append(res, nil) 
 			} else {
 				res = append(res, item)
 			}
