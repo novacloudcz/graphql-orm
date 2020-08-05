@@ -120,20 +120,20 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 	type Generated{{$obj.Name}}ResultTypeResolver struct{ *GeneratedResolver }
 
 	func (r *Generated{{$obj.Name}}ResultTypeResolver) Items(ctx context.Context, obj *{{$obj.Name}}ResultType) (items []*{{$obj.Name}}, err error) {
-		giOpts := GetItemsOptions{
+		otps := GetItemsOptions{
 			Alias:TableName("{{$obj.TableName}}"),
 			Preloaders:[]string{ {{range $r := $obj.PreloadableRelationships}}
 				"{{$r.MethodName}}",{{end}}
 			},
 		}
-		err = obj.GetItems(ctx, r.DB.db, giOpts, &items)
+		err = obj.GetItems(ctx, r.DB.db, otps, &items)
 		{{if $obj.HasPreloadableRelationships}}
 			for _, item := range items {
 				{{range $rel := $obj.PreloadableRelationships}}
 				item.{{$rel.MethodName}}Preloaded = true{{end}}
 			}
 		{{end}}
-
+		
 		uniqueItems := []*{{$obj.Name}}{}
 		idMap := map[string]bool{}
 		for _, item := range items {
@@ -147,7 +147,13 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 	}
 
 	func (r *Generated{{$obj.Name}}ResultTypeResolver) Count(ctx context.Context, obj *{{$obj.Name}}ResultType) (count int, err error) {
-		return obj.GetCount(ctx, r.DB.db, &{{$obj.Name}}{})
+		opts := GetItemsOptions{
+			Alias:TableName("{{$obj.TableName}}"),
+			Preloaders:[]string{ {{range $r := $obj.PreloadableRelationships}}
+				"{{$r.MethodName}}",{{end}}
+			},
+		}
+		return obj.GetCount(ctx, r.DB.db,opts, &{{$obj.Name}}{})
 	}
 	
 	{{if $obj.NeedsQueryResolver}}

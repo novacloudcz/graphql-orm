@@ -47,13 +47,16 @@ type GetItemsOptions struct {
 
 // GetResultTypeItems ...
 func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetItemsOptions, out interface{}) error {
+	subq := db.Model(out).Select(opts.Alias + ".id")
 	q := db
 
 	if r.Limit != nil {
-		q = q.Limit(*r.Limit)
+		// q = q.Limit(*r.Limit)
+		subq = subq.Limit(*r.Limit)
 	}
 	if r.Offset != nil {
-		q = q.Offset(*r.Offset)
+		// q = q.Offset(*r.Offset)
+		subq = subq.Offset(*r.Offset)
 	}
 
 	dialect := q.Dialect()
@@ -67,7 +70,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	if err != nil {
 		return err
 	}
-	
+
 	for _, sort := range r.Sort {
 		sort.Apply(ctx, dialect, &sorts, &joins)
 	}
@@ -82,8 +85,9 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	if len(sorts) > 0 {
 		q = q.Order(strings.Join(sorts, ", "))
 	}
- 	if len(wheres) > 0 {
-		q = q.Where(strings.Join(wheres, " AND "), values...)
+	if len(wheres) > 0 {
+		// q = q.Where(strings.Join(wheres, " AND "), values...)
+		subq = subq.Where(strings.Join(wheres, " AND "), values...)
 	}
 
 	uniqueJoinsMap := map[string]bool{}
@@ -97,6 +101,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 
 	for _, join := range uniqueJoins {
 		q = q.Joins(join)
+		subq = subq.Joins(join)
 	}
 
 	if len(opts.Preloaders) > 0 {
@@ -104,12 +109,15 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 			q = q.Preload(p)
 		}
 	}
-	// q = q.Group(opts.Alias + ".id")
+	subq = subq.Group(opts.Alias + ".id")
+
+	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq.QueryExpr())
+
 	return q.Find(out).Error
 }
 
 // GetCount ...
-func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interface{}) (count int, err error) {
+func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetItemsOptions, out interface{}) (count int, err error) {
 	q := db
 
 	dialect := q.Dialect()
@@ -145,7 +153,7 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, out interf
 	for _, join := range uniqueJoins {
 		q = q.Joins(join)
 	}
-	err = q.Model(out).Count(&count).Error
+	err = q.Model(out).Select("COUNT(DISTINCT(" + opts.Alias + ".id))").Count(&count).Error
 	return
 }
 
