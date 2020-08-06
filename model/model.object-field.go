@@ -92,8 +92,11 @@ func (o *ObjectField) IsSortable() bool {
 	return !o.IsReadonlyType() && o.IsScalarType()
 }
 func (o *ObjectField) IsSearchable() bool {
+	return o.IsString() || o.IsNumeric()
+}
+func (o *ObjectField) IsNumeric() bool {
 	t := getNamedType(o.Def.Type).(*ast.Named)
-	return t.Name.Value == "String" || t.Name.Value == "Int" || t.Name.Value == "Float"
+	return t.Name.Value == "Int" || t.Name.Value == "Float"
 }
 func (o *ObjectField) IsString() bool {
 	t := getNamedType(o.Def.Type).(*ast.Named)

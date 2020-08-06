@@ -26,8 +26,18 @@ type EntityFilter interface {
 type EntityFilterQuery interface {
 	Apply(ctx context.Context, dialect gorm.Dialect, selectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
+
+
+type SortInfo struct {
+	Field         string
+	Direction     string
+	IsAggregation bool
+}
+func (si *SortInfo) String() string {
+	return fmt.Sprintf("%s %s", si.Field, si.Direction)
+}
 type EntitySort interface {
-	Apply(ctx context.Context, dialect gorm.Dialect, sorts *[]string, joins *[]string) error
+	Apply(ctx context.Context, dialect gorm.Dialect, sorts *[]SortInfo, joins *[]string) error
 }
 
 type EntityResultType struct {
@@ -47,8 +57,12 @@ type GetItemsOptions struct {
 
 // GetResultTypeItems ...
 func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetItemsOptions, out interface{}) error {
-	subq := db.Model(out).Select(opts.Alias + ".id")
+	subq := db.Model(out)
 	q := db
+	subqGroups := []string{opts.Alias + ".id"}
+	subqFields := []string{"DISTINCT(" + opts.Alias + ".id) as id"}
+	qSorts := []string{}
+	subqSorts := []string{}
 
 	if r.Limit != nil {
 		// q = q.Limit(*r.Limit)
@@ -66,7 +80,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	whereValues := []interface{}{}
 	havingValues := []interface{}{}
 	joins := []string{}
-	sorts := []string{}
+	sorts := []SortInfo{}
 
 	err := r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &whereValues, &joins)
 	if err != nil {
@@ -85,14 +99,19 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	}
 
 	if len(sorts) > 0 {
-		q = q.Order(strings.Join(sorts, ", "))
+		for i, sort := range sorts {
+			if !sort.IsAggregation {
+				subqGroups = append(subqGroups, fmt.Sprintf("%s", sort.Field))
+			}
+			subqFields = append(subqFields, fmt.Sprintf("%s as "+dialect.Quote("sort_key_%d"), sort.Field, i))
+			qSorts = append(qSorts, fmt.Sprintf(dialect.Quote("filter_table")+"."+dialect.Quote("sort_key_%d")+" %s", i, sort.Direction))
+			subqSorts = append(subqSorts, fmt.Sprintf(dialect.Quote("sort_key_%d")+" %s", i, sort.Direction))
+		}
 	}
 	if len(wheres) > 0 {
-		// q = q.Where(strings.Join(wheres, " AND "), whereValues...)
 		subq = subq.Where(strings.Join(wheres, " AND "), whereValues...)
 	}
 	if len(havings) > 0 {
-		// q = q.Where(strings.Join(wheres, " AND "), havingValues...)
 		subq = subq.Having(strings.Join(havings, " AND "), havingValues...)
 	}
 
@@ -115,7 +134,9 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 			q = q.Preload(p)
 		}
 	}
-	subq = subq.Group(opts.Alias + ".id")
+	subq = subq.Group(strings.Join(subqGroups, ", ")).Select(strings.Join(subqFields, ", "))
+	subq = subq.Order(strings.Join(subqSorts, ", "))
+	q = q.Order(strings.Join(qSorts, ", "))
 	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq.QueryExpr())
 
 	return q.Find(out).Error

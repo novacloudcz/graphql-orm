@@ -9,7 +9,9 @@ func (o *ObjectField) Aggregations() []ObjectFieldAggregation {
 	res := []ObjectFieldAggregation{
 		{Name: "Min"},
 		{Name: "Max"},
-		{Name: "Avg"},
+	}
+	if o.IsNumeric() {
+		res = append(res, ObjectFieldAggregation{Name: "Avg"})
 	}
 	return res
 }
