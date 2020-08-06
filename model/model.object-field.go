@@ -196,13 +196,13 @@ func (f *FilterMappingItem) WrapValueVariable(v string) string {
 func (o *ObjectField) FilterMapping() []FilterMappingItem {
 	t := getNamedType(o.Def.Type)
 	mapping := []FilterMappingItem{
-		FilterMappingItem{"", "= ?", t, "%s"},
-		FilterMappingItem{"_ne", "!= ?", t, "%s"},
-		FilterMappingItem{"_gt", "> ?", t, "%s"},
-		FilterMappingItem{"_lt", "< ?", t, "%s"},
-		FilterMappingItem{"_gte", ">= ?", t, "%s"},
-		FilterMappingItem{"_lte", "<= ?", t, "%s"},
-		FilterMappingItem{"_in", "IN (?)", listType(nonNull(t)), "%s"},
+		{"", "= ?", t, "%s"},
+		{"_ne", "!= ?", t, "%s"},
+		{"_gt", "> ?", t, "%s"},
+		{"_lt", "< ?", t, "%s"},
+		{"_gte", ">= ?", t, "%s"},
+		{"_lte", "<= ?", t, "%s"},
+		{"_in", "IN (?)", listType(nonNull(t)), "%s"},
 	}
 	_t := t.(*ast.Named)
 	if _t.Name.Value == "String" {

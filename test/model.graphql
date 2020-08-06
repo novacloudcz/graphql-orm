@@ -33,6 +33,7 @@ type User @entity {
   lastName: String @column
   addressRaw: String @column
   address: Address
+  salary: Int @column
 
   employers: [Company!]! @relationship(inverse: "employees", preload: true)
   tasks: [Task!]! @relationship(inverse: "assignee")
