@@ -14,59 +14,83 @@ import (
 {{if not $obj.IsExtended}}
 func (f *{{$obj.Name}}FilterType) IsEmpty(ctx context.Context, dialect gorm.Dialect) bool {
 	wheres := []string{}
-	values := []interface{}{}
+	havings := []string{}
+	whereValues := []interface{}{}
+	havingValues := []interface{}{}
 	joins := []string{}
-	err := f.ApplyWithAlias(ctx, dialect, "companies", &wheres, &values, &joins)
+	err := f.ApplyWithAlias(ctx, dialect, "companies", &wheres, &whereValues, &havings, &havingValues, &joins)
 	if err != nil {
 		panic(err)
 	}
-	return len(wheres) == 0
+	return len(wheres) == 0 && len(havings) == 0
 }
-func (f *{{$obj.Name}}FilterType) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error {
-	return f.ApplyWithAlias(ctx, dialect, TableName("{{$obj.TableName}}"), wheres, values, joins)
+func (f *{{$obj.Name}}FilterType) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error {
+	return f.ApplyWithAlias(ctx, dialect, TableName("{{$obj.TableName}}"), wheres, whereValues, havings, havingValues, joins)
 }
-func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, wheres *[]string, values *[]interface{}, joins *[]string) error {
+func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error {
 	if f == nil {
 		return nil
 	}
 	aliasPrefix := dialect.Quote(alias) + "."
 	
-	_where, _values := f.WhereContent(dialect, aliasPrefix)
+	_where, _whereValues := f.WhereContent(dialect, aliasPrefix)
+	_having, _havingValues := f.HavingContent(dialect, aliasPrefix)
 	*wheres = append(*wheres, _where...)
-	*values = append(*values, _values...)
+	*havings = append(*havings, _having...)
+	*whereValues = append(*whereValues, _whereValues...)
+	*havingValues = append(*havingValues, _havingValues...)
+
 
 	if f.Or != nil {
-		cs := []string{}
-		vs := []interface{}{}
+		ws := []string{}
+		hs := []string{}
+		wvs := []interface{}{}
+		hvs := []interface{}{}
 		js := []string{}
 		for _, or := range f.Or {
-			_cs := []string{}
-			err := or.ApplyWithAlias(ctx, dialect, alias, &_cs, &vs, &js)
+			_ws := []string{}
+			_hs := []string{}
+			err := or.ApplyWithAlias(ctx, dialect, alias, &_ws, &wvs, &_hs, &hvs, &js)
 			if err != nil {
 				return err
 			}
-			cs = append(cs, strings.Join(_cs, " AND "))
+			if len(_ws) > 0 {
+				ws = append(ws, strings.Join(_ws, " AND "))
+			}
+			if len(_hs) > 0 {
+				hs = append(hs, strings.Join(_hs, " AND "))
+			}
 		}
-		if len(cs) > 0 {
-			*wheres = append(*wheres, "("+strings.Join(cs, " OR ")+")")
+		if len(ws) > 0 {
+			*wheres = append(*wheres, "("+strings.Join(ws, " OR ")+")")
 		}
-		*values = append(*values, vs...)
+		if len(hs) > 0 {
+			*havings = append(*havings, "("+strings.Join(hs, " OR ")+")")
+		}
+		*whereValues = append(*whereValues, wvs...)
+		*havingValues = append(*havingValues, hvs...)
 		*joins = append(*joins, js...)
 	}
 	if f.And != nil {
-		cs := []string{}
-		vs := []interface{}{}
+		ws := []string{}
+		hs := []string{}
+		wvs := []interface{}{}
+		hvs := []interface{}{}
 		js := []string{}
 		for _, and := range f.And {
-			err := and.ApplyWithAlias(ctx, dialect, alias, &cs, &vs, &js)
+			err := and.ApplyWithAlias(ctx, dialect, alias, &ws, &wvs, &hs, &hvs, &js)
 			if err != nil {
 				return err
 			}
 		}
-		if len(cs) > 0 {
-			*wheres = append(*wheres, strings.Join(cs, " AND "))
+		if len(ws) > 0 {
+			*wheres = append(*wheres, strings.Join(ws, " AND "))
 		}
-		*values = append(*values, vs...)
+		if len(hs) > 0 {
+			*havings = append(*havings, strings.Join(hs, " AND "))
+		}
+		*whereValues = append(*whereValues, wvs...)
+		*havingValues = append(*havingValues, hvs...)
 		*joins = append(*joins, js...)
 	}
 	
@@ -76,7 +100,7 @@ func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect go
 	if {{$varName}} != nil {
 		_alias := alias + "_{{$rel.Name}}"
 		*joins = append(*joins, {{$rel.JoinString}})
-		err := {{$varName}}.ApplyWithAlias(ctx, dialect, _alias, wheres, values, joins)
+		err := {{$varName}}.ApplyWithAlias(ctx, dialect, _alias, wheres, whereValues, havings, havingValues, joins)
 		if err != nil {
 			return err
 		}
@@ -89,7 +113,7 @@ func (f *{{$obj.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix
 	conditions = []string{}
 	values = []interface{}{}
 
-	{{range $col := $obj.Columns}}{{if $col.IsFilterable}}
+	{{range $col := $obj.Columns}} {{if $col.IsFilterable}}
 		{{range $fm := $col.FilterMapping}} {{$varName := (printf "f.%s%s" $col.MethodName $fm.SuffixCamel)}}
 			if {{$varName}} != nil {
 				conditions = append(conditions, aliasPrefix + dialect.Quote("{{$col.Name}}")+" {{$fm.Operator}}")
@@ -103,8 +127,22 @@ func (f *{{$obj.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix
 				conditions = append(conditions, aliasPrefix+dialect.Quote("{{$col.Name}}")+" IS NOT NULL")
 			}
 		}
-	{{end}}
-{{end}}
+	{{end}} {{end}}
+
+	return
+}
+func (f *{{$obj.Name}}FilterType) HavingContent(dialect gorm.Dialect, aliasPrefix string) (conditions []string, values []interface{}) {
+	conditions = []string{}
+	values = []interface{}{}
+
+	{{range $col := $obj.Columns}} {{if $col.IsFilterable}}
+		{{range $fm := $col.FilterMapping}} {{range $fn := $col.Aggregations}} {{$varName := (printf "f.%s%s%s" $col.MethodName $fn.Name $fm.SuffixCamel)}}
+			if {{$varName}} != nil {
+				conditions = append(conditions, "{{$fn.Name}}("+aliasPrefix + dialect.Quote("{{$col.Name}}")+") {{$fm.Operator}}")
+				values = append(values, {{$fm.WrapValueVariable $varName}})
+			}
+		{{end}} {{end}}
+	{{end}} {{end}}
 
 	return
 }

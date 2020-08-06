@@ -21,7 +21,7 @@ func GetItemForRelation(ctx context.Context, db *gorm.DB, obj interface{}, relat
 }
 
 type EntityFilter interface {
-	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, values *[]interface{}, joins *[]string) error
+	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error
 }
 type EntityFilterQuery interface {
 	Apply(ctx context.Context, dialect gorm.Dialect, selectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error
@@ -62,11 +62,13 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	dialect := q.Dialect()
 
 	wheres := []string{}
-	values := []interface{}{}
+	havings := []string{}
+	whereValues := []interface{}{}
+	havingValues := []interface{}{}
 	joins := []string{}
 	sorts := []string{}
 
-	err := r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &values, &joins)
+	err := r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &whereValues, &joins)
 	if err != nil {
 		return err
 	}
@@ -76,7 +78,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	}
 
 	if r.Filter != nil {
-		err = r.Filter.Apply(ctx, dialect, &wheres, &values, &joins)
+		err = r.Filter.Apply(ctx, dialect, &wheres, &whereValues, &havings, &havingValues, &joins)
 		if err != nil {
 			return err
 		}
@@ -86,8 +88,12 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 		q = q.Order(strings.Join(sorts, ", "))
 	}
 	if len(wheres) > 0 {
-		// q = q.Where(strings.Join(wheres, " AND "), values...)
-		subq = subq.Where(strings.Join(wheres, " AND "), values...)
+		// q = q.Where(strings.Join(wheres, " AND "), whereValues...)
+		subq = subq.Where(strings.Join(wheres, " AND "), whereValues...)
+	}
+	if len(havings) > 0 {
+		// q = q.Where(strings.Join(wheres, " AND "), havingValues...)
+		subq = subq.Having(strings.Join(havings, " AND "), havingValues...)
 	}
 
 	uniqueJoinsMap := map[string]bool{}
@@ -110,7 +116,6 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 		}
 	}
 	subq = subq.Group(opts.Alias + ".id")
-
 	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq.QueryExpr())
 
 	return q.Find(out).Error
@@ -122,23 +127,28 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetIt
 
 	dialect := q.Dialect()
 	wheres := []string{}
-	values := []interface{}{}
+	havings := []string{}
+	whereValues := []interface{}{}
+	havingValues := []interface{}{}
 	joins := []string{}
 
-	err = r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &values, &joins)
+	err = r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &whereValues, &joins)
 	if err != nil {
 		return 0, err
 	}
 
 	if r.Filter != nil {
-		err = r.Filter.Apply(ctx, dialect, &wheres, &values, &joins)
+		err = r.Filter.Apply(ctx, dialect, &wheres, &whereValues, &havings, &havingValues, &joins)
 		if err != nil {
 			return 0, err
 		}
 	}
 
 	if len(wheres) > 0 {
-		q = q.Where(strings.Join(wheres, " AND "), values...)
+		q = q.Where(strings.Join(wheres, " AND "), whereValues...)
+	}
+	if len(havings) > 0 {
+		q = q.Having(strings.Join(havings, " AND "), havingValues...)
 	}
 
 	uniqueJoinsMap := map[string]bool{}
@@ -153,7 +163,9 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetIt
 	for _, join := range uniqueJoins {
 		q = q.Joins(join)
 	}
-	err = q.Model(out).Select("COUNT(DISTINCT(" + opts.Alias + ".id))").Count(&count).Error
+	q = q.Model(out).Group(opts.Alias + ".id")
+	err = db.Model(out).Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", q.QueryExpr()).Count(&count).Error
+
 	return
 }
 
