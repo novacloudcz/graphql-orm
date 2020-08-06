@@ -241,6 +241,31 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 					return
 				}
+				func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}Connection(ctx context.Context, obj *{{$obj.Name}}, offset *int, limit *int, q *string, sort []*{{$rel.TargetType}}SortType, filter *{{$rel.TargetType}}FilterType) (res *{{$rel.TargetType}}ResultType, err error) {
+					f := &{{$rel.TargetType}}FilterType{
+						{{$rel.InverseRelationship.MethodName}}: &{{$obj.Name}}FilterType{
+							ID: &obj.ID,
+						},
+					}
+					if filter == nil {
+						filter = f
+					} else {
+						filter = &{{$rel.TargetType}}FilterType{
+							And: []*{{$rel.TargetType}}FilterType{
+								filter,
+								f,
+							},
+						}
+					}
+					opts := Query{{$rel.Target.PluralName}}HandlerOptions{
+						Offset: offset,
+						Limit:  limit,
+						Q:      q,
+						Sort:   sort,
+						Filter: filter,
+					}
+					return r.Handlers.Query{{$rel.Target.PluralName}}(ctx, r.GeneratedResolver, opts)
+				}
 			{{end}}
 
 		{{end}}
