@@ -58,11 +58,13 @@ func fetchFieldDefinition(obj Object) *ast.FieldDefinition {
 }
 
 func listFieldDefinition(obj Object) *ast.FieldDefinition {
-	// createObjectSortType(obj)
+	return listFieldResultTypeDefinition(obj, inflection.Plural(strcase.ToLowerCamel(obj.Name())))
+}
+func listFieldResultTypeDefinition(obj Object, name string) *ast.FieldDefinition {
 	return &ast.FieldDefinition{
 		Kind: kinds.FieldDefinition,
-		Name: nameNode(inflection.Plural(strcase.ToLowerCamel(obj.Name()))),
-		Type: namedType(obj.Name() + "ResultType"),
+		Name: nameNode(name),
+		Type: nonNull(namedType(obj.Name() + "ResultType")),
 		Arguments: []*ast.InputValueDefinition{
 			&ast.InputValueDefinition{
 				Kind: kinds.InputValueDefinition,
