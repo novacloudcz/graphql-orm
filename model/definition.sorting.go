@@ -8,11 +8,11 @@ import (
 
 func createObjectSortEnum() *ast.EnumDefinition {
 	values := []*ast.EnumValueDefinition{
-		&ast.EnumValueDefinition{
+		{
 			Kind: kinds.EnumValueDefinition,
 			Name: nameNode("ASC"),
 		},
-		&ast.EnumValueDefinition{
+		{
 			Kind: kinds.EnumValueDefinition,
 			Name: nameNode("DESC"),
 		},
@@ -37,6 +37,15 @@ func createObjectSortType(obj Object) *ast.InputObjectDefinition {
 			Type: namedType("ObjectSortType"),
 		}
 		fields = append(fields, &field)
+
+		for _, agg := range col.Aggregations() {
+			field := ast.InputValueDefinition{
+				Kind: kinds.InputValueDefinition,
+				Name: nameNode(col.Name() + agg.Name),
+				Type: namedType("ObjectSortType"),
+			}
+			fields = append(fields, &field)
+		}
 	}
 
 	for _, rel := range obj.Relationships() {

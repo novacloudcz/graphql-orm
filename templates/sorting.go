@@ -10,16 +10,23 @@ import (
 
 {{range $obj := .Model.ObjectEntities}}
 {{if not $obj.IsExtended}}
-func (s {{$obj.Name}}SortType) Apply(ctx context.Context, dialect gorm.Dialect, sorts *[]string, joins *[]string) error {
+func (s {{$obj.Name}}SortType) Apply(ctx context.Context, dialect gorm.Dialect, sorts *[]SortInfo, joins *[]string) error {
 	return s.ApplyWithAlias(ctx, dialect, TableName("{{$obj.TableName}}"), sorts, joins)
 }
-func (s {{$obj.Name}}SortType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, sorts *[]string, joins *[]string) error {
+func (s {{$obj.Name}}SortType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, sorts *[]SortInfo, joins *[]string) error {
 	aliasPrefix := dialect.Quote(alias) + "."
 	
-	{{range $col := $obj.Columns}}{{if $col.IsSortable}}
+	{{range $col := $obj.Columns}} {{if $col.IsSortable}} 
 	if s.{{$col.MethodName}} != nil {
-		*sorts = append(*sorts, aliasPrefix+dialect.Quote("{{$col.Name}}")+" "+s.{{$col.MethodName}}.String())
+		sort := SortInfo{Field: aliasPrefix+dialect.Quote("{{$col.Name}}"), Direction: s.{{$col.MethodName}}.String()}
+		*sorts = append(*sorts, sort)
 	}
+	{{range $agg := $col.Aggregations}}
+	if s.{{$col.MethodName}}{{$agg.Name}} != nil {
+		sort := SortInfo{Field: "{{$agg.Name}}("+aliasPrefix+dialect.Quote("{{$col.Name}}")+")", Direction: s.{{$col.MethodName}}{{$agg.Name}}.String(),IsAggregation: true}
+		*sorts = append(*sorts, sort)
+	}
+	{{end}}
 	{{end}}{{end}}
 	
 	{{range $rel := $obj.Relationships}}
