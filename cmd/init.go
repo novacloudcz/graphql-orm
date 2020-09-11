@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -83,31 +84,23 @@ func fileExists(filename string) bool {
 }
 
 func createConfigFile(p string) error {
-	defaultPackagePath := ""
+	packagePath := ""
 	modFilename := "go.mod"
 
-	info, err := os.Stat(modFilename)
+	_, err := os.Stat(modFilename)
 	if os.IsNotExist(err) {
 		return fmt.Errorf("Go modules required (no go.mod file found). Use `go mod init MODULE_NAME` to initialize go modules")
 	}
 
-	data, err := ioutil.ReadFile(modFilname)
-	reader := bufio.NewReader(data)
+	data, err := ioutil.ReadFile(modFilename)
+	reader := bufio.NewReader(bytes.NewReader(data))
 	line, _, err := reader.ReadLine()
 	if err != nil {
 		return err
 	}
-	defaultPackagePath = strings.ReplaceAll(string(line), "package ", "")
+	packagePath = strings.ReplaceAll(string(line), "module ", "")
 
-	packagePathPrompt := "Package path"
-	if defaultPackagePath != "" {
-		packagePathPrompt = fmt.Sprintf("Package path (default '%s')", defaultPackagePath)
-	}
-	packagepPath := tools.Prompt(packagePathPrompt)
-	if packagepPath != "" {
-		defaultPackagePath = packagepPath
-	}
-	c := model.Config{Package: defaultPackagePath}
+	c := model.Config{Package: packagePath}
 
 	content, err := yaml.Marshal(c)
 	if err != nil {
