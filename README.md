@@ -17,8 +17,8 @@ _NOTE: Make sure you have Go installed on your system._
 1. Create new project repository
 1. run `go mod init [MODULE]` to initialize your project with go modules
 1. run `go run github.com/novacloudcz/graphql-orm init`
-1. follow initialization instruction (creating makefile is suggested)
-1. open create `model.graphql` and create your custom model schema
+1. all necessary files should be created and You can run `make run` to start service with dummy model
+1. to update model open `model.graphql` and create your custom model schema
 1. each time you change model, run `make generate` or `go run github.com/novacloudcz/graphql-orm` to recreate generated source codes
 
 _NOTE: graphql-orm requires Go modules for installation. If you are running in \$GOPATH, make sure you are running init command with GO111MODULE=on_
