@@ -3,7 +3,7 @@ module github.com/novacloudcz/graphql-orm
 go 1.12
 
 require (
-	github.com/99designs/gqlgen v0.9.1
+	github.com/99designs/gqlgen v0.10.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
@@ -17,7 +17,7 @@ require (
 	github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047
 	github.com/novacloudcz/graphql-orm/test v0.0.0-20190811213627-c90bee88150a // indirect
 	github.com/urfave/cli v1.21.0
-	github.com/vektah/gqlparser v1.1.2
+	github.com/vektah/gqlparser v1.2.0
 	gopkg.in/AlecAivazis/survey.v1 v1.8.7
 	gopkg.in/gormigrate.v1 v1.6.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8

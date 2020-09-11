@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/novacloudcz/graphql-orm/templates"
-	"github.com/novacloudcz/graphql-orm/tools"
 
 	"gopkg.in/yaml.v2"
 
@@ -60,12 +59,6 @@ var initCmd = cli.Command{
 
 		if err := createDockerFile(p); err != nil {
 			return cli.NewExitError(err, 1)
-		}
-
-		if !fileExists(path.Join(p, "go.mod")) {
-			if err := initModules(p); err != nil {
-				return cli.NewExitError(err, 1)
-			}
 		}
 
 		if err := runGenerate(p); err != nil {
@@ -139,18 +132,6 @@ func createDockerFile(p string) error {
 	}
 	data := templates.TemplateData{Model: nil, Config: &c}
 	return templates.WriteTemplate(templates.Dockerfile, path.Join(p, "Dockerfile"), data)
-}
-
-func initModules(p string) error {
-	c, err := model.LoadConfigFromPath(p)
-	if err != nil {
-		return err
-	}
-	err = tools.RunInteractiveInDir(fmt.Sprintf("go mod init %s", c.Package), p)
-	if err != nil {
-		return err
-	}
-	return tools.RunInteractiveInDir("go get github.com/99designs/gqlgen@v0.10.2", p)
 }
 
 func createResolverFile(p string) error {
