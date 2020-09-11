@@ -8,8 +8,8 @@ import (
 	"path"
 	"text/template"
 
-	"github.com/novacloudcz/goclitools"
 	"github.com/novacloudcz/graphql-orm/model"
+	"github.com/novacloudcz/graphql-orm/tools"
 )
 
 type TemplateData struct {
@@ -39,7 +39,7 @@ func WriteTemplateRaw(t, filename string, data interface{}) error {
 		return err
 	}
 	if path.Ext(filename) == ".go" {
-		return goclitools.RunInteractive(fmt.Sprintf("goimports -w %s", filename))
+		return tools.RunInteractive(fmt.Sprintf("goimports -w %s", filename))
 	}
 	return nil
 }

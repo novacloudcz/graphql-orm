@@ -2,7 +2,6 @@ package main
 
 import (
 	"github.com/akrylysov/algnhsa"
-	"github.com/novacloudcz/graphql-orm/events"
 	"github.com/novacloudcz/graphql-orm/test/gen"
 	"github.com/novacloudcz/graphql-orm/test/src"
 )
@@ -10,7 +9,7 @@ import (
 func main() {
 	db := gen.NewDBFromEnvVars()
 
-	eventController, err := events.NewEventController()
+	eventController, err := gen.NewEventController()
 	if err != nil {
 		panic(err)
 	}

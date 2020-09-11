@@ -1,15 +1,15 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
-	"path/filepath"
+	"strings"
 
 	"github.com/novacloudcz/graphql-orm/templates"
-
-	"github.com/novacloudcz/goclitools"
+	"github.com/novacloudcz/graphql-orm/tools"
 
 	"gopkg.in/yaml.v2"
 
@@ -83,16 +83,31 @@ func fileExists(filename string) bool {
 }
 
 func createConfigFile(p string) error {
-	defaultPackagep := ""
-	if os.Getenv("GOp") != "" {
-		cw, _ := os.Getwd()
-		defaultPackagep, _ = filepath.Rel(os.Getenv("GOp")+"/src", cw)
+	defaultPackagePath := ""
+	modFilename := "go.mod"
+
+	info, err := os.Stat(modFilename)
+	if os.IsNotExist(err) {
+		return fmt.Errorf("Go modules required (no go.mod file found). Use `go mod init MODULE_NAME` to initialize go modules")
 	}
-	packagep := goclitools.Prompt(fmt.Sprintf("Package p (default %s)", defaultPackagep))
-	if packagep != "" {
-		defaultPackagep = packagep
+
+	data, err := ioutil.ReadFile(modFilname)
+	reader := bufio.NewReader(data)
+	line, _, err := reader.ReadLine()
+	if err != nil {
+		return err
 	}
-	c := model.Config{Package: defaultPackagep}
+	defaultPackagePath = strings.ReplaceAll(string(line), "package ", "")
+
+	packagePathPrompt := "Package path"
+	if defaultPackagePath != "" {
+		packagePathPrompt = fmt.Sprintf("Package path (default '%s')", defaultPackagePath)
+	}
+	packagepPath := tools.Prompt(packagePathPrompt)
+	if packagepPath != "" {
+		defaultPackagePath = packagepPath
+	}
+	c := model.Config{Package: defaultPackagePath}
 
 	content, err := yaml.Marshal(c)
 	if err != nil {
@@ -138,7 +153,11 @@ func initModules(p string) error {
 	if err != nil {
 		return err
 	}
-	return goclitools.RunInteractiveInDir(fmt.Sprintf("go mod init %s", c.Package), p)
+	err = tools.RunInteractiveInDir(fmt.Sprintf("go mod init %s", c.Package), p)
+	if err != nil {
+		return err
+	}
+	return tools.RunInteractiveInDir("go get github.com/99designs/gqlgen@v0.10.2", p)
 }
 
 func createResolverFile(p string) error {

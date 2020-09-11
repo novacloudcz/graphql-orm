@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/novacloudcz/graphql-orm/events"
 	"github.com/novacloudcz/graphql-orm/test/gen"
 	"github.com/novacloudcz/graphql-orm/test/src"
 	"github.com/rs/cors"
@@ -104,7 +103,7 @@ func startServer(enableCors bool, port string) error {
 	db := gen.NewDBFromEnvVars()
 	defer db.Close()
 
-	eventController, err := events.NewEventController()
+	eventController, err := gen.NewEventController()
 	if err != nil {
 		return err
 	}

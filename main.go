@@ -10,4 +10,4 @@ func main() {
 }
 
 // this is just for importing the events package and adding it to the go modules
-var _ events.EventController
+var _ events.Event

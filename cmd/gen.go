@@ -9,10 +9,9 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/novacloudcz/goclitools"
-
 	"github.com/novacloudcz/graphql-orm/model"
 	"github.com/novacloudcz/graphql-orm/templates"
+	"github.com/novacloudcz/graphql-orm/tools"
 	"github.com/urfave/cli"
 )
 
@@ -112,7 +111,7 @@ func generate(filePattern, p string) error {
 	}
 
 	fmt.Printf("Running gqlgen generator in %s ...\n", path.Join(p, "gen"))
-	if err := goclitools.RunInteractiveInDir("go run github.com/99designs/gqlgen", path.Join(p, "gen")); err != nil {
+	if err := tools.RunInteractiveInDir("go run github.com/99designs/gqlgen", path.Join(p, "gen")); err != nil {
 		return err
 	}
 
@@ -179,6 +178,9 @@ func generateFiles(p string, m *model.Model, c *model.Config) error {
 		return err
 	}
 	if err := templates.WriteTemplate(templates.Migrations, path.Join(p, "gen/migrations.go"), data); err != nil {
+		return err
+	}
+	if err := templates.WriteTemplate(templates.EventsController, path.Join(p, "gen/events-controller.go"), data); err != nil {
 		return err
 	}
 	if !fileExists(path.Join(p, "src/migrations.go")) {

@@ -10,7 +10,7 @@ import (
 	"github.com/novacloudcz/graphql-orm/test/gen"
 )
 
-func New(db *gen.DB, ec *events.EventController) *Resolver {
+func New(db *gen.DB, ec *gen.EventController) *Resolver {
 	resolver := NewResolver(db, ec)
 
 	resolver.Handlers.OnEvent = func(ctx context.Context, r *gen.GeneratedResolver, e *events.Event) (err error) {

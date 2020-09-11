@@ -11,7 +11,6 @@ import (
 	"strings"
 
 	"github.com/99designs/gqlgen/handler"
-	"github.com/novacloudcz/graphql-orm/events"
 	jwtgo "github.com/dgrijalva/jwt-go"
 	"github.com/rs/cors"
 	"{{.Config.Package}}/gen"
@@ -106,7 +105,7 @@ func startServer(enableCors bool, port string) error {
 	db := gen.NewDBFromEnvVars()
 	defer db.Close()
 
-	eventController, err := events.NewEventController()
+	eventController, err := gen.NewEventController()
 	if err != nil {
 		return err
 	}

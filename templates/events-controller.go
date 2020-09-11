@@ -1,4 +1,6 @@
-package events
+package templates
+
+var EventsController = `package gen
 
 import (
 	"context"
@@ -11,6 +13,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/cloudevents/sdk-go/pkg/cloudevents/transport"
 	cloudeventsaws "github.com/jakubknejzlik/cloudevents-aws-transport"
+	"github.com/novacloudcz/graphql-orm/events"
 )
 
 const (
@@ -74,7 +77,7 @@ func (c *EventController) send(ctx context.Context, e cloudevents.Event) error {
 }
 
 // SendEvent ...
-func (c *EventController) SendEvent(ctx context.Context, e *Event) (err error) {
+func (c *EventController) SendEvent(ctx context.Context, e *events.Event) (err error) {
 	if len(c.clients) == 0 {
 		return
 	}
@@ -140,3 +143,4 @@ func transportForURL(URL string) (t transport.Transport, err error) {
 	}
 	return
 }
+`
