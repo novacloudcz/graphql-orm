@@ -11,7 +11,7 @@ func Execute() {
 	app := cli.NewApp()
 	app.Name = "graphql-orm"
 	app.Usage = "This tool is for generating GraphQL API using gqlgen and gorm"
-	app.Version = "0.0.1"
+	app.Version = "0.4.13"
 
 	app.Action = genCmd.Action
 	app.Usage = genCmd.Usage
