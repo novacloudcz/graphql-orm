@@ -14,7 +14,7 @@ func RunInDir(cmd, dir string) ([]byte, error) {
 	if os.Getenv("DEBUG") != "" {
 		log.Println(cmd)
 	}
-	command := exec.Command("bash", "-c", "set -o pipefail && "+cmd)
+	command := exec.Command("bash", "-c", cmd)
 	command.Dir = dir
 	output, err := command.CombinedOutput()
 	if err != nil {
@@ -33,7 +33,7 @@ func RunInteractiveInDir(cmd, dir string) error {
 	if os.Getenv("DEBUG") != "" {
 		log.Println(cmd)
 	}
-	command := exec.Command("bash", "-c", "set -o pipefail && "+cmd)
+	command := exec.Command("bash", "-c", cmd)
 	command.Stdout = os.Stdout
 	command.Stdin = os.Stdin
 	command.Stderr = os.Stderr
