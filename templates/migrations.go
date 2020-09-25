@@ -22,7 +22,7 @@ func Migrate(db *gorm.DB, options *gormigrate.Options, migrations []*gormigrate.
 	return m.Migrate();
 }
 
-func AutoMigrate(db *gorm.DB) error {
+func AutoMigrate(db *gorm.DB) (err error) {
 	_db := db.AutoMigrate({{range $obj := .Model.ObjectEntities}}
 		{{.Name}}{},{{end}}
 	)
@@ -31,11 +31,23 @@ func AutoMigrate(db *gorm.DB) error {
 		{{range $obj := .Model.ObjectEntities}}
 			{{range $rel := $obj.Relationships}}
 				{{if $rel.IsToOne}}
-					_db.Model({{$obj.Name}}{}).RemoveForeignKey("{{$rel.Name}}Id",TableName("{{$rel.Target.TableName}}")+"({{$rel.ForeignKeyDestinationColumn}})")
-					_db = _db.Model({{$obj.Name}}{}).AddForeignKey("{{$rel.Name}}Id",TableName("{{$rel.Target.TableName}}")+"({{$rel.ForeignKeyDestinationColumn}})", "{{$rel.OnDelete "SET NULL"}}", "{{$rel.OnUpdate "SET NULL"}}")
+					err = _db.Model({{$obj.Name}}{}).RemoveForeignKey("{{$rel.Name}}Id",TableName("{{$rel.Target.TableName}}")+"({{$rel.ForeignKeyDestinationColumn}})").Error
+					if err != nil {
+						return err
+					}
+					err = _db.Model({{$obj.Name}}{}).AddForeignKey("{{$rel.Name}}Id",TableName("{{$rel.Target.TableName}}")+"({{$rel.ForeignKeyDestinationColumn}})", "{{$rel.OnDelete "SET NULL"}}", "{{$rel.OnUpdate "SET NULL"}}").Error
+					if err != nil {
+						return err
+					}
 				{{else if $rel.IsManyToMany}}
-					_db.Model({{$rel.ManyToManyObjectName}}{}).RemoveForeignKey("{{$rel.ForeignKeyDestinationColumn}}",TableName("{{$rel.Obj.TableName}}")+"(id)")
-					_db = _db.Model({{$rel.ManyToManyObjectName}}{}).AddForeignKey("{{$rel.ForeignKeyDestinationColumn}}",TableName("{{$rel.Obj.TableName}}")+"(id)", "{{$rel.OnDelete "CASCADE"}}", "{{$rel.OnUpdate "CASCADE"}}")
+					err = _db.Model({{$rel.ManyToManyObjectName}}{}).RemoveForeignKey("{{$rel.ForeignKeyDestinationColumn}}",TableName("{{$rel.Obj.TableName}}")+"(id)").Error
+					if err != nil {
+						return err
+					}
+					err = _db.Model({{$rel.ManyToManyObjectName}}{}).AddForeignKey("{{$rel.ForeignKeyDestinationColumn}}",TableName("{{$rel.Obj.TableName}}")+"(id)", "{{$rel.OnDelete "CASCADE"}}", "{{$rel.OnUpdate "CASCADE"}}").Error
+					if err != nil {
+						return err
+					}
 				{{end}}
 			{{end}}
 		{{end}}
