@@ -32,6 +32,9 @@ func (o *ObjectField) IsColumn() bool {
 func (o *ObjectField) IsIdentifier() bool {
 	return o.Name() == "id"
 }
+func (o *ObjectField) IsPrincipalIdentifier() bool {
+	return o.Name() == "createdBy" || o.Name() == "updatedBy"
+}
 func (o *ObjectField) IsRelationshipIdentifier() bool {
 	return strings.HasSuffix(o.Name(), "Id") || strings.HasSuffix(o.Name(), "Ids")
 }
@@ -55,6 +58,9 @@ func (o *ObjectField) IsWritableType() bool {
 }
 func (o *ObjectField) IsFilterable() bool {
 	return !o.IsReadonlyType() && !o.IsEmbedded()
+}
+func (o *ObjectField) IsAggregable() bool {
+	return !o.IsReadonlyType() && !o.IsEmbedded() && !o.IsIdentifier() && !o.IsRelationshipIdentifier() && !o.IsPrincipalIdentifier()
 }
 func (o *ObjectField) IsScalarType() bool {
 	return o.Obj.Model.HasScalar(o.TargetType())

@@ -11,15 +11,17 @@ func objectResultTypeDefinition(o *Object) *ast.ObjectDefinition {
 		Kind: kinds.ObjectDefinition,
 		Name: nameNode(o.Name() + "ResultType"),
 		Fields: []*ast.FieldDefinition{
-			&ast.FieldDefinition{
+			{
 				Kind: kinds.FieldDefinition,
 				Name: nameNode("items"),
-				Type: nonNull(&ast.List{
-					Kind: kinds.List,
-					Type: nonNull(namedType(o.Name())),
-				}),
+				Type: nonNull(listType(nonNull(namedType(o.Name())))),
 			},
-			&ast.FieldDefinition{
+			{
+				Kind: kinds.FieldDefinition,
+				Name: nameNode("aggregations"),
+				Type: nonNull(namedType(o.Name() + "Aggregations")),
+			},
+			{
 				Kind: kinds.FieldDefinition,
 				Name: nameNode("count"),
 				Type: nonNull(namedType("Int")),

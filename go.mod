@@ -21,4 +21,5 @@ require (
 	gopkg.in/AlecAivazis/survey.v1 v1.8.7
 	gopkg.in/gormigrate.v1 v1.6.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8
+	gorm.io/gorm v1.20.2 // indirect
 )

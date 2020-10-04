@@ -12,6 +12,7 @@ func (o *ObjectField) Aggregations() []ObjectFieldAggregation {
 	}
 	if o.IsNumeric() {
 		res = append(res, ObjectFieldAggregation{Name: "Avg"})
+		res = append(res, ObjectFieldAggregation{Name: "Sum"})
 	}
 	return res
 }

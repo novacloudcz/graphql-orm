@@ -36,19 +36,19 @@ func fetchFieldDefinition(obj Object) *ast.FieldDefinition {
 		Name: nameNode(inflection.Singular(strcase.ToLowerCamel(obj.Name()))),
 		Type: namedType(obj.Name()),
 		Arguments: []*ast.InputValueDefinition{
-			&ast.InputValueDefinition{
+			{
 				Kind:        kinds.InputValueDefinition,
 				Name:        nameNode("id"),
 				Description: &ast.StringValue{Kind: kinds.StringValue, Value: "Input for searching by object ID"},
 				Type:        namedType("ID"),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind:        kinds.InputValueDefinition,
 				Name:        nameNode("q"),
 				Description: &ast.StringValue{Kind: kinds.StringValue, Value: "Input for textual searching across selected field (string only)"},
 				Type:        namedType("String"),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("filter"),
 				Type: namedType(obj.Name() + "FilterType"),
@@ -66,28 +66,28 @@ func listFieldResultTypeDefinition(obj Object, name string) *ast.FieldDefinition
 		Name: nameNode(name),
 		Type: nonNull(namedType(obj.Name() + "ResultType")),
 		Arguments: []*ast.InputValueDefinition{
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("offset"),
 				Type: namedType("Int"),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind:         kinds.InputValueDefinition,
 				Name:         nameNode("limit"),
 				DefaultValue: &ast.IntValue{Kind: kinds.IntValue, Value: "30"},
 				Type:         namedType("Int"),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("q"),
 				Type: namedType("String"),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("sort"),
 				Type: listType(nonNull(namedType(obj.Name() + "SortType"))),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("filter"),
 				Type: namedType(obj.Name() + "FilterType"),

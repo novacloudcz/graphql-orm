@@ -45,7 +45,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				Limit:  &limit,
 				Query:  &query,
 				Filter: opts.Filter,
-				SelectionSet: &selectionSet,
+				ItemsSelectionSet: &selectionSet,
 			},
 		}
 		qb := r.GetDB(ctx)
@@ -93,10 +93,14 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 	func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.PluralName}}HandlerOptions) (*{{$obj.Name}}ResultType, error) {
 		query := {{$obj.Name}}QueryFilter{opts.Q}
 		
-		var selectionSet *ast.SelectionSet
+		var itemsSelectionSet *ast.SelectionSet
+		var aggregationsSelectionSet *ast.SelectionSet
 		for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
 			if f.Field.Name == "items" {
-				selectionSet = &f.Field.SelectionSet
+				itemsSelectionSet = &f.Field.SelectionSet
+			}
+			if f.Field.Name == "aggregations" {
+				aggregationsSelectionSet = &f.Field.SelectionSet
 			}
 		}
 
@@ -112,7 +116,8 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				Query:  &query,
 				Sort: _sort,
 				Filter: opts.Filter,
-				SelectionSet: selectionSet,
+				ItemsSelectionSet: itemsSelectionSet,
+				AggregationsSelectionSet: aggregationsSelectionSet,
 			},
 		}, nil
 	}
@@ -143,6 +148,17 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 			}
 		}
 		items = uniqueItems
+		return
+	}
+
+	func (r *Generated{{$obj.Name}}ResultTypeResolver) Aggregations(ctx context.Context, obj *{{$obj.Name}}ResultType) (aggregations *{{$obj.Name}}Aggregations, err error) {
+		otps := GetItemsOptions{
+			Alias:TableName("{{$obj.TableName}}"),
+		}
+		model := &{{$obj.Name}}{}
+		aggregations = &{{$obj.Name}}Aggregations{}
+		err = obj.GetAggregations(ctx, r.DB.db, otps, model, &aggregations)
+		
 		return
 	}
 

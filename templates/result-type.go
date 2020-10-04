@@ -24,7 +24,7 @@ type EntityFilter interface {
 	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error
 }
 type EntityFilterQuery interface {
-	Apply(ctx context.Context, dialect gorm.Dialect, selectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error
+	Apply(ctx context.Context, dialect gorm.Dialect, itemsSelectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
 
 
@@ -47,7 +47,8 @@ type EntityResultType struct {
 	Sort         []EntitySort
 	Filter       EntityFilter
 	Fields       []*ast.Field
-	SelectionSet *ast.SelectionSet
+	ItemsSelectionSet *ast.SelectionSet
+	AggregationsSelectionSet *ast.SelectionSet
 }
 
 type GetItemsOptions struct {
@@ -55,7 +56,7 @@ type GetItemsOptions struct {
 	Preloaders []string
 }
 
-// GetResultTypeItems ...
+// GetItems ...
 func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetItemsOptions, out interface{}) error {
 	subq := db.Model(out)
 	q := db
@@ -82,7 +83,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	joins := []string{}
 	sorts := []SortInfo{}
 
-	err := r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &whereValues, &joins)
+	err := r.Query.Apply(ctx, dialect, r.ItemsSelectionSet, &wheres, &whereValues, &joins)
 	if err != nil {
 		return err
 	}
@@ -142,6 +143,82 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	return q.Find(out).Error
 }
 
+// GetAggregations ...
+func (r *EntityResultType) GetAggregations(ctx context.Context, db *gorm.DB, opts GetItemsOptions,model interface{}, out interface{}) error {
+	subq := db.Model(model)
+	q := db.Model(model)
+	subqGroups := []string{opts.Alias + ".id"}
+	subqFields := []string{"DISTINCT(" + opts.Alias + ".id) as id"}
+	qSorts := []string{}
+	subqSorts := []string{}
+
+	dialect := q.Dialect()
+
+	wheres := []string{}
+	havings := []string{}
+	whereValues := []interface{}{}
+	havingValues := []interface{}{}
+	joins := []string{}
+
+	err := r.Query.Apply(ctx, dialect, r.ItemsSelectionSet, &wheres, &whereValues, &joins)
+	if err != nil {
+		return err
+	}
+
+	if r.Filter != nil {
+		err = r.Filter.Apply(ctx, dialect, &wheres, &whereValues, &havings, &havingValues, &joins)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(wheres) > 0 {
+		subq = subq.Where(strings.Join(wheres, " AND "), whereValues...)
+	}
+	if len(havings) > 0 {
+		subq = subq.Having(strings.Join(havings, " AND "), havingValues...)
+	}
+
+	uniqueJoinsMap := map[string]bool{}
+	uniqueJoins := []string{}
+	for _, join := range joins {
+		if !uniqueJoinsMap[join] {
+			uniqueJoinsMap[join] = true
+			uniqueJoins = append(uniqueJoins, join)
+		}
+	}
+
+	for _, join := range uniqueJoins {
+		q = q.Joins(join)
+		subq = subq.Joins(join)
+	}
+
+	if len(opts.Preloaders) > 0 {
+		for _, p := range opts.Preloaders {
+			q = q.Preload(p)
+		}
+	}
+	subq = subq.Group(strings.Join(subqGroups, ", ")).Select(strings.Join(subqFields, ", "))
+	subq = subq.Order(strings.Join(subqSorts, ", "))
+	q = q.Order(strings.Join(qSorts, ", "))
+	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq.QueryExpr())
+
+	fields := []string{}
+	if r.AggregationsSelectionSet != nil {
+		for _, s := range *r.AggregationsSelectionSet {
+			if f, ok := s.(*ast.Field); ok {
+				if strings.HasSuffix(f.Name, "Max") {
+					name := strings.TrimSuffix(f.Name, "Max")
+					fields = append(fields, fmt.Sprintf("%s(%s) as %s", "MAX", name, f.Name))
+				}
+			}
+		}
+	}
+	aggq := db.Raw("SELECT "+strings.Join(fields,", ")+" FROM (?) aggregation_table",q.QueryExpr())
+	
+	return aggq.Scan(out).Error
+}
+
 // GetCount ...
 func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetItemsOptions, out interface{}) (count int, err error) {
 	q := db
@@ -153,7 +230,7 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetIt
 	havingValues := []interface{}{}
 	joins := []string{}
 
-	err = r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &whereValues, &joins)
+	err = r.Query.Apply(ctx, dialect, r.ItemsSelectionSet, &wheres, &whereValues, &joins)
 	if err != nil {
 		return 0, err
 	}

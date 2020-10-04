@@ -168,6 +168,7 @@ github.com/nats-io/nats.go v1.8.1/go.mod h1:BrFz9vVn0fU3AcH9Vn4Kd7W0NpJ651tD5omQ
 github.com/nats-io/nkeys v0.0.2/go.mod h1:dab7URMsZm6Z/jp9Z5UGa87Uutgc2mVpXLC4B7TDb/4=
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/niemeyer/pretty v0.0.0-20200227124842-a10e7caefd8e/go.mod h1:zD1mROLANZcx1PVRCS0qkT7pwLkGfwJo4zjcN/Tysno=
+github.com/novacloudcz/goclitools v0.0.0-20190807112614-386f7ae41d2f/go.mod h1:vUMFKZv4Um2Gti7ZrJ25iP6UStRpA8n7OUR0rEgaGIY=
 github.com/novacloudcz/graphql-orm v0.0.0-20190811071254-8539170bd47b h1:UTi0eHzzNQVZdfbITAe6ElruGO2T+Zvv9jCtUOxpdEo=
 github.com/novacloudcz/graphql-orm v0.0.0-20190811071254-8539170bd47b/go.mod h1:5np8CM49Ux0A8h2L9S2iB1gBkp8G1ZCxfk8hM5kxvT8=
 github.com/novacloudcz/graphql-orm v0.0.0-20190811072339-5d7c5026cfbe h1:vnho+jJDv7GPK4x4QCepaztC3XwZGna6uap4shyod40=

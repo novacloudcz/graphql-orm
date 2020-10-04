@@ -17,14 +17,14 @@ type {{$object.Name}}QueryFilter struct {
 	Query *string
 }
 
-func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.Dialect, selectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error {
+func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.Dialect, itemsSelectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	if qf.Query == nil {
 		return nil
 	}
 
 	fields := []*ast.Field{}
-	if selectionSet != nil {
-		for _, s := range *selectionSet {
+	if itemsSelectionSet != nil {
+		for _, s := range *itemsSelectionSet {
 			if f, ok := s.(*ast.Field); ok {
 				fields = append(fields, f)
 			}
