@@ -206,6 +206,7 @@ func (o *ObjectField) FilterMapping() []FilterMappingItem {
 		{"_gte", ">= ?", t, "%s"},
 		{"_lte", "<= ?", t, "%s"},
 		{"_in", "IN (?)", listType(nonNull(t)), "%s"},
+		{"_not_in", "NOT IN (?)", listType(nonNull(t)), "%s"},
 	}
 	_t := t.(*ast.Named)
 	if _t.Name.Value == "String" {
