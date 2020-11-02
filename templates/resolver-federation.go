@@ -49,7 +49,7 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 				return
 			}
 
-			if f.IsEmpty(ctx, r.GetDB(ctx).Dialect()) {
+			if f.IsEmpty(ctx, r.GetDB(ctx).Statement) {
 				res = append(res, nil)
 				continue
 			}

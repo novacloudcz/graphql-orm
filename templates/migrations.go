@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/jinzhu/gorm"
-	"gopkg.in/gormigrate.v1"
+	"gorm.io/gorm"
+	"github.com/go-gormigrate/gormigrate/v2"
 )
 
 func Migrate(db *gorm.DB, options *gormigrate.Options, migrations []*gormigrate.Migration) error {
@@ -23,35 +23,10 @@ func Migrate(db *gorm.DB, options *gormigrate.Options, migrations []*gormigrate.
 }
 
 func AutoMigrate(db *gorm.DB) (err error) {
-	_db := db.AutoMigrate({{range $obj := .Model.ObjectEntities}}
+	err = db.AutoMigrate({{range $obj := .Model.ObjectEntities}}
 		{{.Name}}{},{{end}}
 	)
 
-	if(_db.Dialect().GetName() != "sqlite3"){
-		{{range $obj := .Model.ObjectEntities}}
-			{{range $rel := $obj.Relationships}}
-				{{if $rel.IsToOne}}
-					err = _db.Model({{$obj.Name}}{}).RemoveForeignKey("{{$rel.Name}}Id",TableName("{{$rel.Target.TableName}}")+"({{$rel.ForeignKeyDestinationColumn}})").Error
-					if err != nil {
-						return err
-					}
-					err = _db.Model({{$obj.Name}}{}).AddForeignKey("{{$rel.Name}}Id",TableName("{{$rel.Target.TableName}}")+"({{$rel.ForeignKeyDestinationColumn}})", "{{$rel.OnDelete "SET NULL"}}", "{{$rel.OnUpdate "SET NULL"}}").Error
-					if err != nil {
-						return err
-					}
-				{{else if $rel.IsManyToMany}}
-					err = _db.Model({{$rel.ManyToManyObjectName}}{}).RemoveForeignKey("{{$rel.ForeignKeyDestinationColumn}}",TableName("{{$rel.Obj.TableName}}")+"(id)").Error
-					if err != nil {
-						return err
-					}
-					err = _db.Model({{$rel.ManyToManyObjectName}}{}).AddForeignKey("{{$rel.ForeignKeyDestinationColumn}}",TableName("{{$rel.Obj.TableName}}")+"(id)", "{{$rel.OnDelete "CASCADE"}}", "{{$rel.OnUpdate "CASCADE"}}").Error
-					if err != nil {
-						return err
-					}
-				{{end}}
-			{{end}}
-		{{end}}
-	}
-	return _db.Error
+	return
 }
 `

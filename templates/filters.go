@@ -7,12 +7,12 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 {{range $obj := .Model.ObjectEntities}}
 {{if not $obj.IsExtended}}
-func (f *{{$obj.Name}}FilterType) IsEmpty(ctx context.Context, dialect gorm.Dialect) bool {
+func (f *{{$obj.Name}}FilterType) IsEmpty(ctx context.Context, dialect *gorm.Statement) bool {
 	wheres := []string{}
 	havings := []string{}
 	whereValues := []interface{}{}
@@ -24,10 +24,10 @@ func (f *{{$obj.Name}}FilterType) IsEmpty(ctx context.Context, dialect gorm.Dial
 	}
 	return len(wheres) == 0 && len(havings) == 0
 }
-func (f *{{$obj.Name}}FilterType) Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error {
+func (f *{{$obj.Name}}FilterType) Apply(ctx context.Context, dialect *gorm.Statement, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error {
 	return f.ApplyWithAlias(ctx, dialect, TableName("{{$obj.TableName}}"), wheres, whereValues, havings, havingValues, joins)
 }
-func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error {
+func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect *gorm.Statement, alias string, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error {
 	if f == nil {
 		return nil
 	}
@@ -109,7 +109,7 @@ func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect go
 	return nil
 }
 
-func (f *{{$obj.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix string) (conditions []string, values []interface{}) {
+func (f *{{$obj.Name}}FilterType) WhereContent(dialect *gorm.Statement, aliasPrefix string) (conditions []string, values []interface{}) {
 	conditions = []string{}
 	values = []interface{}{}
 
@@ -131,7 +131,7 @@ func (f *{{$obj.Name}}FilterType) WhereContent(dialect gorm.Dialect, aliasPrefix
 
 	return
 }
-func (f *{{$obj.Name}}FilterType) HavingContent(dialect gorm.Dialect, aliasPrefix string) (conditions []string, values []interface{}) {
+func (f *{{$obj.Name}}FilterType) HavingContent(dialect *gorm.Statement, aliasPrefix string) (conditions []string, values []interface{}) {
 	conditions = []string{}
 	values = []interface{}{}
 

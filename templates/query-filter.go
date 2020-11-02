@@ -7,7 +7,7 @@ import (
 	"strings"
 	"fmt"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 	"github.com/vektah/gqlparser/ast"
 )
 
@@ -17,7 +17,7 @@ type {{$object.Name}}QueryFilter struct {
 	Query *string
 }
 
-func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.Dialect, itemsSelectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error {
+func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect *gorm.Statement, itemsSelectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	if qf.Query == nil {
 		return nil
 	}
@@ -44,7 +44,7 @@ func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.D
 	return nil
 }
 
-func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(dialect gorm.Dialect, fields []*ast.Field, query, alias string, ors *[]string, values *[]interface{}, joins *[]string) error {
+func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(dialect *gorm.Statement, fields []*ast.Field, query, alias string, ors *[]string, values *[]interface{}, joins *[]string) error {
 	if len(fields) == 0 {
 		return nil
 	}
@@ -60,7 +60,7 @@ func (qf *{{$object.Name}}QueryFilter) applyQueryWithFields(dialect gorm.Dialect
 			column := dialect.Quote(alias)+"."+dialect.Quote("{{$col.Name}}")
 		{{else}}
 			cast := "TEXT"
-			if dialect.GetName() == "mysql" {
+			if dialect.Schema.Name == "mysql" {
 				cast = "CHAR"
 			}
  			column := fmt.Sprintf("CAST(%s"+dialect.Quote("{{$col.Name}}")+" AS %s)", dialect.Quote(alias)+".", cast)

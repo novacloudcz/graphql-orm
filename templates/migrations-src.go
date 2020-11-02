@@ -7,8 +7,8 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/jinzhu/gorm"
-	"gopkg.in/gormigrate.v1"
+	"gorm.io/gorm"
+	"github.com/go-gormigrate/gormigrate/v2"
 )
 
 func GetMigrations(db *gen.DB) []*gormigrate.Migration {

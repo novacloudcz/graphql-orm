@@ -5,15 +5,15 @@ var Sorting = `package gen
 import (
 	"context"
 	
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 {{range $obj := .Model.ObjectEntities}}
 {{if not $obj.IsExtended}}
-func (s {{$obj.Name}}SortType) Apply(ctx context.Context, dialect gorm.Dialect, sorts *[]SortInfo, joins *[]string) error {
+func (s {{$obj.Name}}SortType) Apply(ctx context.Context, dialect *gorm.Statement, sorts *[]SortInfo, joins *[]string) error {
 	return s.ApplyWithAlias(ctx, dialect, TableName("{{$obj.TableName}}"), sorts, joins)
 }
-func (s {{$obj.Name}}SortType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, sorts *[]SortInfo, joins *[]string) error {
+func (s {{$obj.Name}}SortType) ApplyWithAlias(ctx context.Context, dialect *gorm.Statement, alias string, sorts *[]SortInfo, joins *[]string) error {
 	aliasPrefix := dialect.Quote(alias) + "."
 	
 	{{range $col := $obj.Columns}} {{if $col.IsSortable}} 

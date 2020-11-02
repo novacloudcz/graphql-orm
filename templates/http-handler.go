@@ -9,7 +9,7 @@ import (
 
 	"github.com/99designs/gqlgen/handler"
 	jwtgo "github.com/dgrijalva/jwt-go"
-	"gopkg.in/gormigrate.v1"
+	"github.com/go-gormigrate/gormigrate/v2"
 )
 
 func GetHTTPServeMux(r ResolverRoot, db *DB, migrations []*gormigrate.Migration) *http.ServeMux {

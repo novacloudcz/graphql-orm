@@ -5,14 +5,17 @@ var Database = `package gen
 import (
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
+	"time"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mssql"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
-	_ "github.com/jinzhu/gorm/dialects/sqlite"
-	"gopkg.in/gormigrate.v1"
+	"github.com/go-gormigrate/gormigrate/v2"
+	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
+	"gorm.io/gorm/schema"
 )
 
 // DB ...
@@ -39,12 +42,7 @@ func TableName(name string) string {
 
 // NewDB ...
 func NewDB(db *gorm.DB) *DB {
-	prefix := os.Getenv("TABLE_NAME_PREFIX")
-	if prefix != "" {
-		gorm.DefaultTableNameHandler = func(db *gorm.DB, defaultTableName string) string {
-			return prefix + "_" + defaultTableName
-		}
-	}
+
 	v := DB{db}
 	return &v
 }
@@ -58,22 +56,48 @@ func NewDBWithString(urlString string) *DB {
 
 	urlString = getConnectionString(u)
 
-	db, err := gorm.Open(u.Scheme, urlString)
+	var dialector gorm.Dialector
+	switch u.Scheme {
+	case "sqlite3":
+		dialector = sqlite.Open(urlString)
+	case "mysql":
+		dialector = mysql.Open(urlString)
+	case "postgres":
+		dialector = postgres.Open(urlString)
+	}
+
+	prefix := os.Getenv("TABLE_NAME_PREFIX")
+	if prefix != "" {
+		prefix += "_"
+	}
+
+	logMode := logger.Silent
+	if os.Getenv("DEBUG") == "true" {
+		logMode = logger.Info
+	}
+
+	db, err := gorm.Open(dialector, &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			TablePrefix: prefix,
+		},
+		Logger: logger.Default.LogMode(logMode),
+	})
 	if err != nil {
 		panic(err)
 	}
-	
+
 	if urlString == "sqlite3://:memory:" {
-		db.DB().SetMaxIdleConns(1)
-		db.DB().SetConnMaxLifetime(time.Second * 300)
-		db.DB().SetMaxOpenConns(1)
+		rawDB, _ := db.DB()
+		rawDB.SetMaxIdleConns(1)
+		rawDB.SetConnMaxLifetime(time.Second * 300)
+		rawDB.SetMaxOpenConns(1)
 	} else {
-		db.DB().SetMaxIdleConns({{.Config.MaxIdleConnections}})
-		db.DB().SetConnMaxLifetime(time.Second*{{.Config.ConnMaxLifetime}})
-		db.DB().SetMaxOpenConns({{.Config.MaxOpenConnections}})
+		rawDB, _ := db.DB()
+		rawDB.SetMaxIdleConns(5)
+		rawDB.SetConnMaxLifetime(time.Second * 60)
+		rawDB.SetMaxOpenConns(10)
 	}
-	db.LogMode(os.Getenv("DEBUG") == "true")
-	
+
 	return NewDB(db)
 }
 
@@ -86,7 +110,7 @@ func getConnectionString(u *url.URL) string {
 		params.Set("user", u.User.Username())
 		params.Set("password", password)
 		params.Set("dbname", strings.TrimPrefix(u.Path, "/"))
-		return strings.Replace(params.Encode(),"&"," ",-1)
+		return strings.Replace(params.Encode(), "&", " ", -1)
 		// return fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s", host, u.Port(), u.User.Username(), password, strings.TrimPrefix(u.Path, "/"))
 	}
 	if u.Scheme != "sqlite3" {
@@ -119,10 +143,13 @@ func (db *DB) Migrate(migrations []*gormigrate.Migration) error {
 
 // Close ...
 func (db *DB) Close() error {
-	return db.db.Close()
+	rawDB, _ := db.db.DB()
+	return rawDB.Close()
 }
 
+// Ping ...
 func (db *DB) Ping() error {
-	return db.db.DB().Ping()
+	rawDB, _ := db.db.DB()
+	return rawDB.Ping()
 }
 `

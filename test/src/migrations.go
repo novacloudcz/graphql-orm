@@ -1,9 +1,9 @@
 package src
 
 import (
-	"github.com/jinzhu/gorm"
+	"github.com/go-gormigrate/gormigrate/v2"
 	"github.com/novacloudcz/graphql-orm/test/gen"
-	"gopkg.in/gormigrate.v1"
+	"gorm.io/gorm"
 )
 
 func GetMigrations(db *gen.DB) []*gormigrate.Migration {
@@ -24,7 +24,7 @@ func GetMigrations(db *gen.DB) []*gormigrate.Migration {
 				type User struct {
 					Blah string
 				}
-				return tx.AutoMigrate(&User{}).Error
+				return tx.AutoMigrate(&User{})
 			},
 		},
 		&gormigrate.Migration{

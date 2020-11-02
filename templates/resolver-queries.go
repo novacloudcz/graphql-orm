@@ -221,7 +221,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 							if db == nil {
 								db = r.DB.Query()
 							}
-							err = db.Model(obj).Related(&items, "{{$rel.MethodName}}").Error
+							err = db.Model(obj).Association("{{$rel.MethodName}}").Find(&items)
 							res = items
 					{{else}}
 						loaders := ctx.Value(KeyLoaders).(map[string]*dataloader.Loader)
@@ -249,7 +249,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 					if db == nil {
 						db = r.DB.Query()
 					}
-					err = db.Model(obj).Select(TableName("{{$rel.Target.TableName}}") + ".id").Related(&items, "{{$rel.MethodName}}").Error
+					err = db.Model(obj).Select(TableName("{{$rel.Target.TableName}}") + ".id").Association("{{$rel.MethodName}}").Find(&items)
 
 					for _, item := range items {
 						ids = append(ids, item.ID)

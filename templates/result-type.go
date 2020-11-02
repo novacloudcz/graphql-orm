@@ -9,7 +9,7 @@ import (
 	"github.com/iancoleman/strcase"
 	"github.com/vektah/gqlparser/ast"
 
-	"github.com/jinzhu/gorm"
+	"gorm.io/gorm"
 )
 
 func GetItem(ctx context.Context, db *gorm.DB, out interface{}, id *string) error {
@@ -17,14 +17,14 @@ func GetItem(ctx context.Context, db *gorm.DB, out interface{}, id *string) erro
 }
 
 func GetItemForRelation(ctx context.Context, db *gorm.DB, obj interface{}, relation string, out interface{}) error {
-	return db.Model(obj).Related(out, relation).Error
+	return db.Model(obj).Association(relation).Find(out)
 }
 
 type EntityFilter interface {
-	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error
+	Apply(ctx context.Context, dialect *gorm.Statement, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error
 }
 type EntityFilterQuery interface {
-	Apply(ctx context.Context, dialect gorm.Dialect, itemsSelectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error
+	Apply(ctx context.Context, dialect *gorm.Statement, itemsSelectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
 
 
@@ -37,7 +37,7 @@ func (si *SortInfo) String() string {
 	return fmt.Sprintf("%s %s", si.Field, si.Direction)
 }
 type EntitySort interface {
-	Apply(ctx context.Context, dialect gorm.Dialect, sorts *[]SortInfo, joins *[]string) error
+	Apply(ctx context.Context, dialect *gorm.Statement, sorts *[]SortInfo, joins *[]string) error
 }
 
 type EntityResultType struct {
@@ -74,7 +74,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 		subq = subq.Offset(*r.Offset)
 	}
 
-	dialect := q.Dialect()
+	dialect := q.Statement
 
 	wheres := []string{}
 	havings := []string{}
@@ -138,7 +138,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	subq = subq.Group(strings.Join(subqGroups, ", ")).Select(strings.Join(subqFields, ", "))
 	subq = subq.Order(strings.Join(subqSorts, ", "))
 	q = q.Order(strings.Join(qSorts, ", "))
-	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq.QueryExpr())
+	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq)
 
 	return q.Find(out).Error
 }
@@ -152,7 +152,7 @@ func (r *EntityResultType) GetAggregations(ctx context.Context, db *gorm.DB, opt
 	qSorts := []string{}
 	subqSorts := []string{}
 
-	dialect := q.Dialect()
+	dialect := q.Statement
 
 	wheres := []string{}
 	havings := []string{}
@@ -201,7 +201,7 @@ func (r *EntityResultType) GetAggregations(ctx context.Context, db *gorm.DB, opt
 	subq = subq.Group(strings.Join(subqGroups, ", ")).Select(strings.Join(subqFields, ", "))
 	subq = subq.Order(strings.Join(subqSorts, ", "))
 	q = q.Order(strings.Join(qSorts, ", "))
-	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq.QueryExpr())
+	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq)
 
 	fields := []string{}
 	if r.AggregationsSelectionSet != nil {
@@ -214,7 +214,7 @@ func (r *EntityResultType) GetAggregations(ctx context.Context, db *gorm.DB, opt
 			}
 		}
 	}
-	aggq := db.Raw("SELECT "+strings.Join(fields,", ")+" FROM (?) aggregation_table",q.QueryExpr())
+	aggq := db.Raw("SELECT "+strings.Join(fields,", ")+" FROM (?) aggregation_table",q)
 	
 	return aggq.Scan(out).Error
 }
@@ -223,7 +223,7 @@ func (r *EntityResultType) GetAggregations(ctx context.Context, db *gorm.DB, opt
 func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetItemsOptions, out interface{}) (count int, err error) {
 	q := db
 
-	dialect := q.Dialect()
+	dialect := q.Statement
 	wheres := []string{}
 	havings := []string{}
 	whereValues := []interface{}{}
@@ -262,7 +262,9 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetIt
 		q = q.Joins(join)
 	}
 	q = q.Model(out).Group(opts.Alias + ".id")
-	err = db.Model(out).Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", q.QueryExpr()).Count(&count).Error
+	var countResult int64
+	err = db.Model(out).Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", q).Count(&countResult).Error
+	count = int(countResult)
 
 	return
 }

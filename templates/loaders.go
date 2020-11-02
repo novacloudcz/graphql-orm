@@ -4,7 +4,7 @@ var Loaders = `package gen
 
 import (
 	"context"
-	"fmt"
+	"errors"
 
 	"github.com/graph-gophers/dataloader"
 )
@@ -23,7 +23,7 @@ func GetLoaders(db *DB) map[string]*dataloader.Loader {
 
 		items := &[]{{$object.Name}}{}
 		res := db.Query().Find(items, "id IN (?)", ids)
-		if res.Error != nil && !res.RecordNotFound() {
+		if res.Error != nil && !errors.Is(res.Error,gorm.ErrRecordNotFound) {
 			return []*dataloader.Result{
 				&dataloader.Result{Error: res.Error},
 			}
