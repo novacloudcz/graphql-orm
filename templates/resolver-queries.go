@@ -90,6 +90,28 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		}
 		return r.Handlers.Query{{$obj.PluralName}}(ctx, r.GeneratedResolver, opts)
 	}
+	func (r *GeneratedResolver) {{$obj.PluralName}}Items(ctx context.Context, opts Query{{$obj.PluralName}}HandlerOptions) (res []*{{$obj.Name}}, err error) {
+		resultType, err := r.Handlers.Query{{$obj.PluralName}}(ctx, r, opts)
+		if err != nil {
+			return
+		}
+		err = resultType.GetItems(ctx, r.GetDB(ctx), GetItemsOptions{
+			Alias: TableName("{{$obj.TableName}}"),
+		}, &res)
+		if err != nil {
+			return
+		}
+		return
+	}
+	func (r *GeneratedResolver) {{$obj.PluralName}}Count(ctx context.Context, opts Query{{$obj.PluralName}}HandlerOptions) (count int, err error) {
+		resultType, err := r.Handlers.Query{{$obj.PluralName}}(ctx, r, opts)
+		if err != nil {
+			return
+		}
+		return resultType.GetCount(ctx, r.GetDB(ctx), GetItemsOptions{
+			Alias: TableName("{{$obj.TableName}}"),
+		}, &{{$obj.Name}}{})
+	}
 	func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.PluralName}}HandlerOptions) (*{{$obj.Name}}ResultType, error) {
 		query := {{$obj.Name}}QueryFilter{opts.Q}
 		
