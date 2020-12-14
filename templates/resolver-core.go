@@ -54,7 +54,7 @@ func DefaultResolutionHandlers() ResolutionHandlers {
 
 type GeneratedResolver struct {
 	Handlers ResolutionHandlers
-	DB *DB
+	db *DB
 	EventController *EventController
 }
 
@@ -62,7 +62,7 @@ type GeneratedResolver struct {
 func (r *GeneratedResolver) GetDB(ctx context.Context) *gorm.DB {
 	db, _ := ctx.Value(KeyMutationTransaction).(*gorm.DB)
 	if db == nil {
-		db = r.DB.Query()
+		db = r.db.Query()
 	}
 	return db
 }
