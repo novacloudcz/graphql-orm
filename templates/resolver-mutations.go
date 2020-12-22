@@ -279,6 +279,10 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		return done,err
 	}
 	func DeleteAll{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver) (bool,error) {
+		// delete all resolvers are primarily used for 
+		if os.Getenv("ENABLE_DELETE_ALL_RESOLVERS") == "" {
+			return false, fmt.Errorf("delete all resolver is not enabled (ENABLE_DELETE_ALL_RESOLVERS not specified)")
+		}
 		tx := r.GetDB(ctx)
 		err := tx.Delete(&{{$obj.Name}}{}).Error
 		if err!=nil{
