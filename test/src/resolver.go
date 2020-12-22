@@ -54,7 +54,7 @@ func (r *QueryResolver) Hello(ctx context.Context) (string, error) {
 }
 
 func (r *QueryResolver) TopCompanies(ctx context.Context) (items []*gen.Company, err error) {
-	err = r.DB.Query().Model(&gen.Company{}).Find(&items).Error
+	err = r.GetDB(ctx).Model(&gen.Company{}).Find(&items).Error
 	return
 }
 

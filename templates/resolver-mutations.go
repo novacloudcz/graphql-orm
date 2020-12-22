@@ -4,6 +4,7 @@ var ResolverMutations = `package gen
 
 import (
 	"context"
+	"os"
 	"time"
 	
 	"github.com/graph-gophers/dataloader"
@@ -20,7 +21,7 @@ type MutationEvents struct {
 }
 
 func EnrichContextWithMutations(ctx context.Context, r *GeneratedResolver) context.Context {
-	_ctx := context.WithValue(ctx, KeyMutationTransaction, r.DB.db.Begin())
+	_ctx := context.WithValue(ctx, KeyMutationTransaction, r.GetDB(ctx).Begin())
 	_ctx = context.WithValue(_ctx, KeyMutationEvents, &MutationEvents{})
 	return _ctx
 }

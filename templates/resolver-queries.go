@@ -49,9 +49,6 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 			},
 		}
 		qb := r.GetDB(ctx)
-		if qb == nil {
-			qb = r.DB.Query()
-		}
 		if opts.ID != nil {
 			qb = qb.Where(TableName("{{$obj.TableName}}") + ".id = ?", *opts.ID)
 		}
@@ -148,7 +145,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				"{{$r.MethodName}}",{{end}}
 			},
 		}
-		err = obj.GetItems(ctx, r.DB.db, otps, &items)
+		err = obj.GetItems(ctx, r.GetDB(ctx), otps, &items)
 		{{if $obj.HasPreloadableRelationships}}
 			for _, item := range items {
 				{{range $rel := $obj.PreloadableRelationships}}
@@ -175,7 +172,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				"{{$r.MethodName}}",{{end}}
 			},
 		}
-		return obj.GetCount(ctx, r.DB.db,opts, &{{$obj.Name}}{})
+		return obj.GetCount(ctx, r.GetDB(ctx),opts, &{{$obj.Name}}{})
 	}
 	
 	{{if $obj.NeedsQueryResolver}}
@@ -224,9 +221,6 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 					{{if $rel.IsToMany}}
 							items := []*{{$rel.TargetType}}{}
 							db := r.GetDB(ctx)
-							if db == nil {
-								db = r.DB.Query()
-							}
 							err = db.Model(obj).Related(&items, "{{$rel.MethodName}}").Error
 							res = items
 					{{else}}
@@ -252,9 +246,6 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 					items := []*{{$rel.TargetType}}{}
 					db := r.GetDB(ctx)
-					if db == nil {
-						db = r.DB.Query()
-					}
 					err = db.Model(obj).Select(TableName("{{$rel.Target.TableName}}") + ".id").Related(&items, "{{$rel.MethodName}}").Error
 
 					for _, item := range items {

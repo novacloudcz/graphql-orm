@@ -58,6 +58,10 @@ type GeneratedResolver struct {
 	EventController *EventController
 }
 
+func NewGeneratedResolver(handlers ResolutionHandlers, db *DB, ec *EventController) *GeneratedResolver {
+	return &GeneratedResolver{Handlers: handlers, db: db, EventController: ec}
+}
+
 // GetDB returns database connection or transaction for given context (if exists)
 func (r *GeneratedResolver) GetDB(ctx context.Context) *gorm.DB {
 	db, _ := ctx.Value(KeyMutationTransaction).(*gorm.DB)
