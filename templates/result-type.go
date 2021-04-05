@@ -104,7 +104,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 				subqGroups = append(subqGroups, fmt.Sprintf("%s", sort.Field))
 			}
 			subqFields = append(subqFields, fmt.Sprintf("%s as "+dialect.Quote("sort_key_%d"), sort.Field, i))
-			qSorts = append(qSorts, fmt.Sprintf(dialect.Quote("filter_table")+"."+dialect.Quote("sort_key_%d")+" %s", i, sort.Direction))
+			qSorts = append(qSorts, fmt.Sprintf("MAX("+dialect.Quote("filter_table")+"."+dialect.Quote("sort_key_%d")+") %s", i, sort.Direction))
 			subqSorts = append(subqSorts, fmt.Sprintf(dialect.Quote("sort_key_%d")+" %s", i, sort.Direction))
 		}
 	}
@@ -136,7 +136,7 @@ func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetIt
 	}
 	subq = subq.Group(strings.Join(subqGroups, ", ")).Select(strings.Join(subqFields, ", "))
 	subq = subq.Order(strings.Join(subqSorts, ", "))
-	q = q.Order(strings.Join(qSorts, ", "))
+	q = q.Group(strings.Join(subqGroups, ", ")).Order(strings.Join(qSorts, ", "))
 	q = q.Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", subq.QueryExpr())
 
 	return q.Find(out).Error
