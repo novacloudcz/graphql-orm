@@ -8,6 +8,7 @@ import (
 	"github.com/ghodss/yaml"
 )
 
+// Config ...
 type Config struct {
 	Package    string `json:"package"`
 	Connection *struct {
@@ -17,10 +18,12 @@ type Config struct {
 	} `json:"connection,omitempty"`
 }
 
+// LoadConfig ...
 func LoadConfig() (c Config, err error) {
 	return LoadConfigFromPath(".")
 }
 
+// LoadConfigFromPath ...
 func LoadConfigFromPath(p string) (c Config, err error) {
 
 	configSource, err := ioutil.ReadFile(path.Join(p, "graphql-orm.yml"))
@@ -34,6 +37,7 @@ func LoadConfigFromPath(p string) (c Config, err error) {
 	return
 }
 
+// MaxIdleConnections ...
 func (c *Config) MaxIdleConnections() uint {
 	if c.Connection != nil && (*c.Connection).MaxIdleConnections != nil {
 		return *(*c.Connection).MaxIdleConnections
@@ -41,12 +45,15 @@ func (c *Config) MaxIdleConnections() uint {
 	return 5
 }
 
+// MaxOpenConnections ...
 func (c *Config) MaxOpenConnections() uint {
 	if c.Connection != nil && (*c.Connection).MaxOpenConnections != nil {
 		return *(*c.Connection).MaxOpenConnections
 	}
 	return 10
 }
+
+// ConnMaxLifetime ...
 func (c *Config) ConnMaxLifetime() float64 {
 	if c.Connection != nil && (*c.Connection).ConnMaxLifetime != nil {
 		val := *(*c.Connection).ConnMaxLifetime

@@ -16,6 +16,7 @@ require (
 	github.com/novacloudcz/graphql-orm v0.4.12
 	github.com/vektah/gqlparser v1.2.0
 	gopkg.in/gormigrate.v1 v1.6.0
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
 replace github.com/novacloudcz/graphql-orm v0.4.12 => ../

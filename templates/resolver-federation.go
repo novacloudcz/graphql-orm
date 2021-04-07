@@ -1,5 +1,6 @@
 package templates
 
+// ResolverFederation ...
 var ResolverFederation = `package gen
 
 import (
@@ -81,9 +82,12 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 	{{if or $obj.HasAnyRelationships $obj.HasReadonlyColumns}}
 
 		{{range $index, $rel := $obj.Relationships}}
+		// {{$rel.MethodName}} ...
 		func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
 			return r.Handlers.{{$obj.Name}}{{$rel.MethodName}}(ctx, r, obj)
 		}
+		
+		// {{$obj.Name}}{{$rel.MethodName}}Handler ...
 		func {{$obj.Name}}{{$rel.MethodName}}Handler(ctx context.Context,r *Generated{{$obj.Name}}Resolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
 			{{if $rel.Target.IsExtended}}
 				err = fmt.Errorf("not implemented")

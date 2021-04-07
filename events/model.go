@@ -19,6 +19,7 @@ const (
 	EventTypeDeleted = "DELETED"
 )
 
+// EventDataValue ...
 type EventDataValue interface{}
 
 // EventChange ...
@@ -28,6 +29,7 @@ type EventChange struct {
 	NewValue string `json:"newValue"`
 }
 
+// SetOldValue ...
 func (ec *EventChange) SetOldValue(value interface{}) error {
 	data, err := json.Marshal(value)
 	if err == nil {
@@ -35,6 +37,8 @@ func (ec *EventChange) SetOldValue(value interface{}) error {
 	}
 	return err
 }
+
+// OldValueAs ...
 func (ec *EventChange) OldValueAs(data interface{}) error {
 	return json.Unmarshal([]byte(ec.OldValue), data)
 }
@@ -45,10 +49,13 @@ func (ec *EventChange) SetNewValue(value interface{}) error {
 	}
 	return err
 }
+
+// NewValueAs ...
 func (ec *EventChange) NewValueAs(data interface{}) error {
 	return json.Unmarshal([]byte(ec.NewValue), data)
 }
 
+// EventMetadata ...
 type EventMetadata struct {
 	Type        EventType `json:"type"`
 	Entity      string    `json:"entity"`
@@ -98,6 +105,7 @@ func (e Event) ChangedColumns() []string {
 	return columns
 }
 
+// Change ...
 func (e *Event) Change(column string) (ec *EventChange) {
 	for _, c := range e.Changes {
 		if c.Name == column {

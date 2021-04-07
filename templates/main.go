@@ -1,5 +1,6 @@
 package templates
 
+// Main ...
 var Main = `package main
 
 import (

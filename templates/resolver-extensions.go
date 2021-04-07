@@ -1,5 +1,6 @@
 package templates
 
+// ResolverExtensions ...
 var ResolverExtensions = `package gen
 
 import (
@@ -17,6 +18,7 @@ import (
 	{{$obj := $ext.Object}}
 	
 	{{if not $ext.ExtendsLocalObject}}
+		// Generated{{$obj.Name}}Resolver ...
 		type Generated{{$obj.Name}}Resolver struct { *GeneratedResolver }
 	
 		{{if or $obj.HasAnyRelationships $obj.HasReadonlyColumns}}

@@ -10,17 +10,23 @@ import (
 	"github.com/iancoleman/strcase"
 )
 
+// ObjectRelationship ...
 type ObjectRelationship struct {
 	Def *ast.FieldDefinition
 	Obj *Object
 }
 
+// Name ...
 func (o *ObjectRelationship) Name() string {
 	return o.Def.Name.Value
 }
+
+// MethodName ...
 func (o *ObjectRelationship) MethodName() string {
 	return strcase.ToCamel(o.Def.Name.Value)
 }
+
+// ValueForRelationshipDirectiveAttribute ...
 func (o *ObjectRelationship) ValueForRelationshipDirectiveAttribute(name string) (val interface{}, ok bool) {
 	for _, d := range o.Def.Directives {
 		if d.Name.Value == "relationship" {
@@ -35,6 +41,8 @@ func (o *ObjectRelationship) ValueForRelationshipDirectiveAttribute(name string)
 	}
 	return
 }
+
+// StringForRelationshipDirectiveAttribute ...
 func (o *ObjectRelationship) StringForRelationshipDirectiveAttribute(name string) (val string, ok bool) {
 	value, ok := o.ValueForRelationshipDirectiveAttribute(name)
 	if !ok {
@@ -46,6 +54,8 @@ func (o *ObjectRelationship) StringForRelationshipDirectiveAttribute(name string
 	}
 	return
 }
+
+// BoolForRelationshipDirectiveAttribute ...
 func (o *ObjectRelationship) BoolForRelationshipDirectiveAttribute(name string) (val bool, ok bool) {
 	value, ok := o.ValueForRelationshipDirectiveAttribute(name)
 	if !ok {
@@ -57,6 +67,8 @@ func (o *ObjectRelationship) BoolForRelationshipDirectiveAttribute(name string) 
 	}
 	return
 }
+
+// InverseRelationshipName ...
 func (o *ObjectRelationship) InverseRelationshipName() string {
 	val, ok := o.StringForRelationshipDirectiveAttribute("inverse")
 	if !ok {
@@ -65,48 +77,67 @@ func (o *ObjectRelationship) InverseRelationshipName() string {
 	return val
 }
 
+// Preload ...
 func (o *ObjectRelationship) Preload() bool {
 	val, _ := o.BoolForRelationshipDirectiveAttribute("preload")
 	return val
 }
 
+// Target ...
 func (o *ObjectRelationship) Target() *Object {
 	target := o.Obj.Model.Object(o.TargetType())
 	return &target
 }
+
+// InverseRelationship ...
 func (o *ObjectRelationship) InverseRelationship() *ObjectRelationship {
 	return o.Target().Relationship(o.InverseRelationshipName())
 }
 
+// IsToMany ...
 func (o *ObjectRelationship) IsToMany() bool {
 	t := getNullableType(o.Def.Type)
 	return isListType(t)
 }
+
+// IsToOne ...
 func (o *ObjectRelationship) IsToOne() bool {
 	return !o.IsToMany()
 }
 
+// IsManyToMany ...
 func (o *ObjectRelationship) IsManyToMany() bool {
 	return o.IsToMany() && o.InverseRelationship().IsToMany()
 }
+
+// IsManyToOne ...
 func (o *ObjectRelationship) IsManyToOne() bool {
 	return o.IsToMany() && !o.InverseRelationship().IsToMany()
 }
+
+// IsOneToMany ...
 func (o *ObjectRelationship) IsOneToMany() bool {
 	return !o.IsToMany() && o.InverseRelationship().IsToMany()
 }
+
+// IsSelfReferencing ...
 func (o *ObjectRelationship) IsSelfReferencing() bool {
 	inv := o.InverseRelationship()
 	return o.Obj.Name() == inv.Obj.Name() && o.Name() == inv.Name()
 }
+
+// IsMainRelationshipForManyToMany ...
 func (o *ObjectRelationship) IsMainRelationshipForManyToMany() bool {
 	main := o.MainRelationshipForManyToMany()
 	return o.Obj.Name() == main.Obj.Name() && o.Name() == main.Name()
 }
+
+// IsNonNull ...
 func (o *ObjectRelationship) IsNonNull() bool {
 	return isNonNullType(o.Def.Type)
 }
 
+// ReturnType ...
 func (o *ObjectRelationship) ReturnType() string {
 	nt := getNamedType(o.Def.Type).(*ast.Named)
 	if o.IsToMany() {
@@ -114,13 +145,19 @@ func (o *ObjectRelationship) ReturnType() string {
 	}
 	return fmt.Sprintf("*%s", nt.Name.Value)
 }
+
+// TargetType ...
 func (o *ObjectRelationship) TargetType() string {
 	nt := getNamedType(o.Def.Type).(*ast.Named)
 	return nt.Name.Value
 }
+
+// GoType ...
 func (o *ObjectRelationship) GoType() string {
 	return o.ReturnType()
 }
+
+// ChangesName ...
 func (o *ObjectRelationship) ChangesName() string {
 	name := o.MethodName()
 	if o.IsToMany() {
@@ -130,6 +167,8 @@ func (o *ObjectRelationship) ChangesName() string {
 	}
 	return name
 }
+
+// ChangesType ...
 func (o *ObjectRelationship) ChangesType() string {
 	if o.IsToMany() {
 		return "[]*string"
@@ -137,6 +176,8 @@ func (o *ObjectRelationship) ChangesType() string {
 		return "*string"
 	}
 }
+
+// ModelTags ...
 func (o *ObjectRelationship) ModelTags() string {
 	tags := fmt.Sprintf(`json:"%s"`, o.Name())
 	invrel := o.InverseRelationship()
@@ -152,14 +193,20 @@ func (o *ObjectRelationship) ModelTags() string {
 	}
 	return tags
 }
+
+// ManyToManyJoinTable ...
 func (o *ObjectRelationship) ManyToManyJoinTable() string {
 	m := o.MainRelationshipForManyToMany()
 	return m.Obj.LowerName() + "_" + m.Name()
 }
+
+// ManyToManyObjectName ...
 func (o *ObjectRelationship) ManyToManyObjectName() string {
 	m := o.MainRelationshipForManyToMany()
 	return m.Obj.Name() + "_" + m.Name()
 }
+
+// MainRelationshipForManyToMany ...
 func (o *ObjectRelationship) MainRelationshipForManyToMany() *ObjectRelationship {
 	inversed := o.InverseRelationship()
 	if inversed.Name() > o.Name() {
@@ -167,6 +214,8 @@ func (o *ObjectRelationship) MainRelationshipForManyToMany() *ObjectRelationship
 	}
 	return o
 }
+
+// JoinString ...
 func (o *ObjectRelationship) JoinString() string {
 	join := ""
 	if o.IsManyToMany() {
@@ -180,6 +229,7 @@ func (o *ObjectRelationship) JoinString() string {
 	return join
 }
 
+// ForeignKeyDestinationColumn ...
 func (o *ObjectRelationship) ForeignKeyDestinationColumn() string {
 	if o.IsToOne() {
 		return "id"
@@ -189,6 +239,8 @@ func (o *ObjectRelationship) ForeignKeyDestinationColumn() string {
 	}
 	return ""
 }
+
+// OnDelete ...
 func (o *ObjectRelationship) OnDelete(def string) string {
 	str, exists := o.StringForRelationshipDirectiveAttribute("onDelete")
 	if !exists {
@@ -196,6 +248,8 @@ func (o *ObjectRelationship) OnDelete(def string) string {
 	}
 	return str
 }
+
+// OnUpdate ...
 func (o *ObjectRelationship) OnUpdate(def string) string {
 	str, exists := o.StringForRelationshipDirectiveAttribute("onUpdate")
 	if !exists {

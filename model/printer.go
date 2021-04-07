@@ -15,7 +15,7 @@ func filterDirective(ds []*ast.Directive, name string) []*ast.Directive {
 	return res
 }
 
-// PrintSchema
+// PrintSchema ...
 func PrintSchema(model Model) (string, error) {
 
 	for _, o := range model.Objects() {

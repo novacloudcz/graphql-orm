@@ -4,7 +4,7 @@ import (
 	"github.com/graphql-go/graphql/language/parser"
 )
 
-// Parse
+// Parse ...
 func Parse(m string) (Model, error) {
 	var model Model
 	astDoc, err := parser.Parse(parser.ParseParams{

@@ -63,6 +63,7 @@ func EnrichModel(m *Model) error {
 	return nil
 }
 
+// BuildFederatedModel ...
 func BuildFederatedModel(m *Model) error {
 	if m.HasFederatedTypes() {
 		m.Doc.Definitions = append(m.Doc.Definitions, createFederationEntityUnion(m))

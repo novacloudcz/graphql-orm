@@ -4,6 +4,7 @@ import (
 	"github.com/graphql-go/graphql/language/ast"
 )
 
+// ObjectExtension ...
 type ObjectExtension struct {
 	Def    *ast.TypeExtensionDefinition
 	Model  *Model
@@ -18,10 +19,12 @@ type ObjectExtension struct {
 // 	}
 // }
 
+// IsFederatedType ...
 func (oe *ObjectExtension) IsFederatedType() bool {
 	return oe.Object.IsFederatedType()
 }
 
+// ExtendsLocalObject ...
 func (oe *ObjectExtension) ExtendsLocalObject() bool {
 	return oe.Model.HasObject(oe.Object.Name())
 }

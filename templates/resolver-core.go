@@ -1,5 +1,6 @@
 package templates
 
+// ResolverCore ...
 var ResolverCore = `package gen
 
 import (
@@ -13,6 +14,7 @@ import (
 	"github.com/vektah/gqlparser/ast"
 )
 
+// ResolutionHandlers ...
 type ResolutionHandlers struct {
 	OnEvent        func(ctx context.Context, r *GeneratedResolver, e *events.Event) error
 	{{range $obj := .Model.ObjectEntities}}
@@ -31,6 +33,7 @@ type ResolutionHandlers struct {
 	{{end}}
 }
 
+// DefaultResolutionHandlers ...
 func DefaultResolutionHandlers() ResolutionHandlers {
 	handlers := ResolutionHandlers{
 		OnEvent: func(ctx context.Context, r *GeneratedResolver, e *events.Event) error { return nil },
@@ -52,12 +55,14 @@ func DefaultResolutionHandlers() ResolutionHandlers {
 	return handlers
 }
 
+// GeneratedResolver ...
 type GeneratedResolver struct {
 	Handlers ResolutionHandlers
 	db *DB
 	EventController *EventController
 }
 
+// NewGeneratedResolver ...
 func NewGeneratedResolver(handlers ResolutionHandlers, db *DB, ec *EventController) *GeneratedResolver {
 	return &GeneratedResolver{Handlers: handlers, db: db, EventController: ec}
 }

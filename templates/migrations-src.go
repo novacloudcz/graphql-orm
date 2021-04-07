@@ -1,5 +1,6 @@
 package templates
 
+// MigrationsSrc ...
 var MigrationsSrc = `package src
 
 import (
@@ -11,6 +12,7 @@ import (
 	"gopkg.in/gormigrate.v1"
 )
 
+// GetMigrations ...
 func GetMigrations(db *gen.DB) []*gormigrate.Migration {
 	return []*gormigrate.Migration{
 		&gormigrate.Migration{

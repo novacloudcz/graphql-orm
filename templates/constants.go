@@ -1,5 +1,6 @@
 package templates
 
+// Constants ...
 var Constants = `package gen
 
 import (

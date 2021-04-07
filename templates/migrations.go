@@ -1,5 +1,6 @@
 package templates
 
+// Migrations ...
 var Migrations = `package gen
 
 import (
@@ -11,6 +12,7 @@ import (
 	"gopkg.in/gormigrate.v1"
 )
 
+// Migrate ...
 func Migrate(db *gorm.DB, options *gormigrate.Options, migrations []*gormigrate.Migration) error {
 	m := gormigrate.New(db, options, migrations)
 
@@ -22,6 +24,7 @@ func Migrate(db *gorm.DB, options *gormigrate.Options, migrations []*gormigrate.
 	return m.Migrate();
 }
 
+// AutoMigrate ...
 func AutoMigrate(db *gorm.DB) (err error) {
 	_db := db.AutoMigrate({{range $obj := .Model.ObjectEntities}}
 		{{.Name}}{},{{end}}

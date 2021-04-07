@@ -29,6 +29,7 @@ func NewDBFromEnvVars() *DB {
 	return NewDBWithString(urlString)
 }
 
+// TableName ...
 func TableName(name string) string {
 	prefix := os.Getenv("TABLE_NAME_PREFIX")
 	if prefix != "" {
@@ -122,6 +123,7 @@ func (db *DB) Close() error {
 	return db.db.Close()
 }
 
+// Ping ...
 func (db *DB) Ping() error {
 	return db.db.DB().Ping()
 }

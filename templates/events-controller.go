@@ -1,5 +1,6 @@
 package templates
 
+// EventsController ...
 var EventsController = `package gen
 
 import (
@@ -17,15 +18,18 @@ import (
 )
 
 const (
+	// ORMChangeEvent ...
 	ORMChangeEvent = "com.graphql.orm.change"
 )
 
+// EventController ...
 type EventController struct {
 	clients map[string]cloudevents.Client
 	debug   bool
 	source  string
 }
 
+// NewEventController ...
 func NewEventController() (ec EventController, err error) {
 	source := os.Getenv("EVENT_TRANSPORT_SOURCE")
 	if source == "" {

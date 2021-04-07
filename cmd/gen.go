@@ -93,7 +93,7 @@ func generate(filePattern, p string) error {
 		return err
 	}
 
-	var re = regexp.MustCompile(`(?sm)schema {[^}]+}`)
+	var re = regexp.MustCompile(`(?sm)schema\W{[^}]+}`)
 	schemaSDL = re.ReplaceAllString(schemaSDL, ``)
 	var re2 = regexp.MustCompile(`(?sm)type _Service {[^}]+}`)
 	schemaSDL = re2.ReplaceAllString(schemaSDL, ``)

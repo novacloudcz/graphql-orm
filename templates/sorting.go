@@ -1,5 +1,6 @@
 package templates
 
+// Sorting ...
 var Sorting = `package gen
 
 import (
@@ -10,9 +11,12 @@ import (
 
 {{range $obj := .Model.ObjectEntities}}
 {{if not $obj.IsExtended}}
+// Apply ...
 func (s {{$obj.Name}}SortType) Apply(ctx context.Context, dialect gorm.Dialect, sorts *[]SortInfo, joins *[]string) error {
 	return s.ApplyWithAlias(ctx, dialect, TableName("{{$obj.TableName}}"), sorts, joins)
 }
+
+// ApplyWithAlias ...
 func (s {{$obj.Name}}SortType) ApplyWithAlias(ctx context.Context, dialect gorm.Dialect, alias string, sorts *[]SortInfo, joins *[]string) error {
 	aliasPrefix := dialect.Quote(alias) + "."
 	

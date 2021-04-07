@@ -6,6 +6,7 @@ import (
 	"github.com/graphql-go/graphql/language/ast"
 )
 
+// Directive ...
 func (o *ObjectField) Directive(name string) *ast.Directive {
 	for _, d := range o.Def.Directives {
 		if d.Name.Value == name {
@@ -15,10 +16,12 @@ func (o *ObjectField) Directive(name string) *ast.Directive {
 	return nil
 }
 
+// HasDirective ...
 func (o *ObjectField) HasDirective(name string) bool {
 	return o.Directive(name) != nil
 }
 
+// ColumnType ...
 func (o *ObjectField) ColumnType() (value string) {
 	directive := o.Directive("column")
 	if directive == nil {
@@ -34,6 +37,7 @@ func (o *ObjectField) ColumnType() (value string) {
 	return
 }
 
+// ModelTags ...
 func (o *ObjectField) ModelTags() string {
 	_gorm := fmt.Sprintf("column:%s", o.Name())
 	if o.Name() == "id" {

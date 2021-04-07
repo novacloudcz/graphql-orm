@@ -1,12 +1,13 @@
 package templates
 
+// ResolverSrc ...
 var ResolverSrc = `package src
 
 import (
 	"{{.Config.Package}}/gen"
 )
 
-
+// New ...
 func New(db *gen.DB, ec *gen.EventController) *Resolver {
 	resolver := NewResolver(db, ec)
 

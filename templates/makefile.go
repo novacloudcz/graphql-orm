@@ -1,5 +1,6 @@
 package templates
 
+// Makefile ...
 var Makefile = `generate:
 	GO111MODULE=on go run github.com/novacloudcz/graphql-orm
 

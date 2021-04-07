@@ -1,5 +1,6 @@
 package templates
 
+// HTTPHandler ...
 var HTTPHandler = `package gen
 
 import (
@@ -12,6 +13,7 @@ import (
 	"gopkg.in/gormigrate.v1"
 )
 
+// GetHTTPServeMux ...
 func GetHTTPServeMux(r ResolverRoot, db *DB, migrations []*gormigrate.Migration) *http.ServeMux {
 	mux := http.NewServeMux()
 
@@ -61,16 +63,19 @@ func GetHTTPServeMux(r ResolverRoot, db *DB, migrations []*gormigrate.Migration)
 	return handler
 }
 
+// GetPrincipalIDFromContext ...
 func GetPrincipalIDFromContext(ctx context.Context) *string {
 	v, _ := ctx.Value(KeyPrincipalID).(*string)
 	return v
 }
 
+// GetJWTClaimsFromContext ...
 func GetJWTClaimsFromContext(ctx context.Context) *JWTClaims {
 	val, _ := ctx.Value(KeyJWTClaims).(*JWTClaims)
 	return val
 }
 
+// JWTClaims ...
 type JWTClaims struct {
 	jwtgo.StandardClaims
 	Scope *string
@@ -89,6 +94,7 @@ func getJWTClaims(req *http.Request) (*JWTClaims, error) {
 	return p, nil
 }
 
+// Scopes ...
 func (c *JWTClaims) Scopes() []string {
 	s := c.Scope
 	if s != nil && len(*s) > 0 {
@@ -96,6 +102,8 @@ func (c *JWTClaims) Scopes() []string {
 	}
 	return []string{}
 }
+
+// HasScope ...
 func (c *JWTClaims) HasScope(scope string) bool {
 	for _, s := range c.Scopes() {
 		if s == scope {

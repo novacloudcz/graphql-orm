@@ -1,5 +1,6 @@
 package templates
 
+// Lambda ...
 var Lambda = `package main
 
 import (

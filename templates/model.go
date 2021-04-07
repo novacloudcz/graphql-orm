@@ -1,5 +1,6 @@
 package templates
 
+// Model ...
 var Model = `package gen
 
 import (
@@ -13,10 +14,12 @@ import (
 
 {{range $object := .Model.ObjectEntities}}
 
+	// {{.Name}}ResultType ...
 	type {{.Name}}ResultType struct {
 		EntityResultType
 	}
 
+	// {{.Name}} ...
 	type {{.Name}} struct {
 	{{range $col := $object.Columns}}
 		{{$col.MethodName}} {{$col.GoType}} ` + "`" + `{{$col.ModelTags}}` + "`" + `{{end}}
@@ -27,12 +30,16 @@ import (
 	{{end}}
 	}
 
+	// Is_Entity ...
 	func (m *{{.Name}}) Is_Entity() {}
 
+
 	{{range $interface := $object.Interfaces}}
+	// Is{{$interface}} ...
 	func (m *{{$object.Name}}) Is{{$interface}}() {}
 	{{end}}
 
+	// {{.Name}}Changes ...
 	type {{.Name}}Changes struct {
 		{{range $col := $object.Columns}}
 		{{$col.MethodName}} {{$col.InputTypeName}}{{end}}
@@ -42,10 +49,13 @@ import (
 
 	{{range $rel := $object.Relationships}}
 		{{if and $rel.IsManyToMany $rel.IsMainRelationshipForManyToMany}}
+		// {{$rel.ManyToManyObjectName}} ...
 		type {{$rel.ManyToManyObjectName}} struct {
 			{{$rel.ForeignKeyDestinationColumn}} string
 			{{$rel.InverseRelationship.ForeignKeyDestinationColumn}} string
 		}
+
+		// TableName ...
 		func ({{$rel.ManyToManyObjectName}}) TableName() string {
 			return TableName("{{$rel.ManyToManyJoinTable}}")
 		}
@@ -53,7 +63,7 @@ import (
 	{{end}}
 {{end}}
 
-// used to convert map[string]interface{} to EntityChanges struct
+// ApplyChanges used to convert map[string]interface{} to EntityChanges struct
 func ApplyChanges(changes map[string]interface{}, to interface{}) error {
 	dec, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		ErrorUnused: true,

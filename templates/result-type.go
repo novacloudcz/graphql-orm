@@ -1,5 +1,6 @@
 package templates
 
+// ResultType ...
 var ResultType = `package gen
 
 import (
@@ -12,34 +13,44 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+// GetItem ...
 func GetItem(ctx context.Context, db *gorm.DB, out interface{}, id *string) error {
 	return db.Find(out, "id = ?", id).Error
 }
 
+// GetItemForRelation ...
 func GetItemForRelation(ctx context.Context, db *gorm.DB, obj interface{}, relation string, out interface{}) error {
 	return db.Model(obj).Related(out, relation).Error
 }
 
+// EntityFilter ...
 type EntityFilter interface {
 	Apply(ctx context.Context, dialect gorm.Dialect, wheres *[]string, whereValues *[]interface{}, havings *[]string, havingValues *[]interface{}, joins *[]string) error
 }
+
+// EntityFilterQuery ...
 type EntityFilterQuery interface {
 	Apply(ctx context.Context, dialect gorm.Dialect, selectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error
 }
 
-
+// SortInfo ...
 type SortInfo struct {
 	Field         string
 	Direction     string
 	IsAggregation bool
 }
+
+// String ...
 func (si *SortInfo) String() string {
 	return fmt.Sprintf("%s %s", si.Field, si.Direction)
 }
+
+// EntitySort ...
 type EntitySort interface {
 	Apply(ctx context.Context, dialect gorm.Dialect, sorts *[]SortInfo, joins *[]string) error
 }
 
+// EntityResultType ...
 type EntityResultType struct {
 	Offset       *int
 	Limit        *int
@@ -50,6 +61,7 @@ type EntityResultType struct {
 	SelectionSet *ast.SelectionSet
 }
 
+// GetItemsOptions ...
 type GetItemsOptions struct {
 	Alias      string
 	Preloaders []string
@@ -190,6 +202,7 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetIt
 	return
 }
 
+// GetSortStrings ...
 func (r *EntityResultType) GetSortStrings() []string {
 	return []string{}
 }

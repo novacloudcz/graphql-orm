@@ -1,5 +1,6 @@
 package templates
 
+// DummyModel ...
 var DummyModel = `type User @entity {
 	email: String @column
 	firstName: String @column

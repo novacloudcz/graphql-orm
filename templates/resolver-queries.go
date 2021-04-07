@@ -1,5 +1,6 @@
 package templates
 
+// ResolverQueries ...
 var ResolverQueries = `package gen
 
 import (
@@ -13,14 +14,18 @@ import (
 	"github.com/vektah/gqlparser/ast"
 )
 
+// GeneratedQueryResolver ...
 type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 {{range $obj := .Model.ObjectEntities}}
+	// Query{{$obj.Name}}HandlerOptions ...
 	type Query{{$obj.Name}}HandlerOptions struct {
 		ID *string
 		Q      *string
 		Filter *{{$obj.Name}}FilterType
 	}
+	
+	// {{$obj.Name}} ...
 	func (r *GeneratedQueryResolver) {{$obj.Name}}(ctx context.Context, id *string, q *string, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}, error) {
 		opts := Query{{$obj.Name}}HandlerOptions{
 			ID: id,
@@ -29,6 +34,8 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		}
 		return r.Handlers.Query{{$obj.Name}}(ctx, r.GeneratedResolver, opts)
 	}
+
+	// Query{{$obj.Name}}Handler ...
 	func Query{{$obj.Name}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.Name}}HandlerOptions) (*{{$obj.Name}}, error) {
 		selection := []ast.Selection{}
 		for _, f := range graphql.CollectFieldsCtx(ctx, nil) {
@@ -70,6 +77,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		return items[0], err
 	}
 	
+	// Query{{$obj.PluralName}}HandlerOptions ...
 	type Query{{$obj.PluralName}}HandlerOptions struct {
 		Offset *int
 		Limit  *int
@@ -77,6 +85,8 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		Sort   []*{{$obj.Name}}SortType
 		Filter *{{$obj.Name}}FilterType
 	}
+
+	// {{$obj.PluralName}} ...
 	func (r *GeneratedQueryResolver) {{$obj.PluralName}}(ctx context.Context, offset *int, limit *int, q *string, sort []*{{$obj.Name}}SortType, filter *{{$obj.Name}}FilterType) (*{{$obj.Name}}ResultType, error) {
 		opts := Query{{$obj.PluralName}}HandlerOptions{
 			Offset: offset,
@@ -87,6 +97,8 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		}
 		return r.Handlers.Query{{$obj.PluralName}}(ctx, r.GeneratedResolver, opts)
 	}
+
+	// {{$obj.PluralName}}Items ...
 	func (r *GeneratedResolver) {{$obj.PluralName}}Items(ctx context.Context, opts Query{{$obj.PluralName}}HandlerOptions) (res []*{{$obj.Name}}, err error) {
 		resultType, err := r.Handlers.Query{{$obj.PluralName}}(ctx, r, opts)
 		if err != nil {
@@ -100,6 +112,8 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		}
 		return
 	}
+
+	// {{$obj.PluralName}}Count ...
 	func (r *GeneratedResolver) {{$obj.PluralName}}Count(ctx context.Context, opts Query{{$obj.PluralName}}HandlerOptions) (count int, err error) {
 		resultType, err := r.Handlers.Query{{$obj.PluralName}}(ctx, r, opts)
 		if err != nil {
@@ -109,6 +123,8 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 			Alias: TableName("{{$obj.TableName}}"),
 		}, &{{$obj.Name}}{})
 	}
+
+	// Query{{$obj.PluralName}}Handler ...
 	func Query{{$obj.PluralName}}Handler(ctx context.Context, r *GeneratedResolver, opts Query{{$obj.PluralName}}HandlerOptions) (*{{$obj.Name}}ResultType, error) {
 		query := {{$obj.Name}}QueryFilter{opts.Q}
 		
@@ -136,8 +152,10 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		}, nil
 	}
 
+	// Generated{{$obj.Name}}ResultTypeResolver ...
 	type Generated{{$obj.Name}}ResultTypeResolver struct{ *GeneratedResolver }
 
+	// Items ...
 	func (r *Generated{{$obj.Name}}ResultTypeResolver) Items(ctx context.Context, obj *{{$obj.Name}}ResultType) (items []*{{$obj.Name}}, err error) {
 		otps := GetItemsOptions{
 			Alias:TableName("{{$obj.TableName}}"),
@@ -165,6 +183,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		return
 	}
 
+	// Count ...
 	func (r *Generated{{$obj.Name}}ResultTypeResolver) Count(ctx context.Context, obj *{{$obj.Name}}ResultType) (count int, err error) {
 		opts := GetItemsOptions{
 			Alias:TableName("{{$obj.TableName}}"),
@@ -180,9 +199,12 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 		{{range $col := $obj.Fields}}
 			{{if $col.NeedsQueryResolver}}
+				// {{$col.MethodName}} ...
 				func (r *Generated{{$obj.Name}}Resolver) {{$col.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$col.GoResultType}}, err error) {
 					return r.Handlers.{{$obj.Name}}{{$col.MethodName}}(ctx, r.GeneratedResolver, obj)
 				}
+
+				// {{$col.MethodName}}Handler ...
 				func {{$obj.Name}}{{$col.MethodName}}Handler(ctx context.Context,r *GeneratedResolver, obj *{{$obj.Name}}) (res {{$col.GoResultType}}, err error) {
 					{{if and (not $col.IsList) $col.HasTargetTypeWithIDField ($obj.HasColumn (print $col.Name "Id"))}}
 						if obj.{{$col.MethodName}}ID != nil {
@@ -209,9 +231,12 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 		{{end}}
 
 		{{range $index, $rel := $obj.Relationships}}
+			// {{$rel.MethodName}} ...
 			func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}(ctx context.Context, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
 				return r.Handlers.{{$obj.Name}}{{$rel.MethodName}}(ctx, r.GeneratedResolver, obj)
 			}
+
+			// {{$rel.MethodName}}Handler ...
 			func {{$obj.Name}}{{$rel.MethodName}}Handler(ctx context.Context,r *GeneratedResolver, obj *{{$obj.Name}}) (res {{$rel.ReturnType}}, err error) {
 				{{if $rel.Preload}}
 				if obj.{{$rel.MethodName}}Preloaded {
@@ -241,6 +266,7 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 				return 
 			}
 			{{if $rel.IsToMany}}
+				// {{$rel.MethodName}}Ids ...
 				func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}Ids(ctx context.Context, obj *{{$obj.Name}}) (ids []string, err error) {
 					ids = []string{}
 
@@ -254,6 +280,8 @@ type GeneratedQueryResolver struct{ *GeneratedResolver }
 
 					return
 				}
+				
+				// {{$rel.MethodName}}Connection ...
 				func (r *Generated{{$obj.Name}}Resolver) {{$rel.MethodName}}Connection(ctx context.Context, obj *{{$obj.Name}}, offset *int, limit *int, q *string, sort []*{{$rel.TargetType}}SortType, filter *{{$rel.TargetType}}FilterType) (res *{{$rel.TargetType}}ResultType, err error) {
 					f := &{{$rel.TargetType}}FilterType{
 						{{$rel.InverseRelationship.MethodName}}: &{{$obj.Name}}FilterType{

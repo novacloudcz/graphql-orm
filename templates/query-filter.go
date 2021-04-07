@@ -1,5 +1,6 @@
 package templates
 
+// QueryFilters ...
 var QueryFilters = `package gen
 
 import (
@@ -13,10 +14,12 @@ import (
 
 {{range $object := .Model.ObjectEntities}}
 
+// {{$object.Name}}QueryFilter ...
 type {{$object.Name}}QueryFilter struct {
 	Query *string
 }
 
+// Apply ...
 func (qf *{{$object.Name}}QueryFilter) Apply(ctx context.Context, dialect gorm.Dialect, selectionSet *ast.SelectionSet, wheres *[]string, values *[]interface{}, joins *[]string) error {
 	if qf.Query == nil {
 		return nil

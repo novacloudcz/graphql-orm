@@ -6,11 +6,13 @@ import (
 	"github.com/graphql-go/graphql/language/ast"
 )
 
+// Model ...
 type Model struct {
 	Doc *ast.Document
 	// Objects []Object
 }
 
+// Objects ...
 func (m *Model) Objects() []Object {
 	objs := []Object{}
 	for _, def := range m.Doc.Definitions {
@@ -21,6 +23,8 @@ func (m *Model) Objects() []Object {
 	}
 	return objs
 }
+
+// ObjectEntities ...
 func (m *Model) ObjectEntities() []Object {
 	objs := []Object{}
 	for _, def := range m.Doc.Definitions {
@@ -35,6 +39,7 @@ func (m *Model) ObjectEntities() []Object {
 	return objs
 }
 
+// EmbeddedObjects ...
 func (m *Model) EmbeddedObjects() []Object {
 	objs := []Object{}
 	objsMap := map[string]bool{}
@@ -52,6 +57,7 @@ func (m *Model) EmbeddedObjects() []Object {
 	return objs
 }
 
+// ObjectExtensions ...
 func (m *Model) ObjectExtensions() []ObjectExtension {
 	objs := []ObjectExtension{}
 	for _, def := range m.Doc.Definitions {
@@ -64,6 +70,7 @@ func (m *Model) ObjectExtensions() []ObjectExtension {
 	return objs
 }
 
+// Object ...
 func (m *Model) Object(name string) Object {
 	for _, o := range m.Objects() {
 		if o.Name() == name {
@@ -72,6 +79,8 @@ func (m *Model) Object(name string) Object {
 	}
 	panic(fmt.Sprintf("Object with name %s not found in model", name))
 }
+
+// ObjectExtension ...
 func (m *Model) ObjectExtension(name string) ObjectExtension {
 	for _, e := range m.ObjectExtensions() {
 		if e.Object.Name() == name {
@@ -81,6 +90,7 @@ func (m *Model) ObjectExtension(name string) ObjectExtension {
 	panic(fmt.Sprintf("Extension for object with name %s not found in model", name))
 }
 
+// HasObject ...
 func (m *Model) HasObject(name string) bool {
 	if name == "Query" || name == "Mutation" || name == "Subscription" {
 		return true
@@ -93,6 +103,7 @@ func (m *Model) HasObject(name string) bool {
 	return false
 }
 
+// HasObjectExtension ...
 func (m *Model) HasObjectExtension(name string) bool {
 	for _, e := range m.ObjectExtensions() {
 		if e.Object.Name() == name {
@@ -112,6 +123,7 @@ var defaultScalars map[string]bool = map[string]bool{
 	"Time":    true,
 }
 
+// HasScalar ...
 func (m *Model) HasScalar(name string) bool {
 	if _, ok := defaultScalars[name]; ok {
 		return true
@@ -125,6 +137,7 @@ func (m *Model) HasScalar(name string) bool {
 	return false
 }
 
+// HasEnum ...
 func (m *Model) HasEnum(name string) bool {
 	if _, ok := defaultScalars[name]; ok {
 		return true
@@ -138,6 +151,7 @@ func (m *Model) HasEnum(name string) bool {
 	return false
 }
 
+// RemoveObjectExtension ...
 func (m *Model) RemoveObjectExtension(oe *ObjectExtension) {
 	newDefinitions := []ast.Node{}
 	for _, d := range m.Doc.Definitions {

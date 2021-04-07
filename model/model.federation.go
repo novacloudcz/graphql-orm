@@ -1,5 +1,6 @@
 package model
 
+// HasFederatedTypes ...
 func (m *Model) HasFederatedTypes() bool {
 	for _, o := range m.Objects() {
 		if o.IsFederatedType() {
@@ -10,6 +11,7 @@ func (m *Model) HasFederatedTypes() bool {
 	return false
 }
 
+// IsFederatedType ...
 func (o *Object) IsFederatedType() bool {
 	return o.HasDirective("key")
 }

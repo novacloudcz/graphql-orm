@@ -1,5 +1,6 @@
 package templates
 
+// GQLGen ...
 var GQLGen = `# Generated with graphql-orm
 {{$config:=.Config}}
 schema:
