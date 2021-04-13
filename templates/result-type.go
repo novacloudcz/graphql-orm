@@ -67,7 +67,7 @@ type GetItemsOptions struct {
 	Preloaders []string
 }
 
-// GetResultTypeItems ...
+// GetItems ...
 func (r *EntityResultType) GetItems(ctx context.Context, db *gorm.DB, opts GetItemsOptions, out interface{}) error {
 	subq := db.Model(out)
 	q := db
@@ -200,6 +200,80 @@ func (r *EntityResultType) GetCount(ctx context.Context, db *gorm.DB, opts GetIt
 	err = db.Model(out).Joins("INNER JOIN (?) as filter_table ON filter_table.id = "+opts.Alias+".id", q.QueryExpr()).Count(&count).Error
 
 	return
+}
+
+// GetAggregationsOptions ...
+type GetAggregationsOptions struct {
+	Alias             string
+	Fields            []string
+	AggregationFields []GetAggregationsAggregationField
+}
+
+// GetAggregationsAggregationField ...
+type GetAggregationsAggregationField struct {
+	Name string
+	Function string
+}
+
+// GetAggregations ...
+func (r *EntityResultType) GetAggregations(ctx context.Context, db *gorm.DB, opts GetAggregationsOptions, model interface{}, out interface{}) error {
+	subq := db.Model(model)
+	q := db
+	subqGroups := []string{opts.Alias + ".id"}
+	subqFields := []string{}
+	qFields := []string{}
+
+	dialect := q.Dialect()
+
+	for _, f := range opts.Fields {
+		subqFields = append(subqFields, opts.Alias+"."+dialect.Quote(f))
+	}
+	for _, af := range opts.AggregationFields {
+		val := fmt.Sprintf("%s(t.%s) as %s", strings.ToUpper(af.Function), dialect.Quote(af.Name), dialect.Quote(strcase.ToSnake(af.Name)+"_"+strings.ToLower(af.Function)))
+		qFields = append(qFields, val)
+	}
+
+	wheres := []string{}
+	havings := []string{}
+	whereValues := []interface{}{}
+	havingValues := []interface{}{}
+	joins := []string{}
+
+	err := r.Query.Apply(ctx, dialect, r.SelectionSet, &wheres, &whereValues, &joins)
+	if err != nil {
+		return err
+	}
+
+	if r.Filter != nil {
+		err = r.Filter.Apply(ctx, dialect, &wheres, &whereValues, &havings, &havingValues, &joins)
+		if err != nil {
+			return err
+		}
+	}
+
+	if len(wheres) > 0 {
+		subq = subq.Where(strings.Join(wheres, " AND "), whereValues...)
+	}
+	if len(havings) > 0 {
+		subq = subq.Having(strings.Join(havings, " AND "), havingValues...)
+	}
+
+	uniqueJoinsMap := map[string]bool{}
+	uniqueJoins := []string{}
+	for _, join := range joins {
+		if !uniqueJoinsMap[join] {
+			uniqueJoinsMap[join] = true
+			uniqueJoins = append(uniqueJoins, join)
+		}
+	}
+
+	for _, join := range uniqueJoins {
+		subq = subq.Joins(join)
+	}
+
+	subq = subq.Group(strings.Join(subqGroups, ", ")).Select(strings.Join(subqFields, ", "))
+	err = q.Raw("SELECT "+strings.Join(qFields, ",")+" FROM (?) as t", subq.QueryExpr()).Scan(out).Error
+	return err
 }
 
 // GetSortStrings ...

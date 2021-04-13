@@ -41,6 +41,9 @@ func EnrichModel(m *Model) error {
 		}
 		definitions = append(definitions, createObjectDefinition(o), updateObjectDefinition(o), createObjectSortType(o), createObjectFilterType(o))
 		definitions = append(definitions, objectResultTypeDefinition(&o))
+		if o.HasAggregableColumn() {
+			definitions = append(definitions, objectResultTypeAggregationsDefinition(&o))
+		}
 	}
 
 	for _, o := range m.EmbeddedObjects() {

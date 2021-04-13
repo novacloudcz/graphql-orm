@@ -39,8 +39,8 @@ func filterInputValues(column *ObjectField, t ast.Type) []*ast.InputValueDefinit
 	for _, val := range column.FilterMapping() {
 		name := fmt.Sprintf("%s%s", column.Name(), val.Suffix)
 		values = append(values, filterInputValue(name, val.InputType))
-		for _, fn := range column.Aggregations() {
-			name := fmt.Sprintf("%s%s%s", column.Name(), fn.Name, val.Suffix)
+		for _, agg := range column.Aggregations() {
+			name := fmt.Sprintf("%s%s%s", column.Name(), agg.Name, val.Suffix)
 			values = append(values, filterInputValue(name, val.InputType))
 		}
 	}

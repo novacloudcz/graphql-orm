@@ -66,28 +66,28 @@ func listFieldResultTypeDefinition(obj Object, name string) *ast.FieldDefinition
 		Name: nameNode(name),
 		Type: nonNull(namedType(obj.Name() + "ResultType")),
 		Arguments: []*ast.InputValueDefinition{
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("offset"),
 				Type: namedType("Int"),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind:         kinds.InputValueDefinition,
 				Name:         nameNode("limit"),
 				DefaultValue: &ast.IntValue{Kind: kinds.IntValue, Value: "30"},
 				Type:         namedType("Int"),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("q"),
 				Type: namedType("String"),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("sort"),
 				Type: listType(nonNull(namedType(obj.Name() + "SortType"))),
 			},
-			&ast.InputValueDefinition{
+			{
 				Kind: kinds.InputValueDefinition,
 				Name: nameNode("filter"),
 				Type: namedType(obj.Name() + "FilterType"),
