@@ -137,14 +137,29 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		}
 		
 		{{range $rel := $obj.Relationships}}
-			{{if $rel.IsToMany}}{{if not $rel.Target.IsExtended}}
-				if ids,exists:=input["{{$rel.Name}}Ids"]; exists {
-					items := []{{$rel.TargetType}}{}
-					tx.Find(&items, "id IN (?)", ids)
-					association := tx.Model(&item).Association("{{$rel.MethodName}}")
-					association.Replace(items)
-				}
-			{{end}}{{end}}
+			{{if not $rel.Target.IsExtended}}
+				{{if $rel.IsManyToMany}}
+					if ids,exists:=input["{{$rel.Name}}Ids"]; exists {
+						items := []{{$rel.TargetType}}{}
+						err = tx.Find(&items, "id IN (?)", ids).Error
+						if err != nil {
+							return
+						}
+						association := tx.Model(&item).Association("{{$rel.MethodName}}")
+						err = association.Replace(items).Error
+						if err != nil {
+							return
+						}
+					}
+				{{else if $rel.IsToMany}}
+					if ids,exists:=input["{{$rel.Name}}Ids"]; exists {
+						err = tx.Model({{$rel.TargetType}}{}).Where("id IN (?)", ids).Update("{{$rel.ForeignKeyDestinationColumn}}", item.ID).Error
+						if err != nil {
+							return
+						}
+					}
+				{{end}}
+			{{end}}
 		{{end}}
 
 		AddMutationEvent(ctx, event)

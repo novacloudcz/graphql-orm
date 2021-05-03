@@ -237,6 +237,9 @@ func (o *ObjectRelationship) ForeignKeyDestinationColumn() string {
 	if o.IsManyToMany() {
 		return inflection.Singular(o.InverseRelationshipName()) + "_id"
 	}
+	if o.IsToMany() {
+		return inflection.Singular(o.InverseRelationshipName()) + "Id"
+	}
 	return ""
 }
 
