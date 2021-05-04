@@ -5,7 +5,7 @@ test-generate:
 test-start:
 	cd test && ENABLE_DELETE_ALL_RESOLVERS=true make run && cd ..
 test-start-mysql:
-	cd test && ENABLE_DELETE_ALL_RESOLVERS=true DATABASE_URL=mysql://root:@localhost/test PORT=8080 go run *.go start --cors && cd ..
+	cd test && ENABLE_DELETE_ALL_RESOLVERS=true DATABASE_URL=mysql://root:root@localhost/test PORT=8080 go run *.go start --cors && cd ..
 test-start-postgres:
 	cd test && ENABLE_DELETE_ALL_RESOLVERS=true DATABASE_URL=postgres://postgres@localhost:5432/test?sslmode=disable PORT=8080 go run *.go start --cors && cd ..
 test-start:
@@ -19,7 +19,7 @@ test-run-sqlite3:
 test-run-postgres:
 	cd test && DATABASE_URL=postgres://postgres@localhost:5432/test?sslmode=disable make test && cd ..
 test-run-mysql:
-	cd test && DATABASE_URL=mysql://root:@localhost/test make test && cd ..
+	cd test && DATABASE_URL=mysql://root:root@localhost/test make test && cd ..
 test-build-lambda:
 	cd test && make build-lambda-function && cd ..
 test-cleanup:
