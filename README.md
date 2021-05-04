@@ -1,6 +1,5 @@
 # graphql-orm
 
-[![Build Status](https://travis-ci.org/novacloudcz/graphql-orm.svg?branch=master)](https://travis-ci.org/novacloudcz/graphql-orm)
 [![Go Report Card](https://goreportcard.com/badge/github.com/novacloudcz/graphql-orm)](https://goreportcard.com/report/github.com/novacloudcz/graphql-orm)
 
 Golang GraphQL API generator using [gqlgen](https://gqlgen.com) and [gorm](https://gorm.io)

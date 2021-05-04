@@ -15,4 +15,4 @@ services:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
       MYSQL_DATABASE: test
       MYSQL_USER: root
-      MYSQL_PASSWORD: null
+      MYSQL_PASSWORD: root

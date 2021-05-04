@@ -13,10 +13,10 @@ require (
 	github.com/jakubknejzlik/cloudevents-aws-transport v0.1.4
 	github.com/jinzhu/gorm v1.9.10
 	github.com/mitchellh/mapstructure v0.0.0-20180203102830-a4e142e9c047
-	github.com/novacloudcz/graphql-orm v0.4.12
+	github.com/novacloudcz/graphql-orm v0.0.0
 	github.com/vektah/gqlparser v1.2.0
 	gopkg.in/gormigrate.v1 v1.6.0
 	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
 
-replace github.com/novacloudcz/graphql-orm v0.4.12 => ../
+replace github.com/novacloudcz/graphql-orm v0.0.0 => ../
