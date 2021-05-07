@@ -80,7 +80,7 @@ func (r *Resolver) Query() gen.QueryResolver {
 		type {{$obj.Name}}Resolver struct {
 			*gen.Generated{{$obj.Name}}Resolver
 		}
-		{{if or $obj.HasAnyRelationships $obj.HasReadonlyColumns}}
+		{{if or $obj.HasAnyRelationships $obj.HasReadonlyColumns $ext.HasAnyNonExternalField}}
 			// {{$obj.Name}} ...
 			func (r *Resolver) {{$obj.Name}}() gen.{{$obj.Name}}Resolver {
 				return &{{$obj.Name}}Resolver{&gen.Generated{{$obj.Name}}Resolver{r.GeneratedResolver}}

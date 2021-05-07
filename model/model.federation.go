@@ -7,6 +7,11 @@ func (m *Model) HasFederatedTypes() bool {
 			return true
 		}
 	}
+	for _, e := range m.ObjectExtensions() {
+		if e.IsFederatedType() {
+			return true
+		}
+	}
 
 	return false
 }

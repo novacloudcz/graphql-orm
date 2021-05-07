@@ -28,3 +28,13 @@ func (oe *ObjectExtension) IsFederatedType() bool {
 func (oe *ObjectExtension) ExtendsLocalObject() bool {
 	return oe.Model.HasObject(oe.Object.Name())
 }
+
+// IsExternal ...
+func (oe *ObjectExtension) HasAnyNonExternalField() bool {
+	for _, f := range oe.Object.Fields() {
+		if !f.IsExternal() {
+			return true
+		}
+	}
+	return false
+}

@@ -1,9 +1,8 @@
 package model
 
 import (
-	"github.com/graphql-go/graphql/language/kinds"
-
 	"github.com/graphql-go/graphql/language/ast"
+	"github.com/graphql-go/graphql/language/kinds"
 )
 
 // https://github.com/99designs/gqlgen/issues/681 for nested fields

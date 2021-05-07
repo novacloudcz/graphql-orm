@@ -37,6 +37,12 @@ func createFederationEntityUnion(m *Model) *ast.UnionDefinition {
 			types = append(types, t.(*ast.Named))
 		}
 	}
+	for _, e := range m.ObjectExtensions() {
+		if e.IsFederatedType() {
+			t := namedType(e.Object.Name())
+			types = append(types, t.(*ast.Named))
+		}
+	}
 
 	return &ast.UnionDefinition{
 		Kind:  kinds.UnionDefinition,

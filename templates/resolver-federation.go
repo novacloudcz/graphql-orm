@@ -41,32 +41,44 @@ func (r *GeneratedQueryResolver) _entities(ctx context.Context, representations 
 			break
 		}
 		
-		switch typename { {{range $obj := .Model.ObjectEntities}}{{if $obj.IsFederatedType}}
-		case "{{$obj.Name}}":
-			ec := getExecutionContext(ctx)
-			f, _err := ec.unmarshalInput{{$obj.Name}}FilterType(ctx, anyValue)
-			err = _err
-			if err != nil {
-				return
-			}
+		switch typename { 
+			{{range $obj := .Model.ObjectEntities}}
+				{{if $obj.IsFederatedType}}
+					case "{{$obj.Name}}":
+						ec := getExecutionContext(ctx)
+						f, _err := ec.unmarshalInput{{$obj.Name}}FilterType(ctx, anyValue)
+						err = _err
+						if err != nil {
+							return
+						}
 
-			if f.IsEmpty(ctx, r.GetDB(ctx).Dialect()) {
-				res = append(res, nil)
-				continue
-			}
-			
-			item, _err := r.{{$obj.Name}}(ctx, nil, nil, &f)
-			if _err != nil {
-				err = _err
-				return
-			} 
-			if item == nil {
-				// append nil object without reflected interface
-				res = append(res, nil) 
-			} else {
-				res = append(res, item)
-			}
-			break;{{end}}{{end}}
+						if f.IsEmpty(ctx, r.GetDB(ctx).Dialect()) {
+							res = append(res, nil)
+							continue
+						}
+						
+						item, _err := r.{{$obj.Name}}(ctx, nil, nil, &f)
+						if _err != nil {
+							err = _err
+							return
+						} 
+						if item == nil {
+							// append nil object without reflected interface
+							res = append(res, nil) 
+						} else {
+							res = append(res, item)
+						}
+						break;
+				{{end}}
+			{{end}}
+			{{range $ext := .Model.ObjectExtensions}}
+				{{if $ext.IsFederatedType}}
+					case "{{$ext.Object.Name}}":
+						item := {{$ext.Object.Name}}{ID:anyValue["id"].(string)}
+						res = append(res, item)
+						break;
+				{{end}}
+			{{end}}
 		default:
 			err = fmt.Errorf("The _entities resolver tried to load an entity for type \"%s\", but no object type of that name was found in the schema", typename)
 			return

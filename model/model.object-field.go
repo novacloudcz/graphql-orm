@@ -37,6 +37,11 @@ func (o *ObjectField) IsColumn() bool {
 	return o.HasDirective("column")
 }
 
+// IsExternal ...
+func (o *ObjectField) IsExternal() bool {
+	return o.HasDirective("external")
+}
+
 // IsIdentifier ...
 func (o *ObjectField) IsIdentifier() bool {
 	return o.Name() == "id"
