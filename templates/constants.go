@@ -13,6 +13,7 @@ const (
 	KeyLoaders          	key    = iota
 	KeyExecutableSchema 	key    = iota
 	KeyJWTClaims        	key    = iota
+	KeyHTTPRequest          key    = iota
 	KeyMutationTransaction	key    = iota
 	KeyMutationEvents		key    = iota
 	SchemaSDL string = ` + "`{{.SchemaSDL}}`" + `
