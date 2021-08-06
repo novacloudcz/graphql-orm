@@ -6,7 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.10.2
 	github.com/akrylysov/algnhsa v0.11.0 // indirect
 	github.com/cloudevents/sdk-go v0.10.0
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/golang-jwt/jwt v3.2.0+incompatible
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/iancoleman/strcase v0.0.0-20190422225806-e506e3ef7365

@@ -4,9 +4,9 @@ go 1.12
 
 require (
 	github.com/99designs/gqlgen v0.10.2
-	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
+	github.com/golang-jwt/jwt v3.2.2+incompatible // indirect
 	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/graphql-go/graphql v0.7.8
 	github.com/howeyc/gopass v0.0.0-20190910152052-7cb4b85ec19c
@@ -21,4 +21,5 @@ require (
 	gopkg.in/AlecAivazis/survey.v1 v1.8.7
 	gopkg.in/gormigrate.v1 v1.6.0 // indirect
 	gopkg.in/yaml.v2 v2.2.8
+	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 )
