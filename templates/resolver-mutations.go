@@ -78,6 +78,7 @@ func AddMutationEvent(ctx context.Context, e events.Event) {
 		ctx = EnrichContextWithMutations(ctx, r.GeneratedResolver)
 		item, err = r.Handlers.Create{{$obj.Name}}(ctx, r.GeneratedResolver, input)
 		if err!=nil{
+			RollbackMutationContext(ctx, r.GeneratedResolver)
 			return
 		}
 		err = FinishMutationContext(ctx, r.GeneratedResolver)
