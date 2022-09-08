@@ -10,9 +10,9 @@ services:
   mysql:
     ports:
       - "3306:3306"
-    image: "mariadb:10.3.2"
+    # image: "mariadb:10.3.2"
+    image: "mysql"
     environment:
       MYSQL_ALLOW_EMPTY_PASSWORD: 1
       MYSQL_DATABASE: test
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
+      MYSQL_ROOT_PASSWORD: root

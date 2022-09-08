@@ -103,6 +103,38 @@ Feature: It should be possible to fetch with relationships
             }
             """
 
+    Scenario: Fetching many2many with filter by id
+        When I send query:
+            """
+            query {
+            users(filter:{employersIds_in:["test"]}) { items { firstName lastName createdBy updatedBy employers { name } } count }
+            }
+            """
+        Then the response should be:
+            """
+            {
+                "users": {
+                    "items": [
+                        {
+                            "firstName": "John",
+                            "lastName": "Doe",
+                            "createdBy": null,
+                            "updatedBy": null,
+                            "employers": [
+                                {
+                                    "name": "test company"
+                                },
+                                {
+                                    "name": "test2 company"
+                                }
+                            ]
+                        }
+                    ],
+                    "count": 1
+                }
+            }
+            """
+
     Scenario: Fetching toOne
         When I send query:
             """

@@ -103,12 +103,18 @@ func (f *{{$obj.Name}}FilterType) ApplyWithAlias(ctx context.Context, dialect go
 	{{range $rel := $obj.Relationships}}
 	{{if not $rel.Target.IsExtended}}
 	{{$varName := (printf "f.%s" $rel.MethodName)}}
-	if {{$varName}} != nil {
+	if {{$varName}} != nil || {{$varName}}IdsIn != nil {
 		_alias := alias + "_{{$rel.Name}}"
 		*joins = append(*joins, {{$rel.JoinString}})
-		err := {{$varName}}.ApplyWithAlias(ctx, dialect, _alias, wheres, whereValues, havings, havingValues, joins)
-		if err != nil {
-			return err
+		if {{$varName}} != nil {
+			err := {{$varName}}.ApplyWithAlias(ctx, dialect, _alias, wheres, whereValues, havings, havingValues, joins)
+			if err != nil {
+				return err
+			}
+		}
+		if {{$varName}}IdsIn != nil {
+			*wheres = append(*wheres, dialect.Quote(_alias)+".id IN (?)")
+			*whereValues = append(*whereValues, {{$varName}}IdsIn)
 		}
 	}{{end}}{{end}}
 

@@ -24,6 +24,7 @@ func createObjectFilterType(obj Object) *ast.InputObjectDefinition {
 		fields = append(fields, filterInputValues(&col, col.InputType())...)
 	}
 	for _, rel := range obj.Relationships() {
+		fields = append(fields, filterInputValue(rel.Name()+"Ids_in", listType(nonNull(namedType("ID")))))
 		fields = append(fields, filterInputValue(rel.Name(), namedType(rel.Target().Name()+"FilterType")))
 	}
 
