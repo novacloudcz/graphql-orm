@@ -12,7 +12,7 @@ require (
 	github.com/jinzhu/inflection v1.0.0
 	github.com/urfave/cli v1.21.0
 	golang.org/x/crypto v0.0.0-20190530122614-20be4c3c3ed5 // indirect
-	golang.org/x/sys v0.0.0-20190507160741-ecd444e8653b // indirect
+	golang.org/x/sys v0.1.0 // indirect
 	golang.org/x/tools v0.0.0-20190806215303-88ddfcebc769 // indirect
 	gopkg.in/AlecAivazis/survey.v1 v1.8.7
 	gopkg.in/yaml.v2 v2.2.8
